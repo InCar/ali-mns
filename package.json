@@ -1,0 +1,35 @@
+{
+    "name": "ali-mqs",
+    "version": "1.0.0",
+    "description": "The nodejs SDK for aliyun mqs service",
+    "main": "index.js",
+    "dependencies": {
+        "promise": "6.0.*",
+        "request": "2.45.*",
+        "xml2js": "0.4.*"
+    },
+    "devDependencies": {
+        "grunt": "0.4.*",
+        "load-grunt-tasks": "0.6.*",
+        "grunt-contrib-clean": "0.6.*",
+        "grunt-typescript": "0.3.*"
+    },
+    "scripts": {
+        "test": "node ./test/main"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/InCar/ali-mqs.git"
+    },
+    "keywords": [
+        "aliyun",
+        "mqs",
+        "incar"
+    ],
+    "author": "ghxiong@incardata.com.cn",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/InCar/ali-mqs/issues"
+    },
+    "homepage": "https://github.com/InCar/ali-mqs"
+}
