@@ -26,8 +26,18 @@ function runTest(){
 
     var testAll = [];
     testAll.push(mqs.listP());
-    testAll.push(mq.sendP("test"));
-    testAll.push(mq.recvP());
+    testAll.push(mq.sendP("test").then(function(dataSend){
+        console.log(dataSend);
+        console.log("\t-----");
+        return mq.recvP();
+    }).then(function(dataRecv){
+        console.log(dataRecv);
+        console.log("\t-----");
+        return mq.deleteP(dataRecv.Message.ReceiptHandle)
+            .then(function(){
+                return "Deleted succeed: " + dataRecv.Message.ReceiptHandle;
+            });
+    }));
 
     var i = 0;
     testAll.forEach(function(any){
@@ -44,7 +54,7 @@ function runTest(){
         });
     });
 
-    return Promise.all(testAll).then(function(results){
+    return Promise.all(testAll).then(function(){
         return "Test finished!";
     });
 }

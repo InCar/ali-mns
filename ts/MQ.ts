@@ -30,6 +30,11 @@ module AliMQS{
             return this._openStack.sendP("GET", this._url);
         }
 
+        // 删除消息
+        public deleteP(receiptHandle:string){
+            return this._openStack.sendP("DELETE", this._url + "?ReceiptHandle=" + receiptHandle);
+        }
+
         private makeURL(){
             return Util.format(this._pattern, this._account.getOwnerId(), this._region, this._name);
         }

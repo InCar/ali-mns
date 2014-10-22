@@ -46,13 +46,13 @@ module AliMQS{
             var contentType = "";
             if(body){
                 if(!headers["Content-Length"]) headers["Content-Length"] = body.length;
-                if(!headers["Content-Type"]) headers["Content-Type"] = "text/xml;charset=UTF-8";
+                if(!headers["Content-Type"]) headers["Content-Type"] = this._contentType;
                 contentType = headers["Content-Type"];
                 contentMD5 = this._account.b64md5(body);
                 headers["Content-MD5"] = contentMD5;
             }
 
-            if(!headers["x-mqs-version"]) headers["x-mqs-version"] = "2014-07-08";
+            if(!headers["x-mqs-version"]) headers["x-mqs-version"] = this._version;
 
             // lowercase & sort & extract the x-mqs-<any>
             var headsLower :any = {};
@@ -104,5 +104,7 @@ module AliMQS{
         private _patternMQS = "MQS %s:%s";
         private _patternSign = "%s\n%s\n%s\n%s\n%s%s";
         private _xmlBuilder: any;
+        private _contentType = "text/xml;charset=utf-8";
+        private _version = "2014-07-08";
     }
 }
