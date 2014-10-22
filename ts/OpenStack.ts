@@ -5,6 +5,9 @@ module AliMQS{
     export class OpenStack{
         constructor(account:Account){
             this._account = account;
+
+            // xml builder
+            this._xmlBuilder = new Xml2js.Builder();
         }
 
         // Send the request
@@ -12,16 +15,21 @@ module AliMQS{
         // url: request url
         // body: optional, request body
         // head: optional, request heads
-        public sendP(mothod:string, url:string, body?:any, headers?:any){
-            return Request.requestP({
-                mothod:mothod,
-                url:url,
-                headers: this.makeHeaders(mothod, url, headers)
-            }).then((response)=>{
+        public sendP(method:string, url:string, body?:any, headers?:any){
+            var req :any = { method:method,url:url };
+            if(body) req.body = this._xmlBuilder.buildObject(body);
+
+            req.headers = this.makeHeaders(method, url, headers, req.body);
+
+            return Request.requestP(req).then((response)=>{
                 // convert the body from xml to json
                 return Xml2js.parseStringP(response.body, {explicitArray: false})
-                    .then((bodyJSON)=>{
+                    .then((bodyJSON)=> {
                         response.bodyJSON = bodyJSON;
+                        return response;
+                    }, ()=>{
+                        // cannot parse as xml
+                        response.bodyJSON = response.body;
                         return response;
                     });
             }).then((response)=>{
@@ -30,9 +38,19 @@ module AliMQS{
             });
         }
 
-        private makeHeaders(mothod:string, url:string, headers?:any){
+        private makeHeaders(mothod:string, url:string, headers:any, body?:string){
             // if not exist, create one
             if(!headers) headers = {};
+
+            var contentMD5 = "";
+            var contentType = "";
+            if(body){
+                if(!headers["Content-Length"]) headers["Content-Length"] = body.length;
+                if(!headers["Content-Type"]) headers["Content-Type"] = "text/xml;charset=UTF-8";
+                contentType = headers["Content-Type"];
+                contentMD5 = this._account.b64md5(body);
+                headers["Content-MD5"] = contentMD5;
+            }
 
             if(!headers["x-mqs-version"]) headers["x-mqs-version"] = "2014-07-08";
 
@@ -49,36 +67,32 @@ module AliMQS{
 
             keys.sort();
 
-            var headsCanonicalize : any = {};
             var mqsHeaders = "";
-            for(var key in keys){
-                headsCanonicalize[key] = headsLower[key];
-
-                if(key.indexOf("x-mqs-") === 0){
-                    mqsHeaders += Util.format("%s:%s\n", key, headsLower[key]);
+            for(var i in keys){
+                var k = keys[i];
+                if(k.indexOf("x-mqs-") === 0){
+                    mqsHeaders += Util.format("%s:%s\n", k, headsLower[k]);
                 }
             }
 
             var tm = (new Date()).toUTCString();
             var mqsURL:any = Url.parse(url);
-            headsCanonicalize.Authorization = this.authorize(mothod, mqsURL.path, mqsHeaders, tm);
-            headsCanonicalize.Date = tm;
-            headsCanonicalize.Host = mqsURL.host;
+            headers.Date = tm;
+            headers.Authorization = this.authorize(mothod, mqsURL.path,
+                mqsHeaders, contentType, contentMD5, tm);
+            headers.Host = mqsURL.host;
 
-            return headsCanonicalize;
+            return headers;
         }
 
         // ali mqs authorize header
-        private authorize(httpVerb:string, mqsURI:string, mqsHeaders:any, tm:string){
+        private authorize(httpVerb:string, mqsURI:string, mqsHeaders:any, contentType:string, contentMD5:string, tm:string){
             return Util.format(this._patternMQS, this._account.getKeyId(),
-                this.signature(httpVerb, mqsURI, mqsHeaders, tm));
+                this.signature(httpVerb, mqsURI, mqsHeaders, contentType, contentMD5, tm));
         }
 
         // ali mqs signature
-        private signature(httpVerb:string, mqsURI:string, mqsHeaders:string, tm:string){
-            var contentMD5 = "";
-            var contentType = "";
-
+        private signature(httpVerb:string, mqsURI:string, mqsHeaders:string, contentType:string, contentMD5:string, tm:string){
             var text = Util.format(this._patternSign,
                 httpVerb, contentMD5, contentType, tm,
                 mqsHeaders, mqsURI);
@@ -89,5 +103,6 @@ module AliMQS{
         private _account:Account;
         private _patternMQS = "MQS %s:%s";
         private _patternSign = "%s\n%s\n%s\n%s\n%s%s";
+        private _xmlBuilder: any;
     }
 }

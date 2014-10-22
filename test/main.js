@@ -2,6 +2,7 @@
 
 var Path = require("path");
 var fs = require("fs");
+var Promise = require("promise");
 var AliMQS = require(Path.join(__dirname, "../index.js"));
 
 function runTest(){
@@ -10,7 +11,8 @@ function runTest(){
         ownerId: "your-owner-id",
         keyId: "your-key-id",
         keySecret: "your-key-secret",
-        region: "hangzhou"
+        region: "hangzhou",
+        mqName: "dev"
     };
 
     // test/account.js contains sensitive data, and will not be pushed to github
@@ -20,14 +22,35 @@ function runTest(){
     }
     var account = new AliMQS.Account(aliCfg.ownerId, aliCfg.keyId, aliCfg.keySecret);
     var mqs = new AliMQS.MQS(account, aliCfg.region);
+    var mq = new AliMQS.MQ(aliCfg.mqName, account, aliCfg.region);
 
-    return mqs.listP();
+    var testAll = [];
+    testAll.push(mqs.listP());
+    testAll.push(mq.sendP("test"));
+    testAll.push(mq.recvP());
+
+    var i = 0;
+    testAll.forEach(function(any){
+        any.done(function(ret){
+            i++;
+            console.log("Test " + i + " succeed!");
+            console.log(ret);
+            console.log("-----");
+        }, function(ex){
+            i++;
+            console.log("Test " + i + " failed!");
+            console.log(ex);
+            console.log("-----");
+        });
+    });
+
+    return Promise.all(testAll).then(function(results){
+        return "Test finished!";
+    });
 }
 
-runTest().done(function(ret){
-    console.log("okay");
-    console.log(ret);
-}, function(ex){
-    console.log("failed");
+runTest().done(function(data){
+    console.log(data);
+}, function (ex) {
     console.log(ex);
 });
