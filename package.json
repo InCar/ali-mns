@@ -1,6 +1,6 @@
 {
     "name": "ali-mqs",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "description": "The nodejs SDK for aliyun mqs service",
     "main": "index.js",
     "dependencies": {
@@ -15,6 +15,7 @@
         "grunt-typescript": "0.3.*"
     },
     "scripts": {
+        "prepublish": "grunt",
         "test": "node ./test/main"
     },
     "repository": {

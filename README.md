@@ -19,7 +19,7 @@ Use 'npm install ali-mqs' to install the package.
 
 #Promised
 The ali-mqs use the [promise](https://www.npmjs.org/package/promise) pattern.
-Any functions suffix with 'P' indicate a promise object will be return from it.
+Any functions suffix with 'P' indicate a promise object will be returned from it.
 
 #Typescript
 Most source files are written in typescript instead of javascript.
