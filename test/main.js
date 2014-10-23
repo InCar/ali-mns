@@ -25,11 +25,14 @@ function runTest(){
     var mq = new AliMQS.MQ(aliCfg.mqName, account, aliCfg.region);
 
     var testAll = [];
-    testAll.push(mqs.listP());
+    // test: list all of the mqs queue.
+    /*testAll.push(mqs.listP());
+
+    // test: send, receive then delete
     testAll.push(mq.sendP("test").then(function(dataSend){
         console.log(dataSend);
         console.log("\t-----");
-        return mq.recvP();
+        return mq.recvP(10);
     }).then(function(dataRecv){
         console.log(dataRecv);
         console.log("\t-----");
@@ -37,6 +40,33 @@ function runTest(){
             .then(function(){
                 return "Deleted succeed: " + dataRecv.Message.ReceiptHandle;
             });
+    }));
+*/
+    // test: send 3 messages and receive then all by notifyRecv
+    var notifyCount = 0, notifyConfirmed = 0;
+    testAll.push(Promise.all([mq.sendP("testA"), mq.sendP("testB"), mq.sendP("testC")]).then(function(){
+        return new Promise(function(resolve, reject){
+            mq.notifyRecv(function(ex, dataRecv){
+                notifyCount++;
+                if(ex) {
+                    console.log(ex);
+                }
+                else {
+                    notifyConfirmed++;
+                    console.log(dataRecv);
+                }
+                console.log("\t-----");
+
+                if(notifyCount >= 3){
+                    mq.notifyStopP().done(function(){
+                        if(notifyConfirmed >= 3) resolve("notifyRecv task succeed!");
+                        else reject("notifyRecv task failed!");
+                    });
+                }
+
+                return true;
+            });
+        });
     }));
 
     var i = 0;

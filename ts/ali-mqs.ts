@@ -4,10 +4,11 @@
 module.exports = AliMQS;
 
 // dependencies
+var Buffer:any  = require("buffer");
+var Crypto:any  = require("crypto");
+var Events:any  = require("events");
 var Util:any    = require("util");
 var Url:any     = require("url");
-var Crypto:any  = require("crypto");
-var Buffer:any  = require("buffer");
 
 var Promise:any = require("promise");
 

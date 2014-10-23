@@ -14,6 +14,9 @@ module AliMQS{
 
             // create the OpenStack object
             this._openStack = new OpenStack(account);
+
+            // emitter
+            this._emitter = new Events.EventEmitter();
         }
 
         // 发送消息
@@ -26,13 +29,70 @@ module AliMQS{
         }
 
         // 接收消息
-        public recvP(){
-            return this._openStack.sendP("GET", this._url);
+        // waitSeconds, 最久等待多少秒0~30
+        public recvP(waitSeconds?:number){
+            var url = this._url;
+            if(waitSeconds) url += "?waitseconds=" + waitSeconds;
+            return this._openStack.sendP("GET", url);
         }
 
         // 删除消息
         public deleteP(receiptHandle:string){
             return this._openStack.sendP("DELETE", this._url + "?ReceiptHandle=" + receiptHandle);
+        }
+
+        // 消息通知.每当有消息收到时,都调用cb回调函数
+        // 如果cb返回true,那么将删除消息,否则保留消息
+        public notifyRecv(cb:(ex:Error, msg:any)=>Boolean){
+            this._signalSTOP = false;
+            this.notifyRecvInternal(cb);
+        }
+
+        private notifyRecvInternal(cb:(ex:Error, msg:any)=>Boolean){
+            var waitSeconds = 5;
+
+            // This signal will be triggered by notifyStopP()
+            if(this._signalSTOP){
+                this._emitter.emit(this._evStopped);
+                return;
+            }
+
+            this.recvP(waitSeconds).done((dataRecv)=>{
+                try {
+                    if(cb(null, dataRecv)){
+                        this.deleteP(dataRecv.Message.ReceiptHandle)
+                            .done(null, (ex)=>{ console.log(ex); });
+                    }
+                }
+                catch(ex){
+                    // ignore any ex throw from cb
+                }
+                this.notifyRecvInternal(cb);
+            }, (ex)=>{
+                if(ex.Error.Code !== "MessageNotExist") {
+                    try {
+                        cb(ex, null);
+                    }
+                    catch (ex) {
+                        // ignore any ex throw from cb
+                    }
+                }
+
+                console.log(ex);
+                process.nextTick(()=>{
+                    this.notifyRecvInternal(cb);
+                });
+            });
+        }
+
+        // 停止消息通知
+        public notifyStopP(){
+            this._signalSTOP = true;
+            return new Promise((resolve)=>{
+                this._emitter.once(this._evStopped, ()=>{
+                    resolve(this._evStopped);
+                });
+            });
         }
 
         private makeURL(){
@@ -45,5 +105,8 @@ module AliMQS{
         private _url:string; // mq url
         private _pattern = "http://%s.mqs-cn-%s.aliyuncs.com/%s/messages";
         private _openStack: OpenStack;
+        private _signalSTOP = false;
+        private _evStopped = "AliMQS_MQ_NOTIFY_STOPPED";
+        private _emitter:any;
     }
 }
