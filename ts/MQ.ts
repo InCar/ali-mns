@@ -87,6 +87,9 @@ module AliMQS{
 
         // 停止消息通知
         public notifyStopP(){
+            if(this._signalSTOP)
+                return Promise.resolve(this._evStopped);
+
             this._signalSTOP = true;
             return new Promise((resolve)=>{
                 this._emitter.once(this._evStopped, ()=>{
@@ -105,7 +108,7 @@ module AliMQS{
         private _url:string; // mq url
         private _pattern = "http://%s.mqs-cn-%s.aliyuncs.com/%s/messages";
         private _openStack: OpenStack;
-        private _signalSTOP = false;
+        private _signalSTOP = true;
         private _evStopped = "AliMQS_MQ_NOTIFY_STOPPED";
         private _emitter:any;
     }
