@@ -26,7 +26,7 @@ function runTest(){
 
     var testAll = [];
     // test: list all of the mqs queue.
-    /*testAll.push(mqs.listP());
+    testAll.push(mqs.listP());
 
     // test: send, receive then delete
     testAll.push(mq.sendP("test").then(function(dataSend){
@@ -41,7 +41,7 @@ function runTest(){
                 return "Deleted succeed: " + dataRecv.Message.ReceiptHandle;
             });
     }));
-*/
+
     // test: send 3 messages and receive then all by notifyRecv
     var notifyCount = 0, notifyConfirmed = 0;
     testAll.push(Promise.all([mq.sendP("testA"), mq.sendP("testB"), mq.sendP("testC")]).then(function(){
