@@ -30,6 +30,12 @@ module AliMQS{
                 });
         }
 
+        public deleteP(name:string){
+            var url = Url.resolve(this._url, name);
+            return this._openStack.sendP("DELETE", url)
+                .then(()=>{ return 0; });
+        }
+
         private makeURL(){
             return Util.format(this._pattern, this._account.getOwnerId(), this._region);
         }
