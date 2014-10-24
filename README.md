@@ -59,6 +59,31 @@ List all of the queue in a data center.
 
     mqs.listP().then(console.log, console.log);
 
+##mqs.createP(name, options)
+Create a mq.
+
+name: string. The queue name.
+
+options: optional. The queue attributes.
+
+options.DelaySeconds: number. How many seconds will the messages be visible after sent. 0~604800(7days), default is 0.
+
+options.MaximumMessageSize: number. How many bytes could the message be. 1024(1k)~65536, default is 65536(64k).
+
+options.MessageRetentionPeriod: number. How many seconds will the messages live, 60~1296000(15days), default is 345600(4days).
+
+optiions.VisibilityTimeout: number. How many seconds will the message keep invisible after be received, 1~43200(12hours), default is 30.
+
+options.PollingWaitSeconds: numer. How many seconds will the receive request wait for if mq is empty. 0~30, default is 0.
+
+    mqs.createP("myAliMQ", {
+        DelaySeconds: 0,
+        MaximumMessageSize: 65536,
+        MessageRetentionPeriod: 345600,
+        VisibilityTimeout: 30,
+        PollingWaitSeconds: 0
+    }).then(console.log, console.log);
+
 ##MQ
 The *MQ* operate the message in a queue.
 
@@ -94,7 +119,7 @@ receiptHandle: String.
     mq.recvP(5).then(function(data){
         return mq.deleteP(data.Message.ReceiptHandle);
     }).then(function(){
-        console.log("Delete succeed!");
+        console.log("Delete succeeded!");
     });
 
 ##mq.notifyRecv(callback)

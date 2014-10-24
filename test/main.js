@@ -27,6 +27,8 @@ function runTest(){
     var testAll = [];
     // test: list all of the mqs queue.
     testAll.push(mqs.listP());
+    // test: create mq
+    testAll.push(mqs.createP("dev", { DelaySeconds: 0 }));
 
     // test: send, receive then delete
     testAll.push(mq.sendP("test").then(function(dataSend){

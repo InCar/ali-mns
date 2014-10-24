@@ -19,6 +19,17 @@ module AliMQS{
             return this._openStack.sendP("GET", this._url);
         }
 
+        // Create a message queue
+        public createP(name:string, options?:any){
+            var body = { Queue: "" };
+            if(options) body.Queue = options;
+            var url = Url.resolve(this._url, name);
+            return this._openStack.sendP("PUT", url, body)
+                .then(()=>{
+                    return url;
+                });
+        }
+
         private makeURL(){
             return Util.format(this._pattern, this._account.getOwnerId(), this._region);
         }
