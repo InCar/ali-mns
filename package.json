@@ -1,19 +1,19 @@
 {
     "name": "ali-mqs",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "description": "The nodejs SDK for aliyun mqs service",
     "main": "index.js",
     "dependencies": {
-        "promise": "6.0.*",
-        "request": "2.45.*",
-        "xml2js": "0.4.*"
+        "promise": "6.*.*",
+        "request": "2.*.*",
+        "xml2js": "0.*.*"
     },
     "devDependencies": {
-        "grunt": "0.4.*",
-        "grunt-newer": "^0.8.*",
-        "grunt-contrib-clean": "0.6.*",
-        "grunt-typescript": "0.3.*",
-        "load-grunt-tasks": "0.6.*"
+        "grunt": "0.*.*",
+        "grunt-newer": "^0.*.*",
+        "grunt-contrib-clean": "0.*.*",
+        "grunt-typescript": "0.*.*",
+        "load-grunt-tasks": "0.*.*"
     },
     "scripts": {
         "prepublish": "grunt",

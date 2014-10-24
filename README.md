@@ -28,13 +28,19 @@ Visit [http://www.typescriptlang.org/](http://www.typescriptlang.org/) for more 
 Please use 'grunt' to compile ts files into a single index.js file after downloading source files. 
 
 #API Reference
-##Account
+##Account(ownerId, keyId, keySecret)
 The *Account* class store your ali account information. Construct an account object is simple:
+
+ownerId: String, ali owner id.
+
+keyId: String, ali key id.
+
+keySecret: String, ali key secret.
 
     var AliMQS = require("ali-mqs");
     var account = new AliMQS.Account("<your-owner-id>", "<your-key-id>", "<your-key-secret>");
 
-The account object is usually passed as argument for other class such as *MQ*
+The account object is usually passed as an argument for other class such as *MQS*, *MQ*
 
 ##account.getOwnerId()
 Return the ali owner id.
@@ -42,26 +48,26 @@ Return the ali owner id.
 ##account.getKeyId()
 Return the ali key id.
 
-##MQS
+##MQS(account, region)
 The *MQS* operate the mqs queue.
+
+account: An account object.
+
+region: String, optional. It can be "hangzhou", "beijing" or "qingdao", the 3 data center that provide mqs service.
+Default is "hangzhou".
 
     var AliMQS = require("ali-mqs");
     var account = new AliMQS.Account("<your-owner-id>", "<your-key-id>", "<your-key-secret>");
     var mqs = new AliMQS.MQS(account, "hangzhou");
 
-The 1st argument is an account object.
-
-The 2nd argument is optional. it can be "hangzhou", "beijing" or "qingdao", the 3 data center that provide mqs service.
-Default is "hangzhou".
-
 ##mqs.listP(prefix, pageSize, pageMarker)
 List all of the queue in a data center.
 
-prefix: string, optional. Return only mq with the prefix.
+prefix: String, optional. Return only mq with the prefix.
 
 pageSize: number, optional. How many mqs will be returned in a page, 1~1000, default is 1000.
 
-pageMarker: string, optional. Request the next page, the value is returned in last call.
+pageMarker: String, optional. Request the next page, the value is returned in last call.
 
     mqs.listP("my", 20).then(function(data){
         console.log(data);
@@ -73,7 +79,7 @@ pageMarker: string, optional. Request the next page, the value is returned in la
 ##mqs.createP(name, <a name="options">options</a>)
 Create a mq.
 
-name: string. The queue name.
+name: String. The queue name.
 
 options: optional. The queue attributes.
 
@@ -101,23 +107,23 @@ Any mismatched attributes will cause an "QueueAlreadyExist" failure.
 ##mqs.deleteP(name)
 Delete an mq.
 
-name: string. The queue name.
+name: String. The queue name.
 
     mqs.deleteP("myAliMQ");
 
-##MQ
+##MQ(name, account, region)
 The *MQ* operate the message in a queue.
+
+name: String. The name of mq.
+
+account: An account object.
+
+region: String, optional. It can be "hangzhou", "beijing" or "qingdao", the 3 data center that provide mqs service.
+Default is "hangzhou".
 
     var AliMQS = require("ali-mqs");
     var account = new AliMQS.Account("<your-owner-id>", "<your-key-id>", "<your-key-secret>");
     var mq = new AliMQS.MQ("myAliMQ", account, "hangzhou");
-
-The 1st argument is the name of mq.
-
-The 2nd argument is an account object.
-
-The 3rd argument is optional. it can be "hangzhou", "beijing" or "qingdao", the 3 data center that provide mqs service.
-Default is "hangzhou".
 
 ##mq.sendP(message, priority, delaySeconds)
 Send a message to the queue.
