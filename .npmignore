@@ -1,4 +1,6 @@
 Gruntfile.js
+.npmignore
+.idea/
 dts/
 ts/
 test/

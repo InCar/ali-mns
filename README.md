@@ -84,6 +84,16 @@ options.PollingWaitSeconds: numer. How many seconds will the receive request wai
         PollingWaitSeconds: 0
     }).then(console.log, console.log);
 
+If a mq with same name exists, calling createP will succeed only when all of the mq variables are all same.
+Any mismatched variables will cause an "exists already" failure.
+
+##mqs.deleteP(name)
+Delete an mq.
+
+name: string. The queue name.
+
+    mqs.deleteP("myAliMQ");
+
 ##MQ
 The *MQ* operate the message in a queue.
 
