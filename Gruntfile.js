@@ -18,13 +18,17 @@ module.exports = function (grunt) {
         },
 
         clean: {
-            typescript: ["index.js"]
+            typescript: ["index.js", "index.js.map"]
         }
     });
 
     grunt.registerTask("build", [
+        "newer:typescript"
+    ]);
+
+    grunt.registerTask("rebuild", [
         "clean",
-        "typescript"
+        "build"
     ]);
 
     grunt.registerTask("default", ["build"]);

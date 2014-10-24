@@ -54,8 +54,14 @@ The 1st argument is an account object.
 The 2nd argument is optional. it can be "hangzhou", "beijing" or "qingdao", the 3 data center that provide mqs service.
 Default is "hangzhou".
 
-##mqs.listP()
+##mqs.listP(prefix, pageMarker, pageSize)
 List all of the queue in a data center.
+
+prefix: string, optional. Return only mq with the prefix.
+
+pageMarker: string, optional. Request the next page, the value is returned in last call.
+
+pageSize: number, optional. How many mqs will be returned in a page, 1~1000, default is 1000.
 
     mqs.listP().then(console.log, console.log);
 

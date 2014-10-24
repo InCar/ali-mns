@@ -10,9 +10,10 @@
     },
     "devDependencies": {
         "grunt": "0.4.*",
-        "load-grunt-tasks": "0.6.*",
+        "grunt-newer": "^0.8.*",
         "grunt-contrib-clean": "0.6.*",
-        "grunt-typescript": "0.3.*"
+        "grunt-typescript": "0.3.*",
+        "load-grunt-tasks": "0.6.*"
     },
     "scripts": {
         "prepublish": "grunt",

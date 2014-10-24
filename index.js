@@ -165,8 +165,15 @@ var AliMQS;
             this._openStack = new AliMQS.OpenStack(account);
         }
         // List all mqs.
-        MQS.prototype.listP = function () {
-            return this._openStack.sendP("GET", this._url);
+        MQS.prototype.listP = function (prefix, pageMarker, pageSize) {
+            var headers = {};
+            if (prefix)
+                headers["x-mqs-prefix"] = prefix;
+            if (pageMarker)
+                headers["x-mqs-marker"] = pageMarker;
+            if (pageSize)
+                headers["x-mqs-ret-number"] = pageSize;
+            return this._openStack.sendP("GET", this._url, null, headers);
         };
 
         // Create a message queue
