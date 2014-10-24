@@ -99,7 +99,7 @@ options.PollingWaitSeconds: numer. How many seconds will the receive request wai
         MessageRetentionPeriod: 345600,
         VisibilityTimeout: 30,
         PollingWaitSeconds: 0
-    }).then(console.log, console.log);
+    }).then(console.log, console.error);
 
 If a mq with same name exists, calling createP will succeed only when all of the mq attributes are all same.
 Any mismatched attributes will cause an "QueueAlreadyExist" failure.
@@ -109,7 +109,7 @@ Delete an mq.
 
 name: String. The queue name.
 
-    mqs.deleteP("myAliMQ");
+    mqs.deleteP("myAliMQ").then(console.log, console.error);;
 
 ##MQ(name, account, region)
 The *MQ* operate the message in a queue.
@@ -161,9 +161,7 @@ receiptHandle: String. Return by mq.recvP or mq.notifyRecv.
 
     mq.recvP(5).then(function(data){
         return mq.deleteP(data.Message.ReceiptHandle);
-    }).then(function(){
-        console.log("Delete succeeded!");
-    }, console.error);
+    }).then(console.log, console.error);
 
 ##mq.reserveP(receiptHandle, reserveSeconds)
 Reserve a received message.
@@ -185,11 +183,17 @@ Set a shorter time is also possible.
 If succeed, a new receiptHandle will be returned to replace the old one, further mq.deleteP or mq.reserveP should use the newer.
 And the newer receiptHandle will expired after reserveSeconds past.
 
-##mq.notifyRecv(callback)
+##mq.notifyRecv(callback, waitSeconds)
 Register a callback function to receive messages.
 
-The callback function will be called once for each received message.
-And if the callback function return *true*, the message received will be delete automatically.
+callback: The callback function will be called once for each received message.
+And if the callback function return *true*, the message received will be delete automatically,
+while you should delete the message manually, if return *false*.
+
+waitSeconds: number, optional. 1~30. The max seconds to wait in a polling loop, default is 5.
+At the begin of a polling loop, it will check if mq.notifyStopP has been called, So the bigger number
+will cause a slowly mq.notifyStopP.
+Set waitSeconds to 0 ,will actually use the default value 5 seconds instead.
 
     mq.notifyRecv(function(err, message){
         console.log(message);
@@ -201,21 +205,28 @@ Both callback functions will work if you call notifyRecv twice for 2 different c
 But each received message only will trigger one of them only. 
 
 ##mq.notifyStopP()
-Stop mq.notifyRecv working.
+Stop mq.notifyRecv working. The promise object returned will not be resolved until the receiving loop stopped actually.
+The max time wait for notifyRecv() stop is determined by waitSeconds passed to mq.notifyRecv.
 
-    mq.notifyStopP().then(function(){
-        console.log("The receiving loop has been stopped!");
-    });
+    mq.notifyStopP().then(console.log, console.error);
 
 ##mq.getAttrsP()
 Get the attributes of the mq.
 
-    mq.getAttrsP().then(console.log);
+    mq.getAttrsP().then(console.log, console.error);
 
 ##mq.setAttrsP(options)
 Modify the attributes of mq.
 
 options: the queue attributes. See the [options](#options) of mqs.createP.
+
+    mq.setAttrsP({
+        DelaySeconds: 0,
+        MaximumMessageSize: 65536,
+        MessageRetentionPeriod: 345600,
+        VisibilityTimeout: 30,
+        PollingWaitSeconds: 0
+    }).then(console.log, console.error);
 
 #License
 MIT

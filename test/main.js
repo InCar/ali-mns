@@ -86,7 +86,7 @@ function runTest(){
                     }
 
                     return true;
-                });
+                }, 5);
             });
         }));
 

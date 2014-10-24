@@ -67,14 +67,12 @@ module AliMQS{
 
         // 消息通知.每当有消息收到时,都调用cb回调函数
         // 如果cb返回true,那么将删除消息,否则保留消息
-        public notifyRecv(cb:(ex:Error, msg:any)=>Boolean){
+        public notifyRecv(cb:(ex:Error, msg:any)=>Boolean, waitSeconds?:number){
             this._signalSTOP = false;
-            this.notifyRecvInternal(cb);
+            this.notifyRecvInternal(cb, waitSeconds || 5);
         }
 
-        private notifyRecvInternal(cb:(ex:Error, msg:any)=>Boolean){
-            var waitSeconds = 5;
-
+        private notifyRecvInternal(cb:(ex:Error, msg:any)=>Boolean, waitSeconds:number){
             // This signal will be triggered by notifyStopP()
             if(this._signalSTOP){
                 this._emitter.emit(this._evStopped);
@@ -91,7 +89,7 @@ module AliMQS{
                 catch(ex){
                     // ignore any ex throw from cb
                 }
-                this.notifyRecvInternal(cb);
+                this.notifyRecvInternal(cb, waitSeconds);
             }, (ex)=>{
                 if(ex.Error.Code !== "MessageNotExist") {
                     try {
@@ -102,9 +100,8 @@ module AliMQS{
                     }
                 }
 
-                console.log(ex);
                 process.nextTick(()=>{
-                    this.notifyRecvInternal(cb);
+                    this.notifyRecvInternal(cb, waitSeconds);
                 });
             });
         }

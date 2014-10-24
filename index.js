@@ -104,15 +104,13 @@ var AliMQS;
 
         // 消息通知.每当有消息收到时,都调用cb回调函数
         // 如果cb返回true,那么将删除消息,否则保留消息
-        MQ.prototype.notifyRecv = function (cb) {
+        MQ.prototype.notifyRecv = function (cb, waitSeconds) {
             this._signalSTOP = false;
-            this.notifyRecvInternal(cb);
+            this.notifyRecvInternal(cb, waitSeconds || 5);
         };
 
-        MQ.prototype.notifyRecvInternal = function (cb) {
+        MQ.prototype.notifyRecvInternal = function (cb, waitSeconds) {
             var _this = this;
-            var waitSeconds = 5;
-
             // This signal will be triggered by notifyStopP()
             if (this._signalSTOP) {
                 this._emitter.emit(this._evStopped);
@@ -129,7 +127,7 @@ var AliMQS;
                 } catch (ex) {
                     // ignore any ex throw from cb
                 }
-                _this.notifyRecvInternal(cb);
+                _this.notifyRecvInternal(cb, waitSeconds);
             }, function (ex) {
                 if (ex.Error.Code !== "MessageNotExist") {
                     try  {
@@ -139,9 +137,8 @@ var AliMQS;
                     }
                 }
 
-                console.log(ex);
                 process.nextTick(function () {
-                    _this.notifyRecvInternal(cb);
+                    _this.notifyRecvInternal(cb, waitSeconds);
                 });
             });
         };
