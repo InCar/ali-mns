@@ -169,6 +169,24 @@ var AliMQS;
             return this._openStack.sendP("GET", this._url);
         };
 
+        // Create a message queue
+        MQS.prototype.createP = function (name, options) {
+            var body = { Queue: "" };
+            if (options)
+                body.Queue = options;
+            var url = Url.resolve(this._url, name);
+            return this._openStack.sendP("PUT", url, body).then(function () {
+                return url;
+            });
+        };
+
+        MQS.prototype.deleteP = function (name) {
+            var url = Url.resolve(this._url, name);
+            return this._openStack.sendP("DELETE", url).then(function () {
+                return 0;
+            });
+        };
+
         MQS.prototype.makeURL = function () {
             return Util.format(this._pattern, this._account.getOwnerId(), this._region);
         };
