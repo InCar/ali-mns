@@ -15,8 +15,12 @@ module AliMQS{
         }
 
         // List all mqs.
-        public listP(){
-            return this._openStack.sendP("GET", this._url);
+        public listP(prefix?:string, pageSize?:number, pageMarker?:string){
+            var headers = {};
+            if(prefix)      headers["x-mqs-prefix"] = prefix;
+            if(pageMarker)  headers["x-mqs-marker"] = pageMarker;
+            if(pageSize)    headers["x-mqs-ret-number"] = pageSize;
+            return this._openStack.sendP("GET", this._url, null, headers);
         }
 
         // Create a message queue
@@ -24,16 +28,13 @@ module AliMQS{
             var body = { Queue: "" };
             if(options) body.Queue = options;
             var url = Url.resolve(this._url, name);
-            return this._openStack.sendP("PUT", url, body)
-                .then(()=>{
-                    return url;
-                });
+            return this._openStack.sendP("PUT", url, body);
         }
 
+        // Delete a message queue
         public deleteP(name:string){
             var url = Url.resolve(this._url, name);
-            return this._openStack.sendP("DELETE", url)
-                .then(()=>{ return 0; });
+            return this._openStack.sendP("DELETE", url);
         }
 
         private makeURL(){

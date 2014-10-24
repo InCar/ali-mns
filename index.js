@@ -38,7 +38,7 @@ var AliMQS;
         // region can be "hangzhou", "beijing" or "qingdao", the default is "hangzhou"
         function MQ(name, account, region) {
             this._region = "hangzhou";
-            this._pattern = "http://%s.mqs-cn-%s.aliyuncs.com/%s/messages";
+            this._pattern = "http://%s.mqs-cn-%s.aliyuncs.com/%s";
             this._signalSTOP = true;
             this._evStopped = "AliMQS_MQ_NOTIFY_STOPPED";
             this._name = name;
@@ -47,6 +47,7 @@ var AliMQS;
                 this._region = region;
 
             // make url
+            this._urlAttr = this.makeAttrURL();
             this._url = this.makeURL();
 
             // create the OpenStack object
@@ -55,6 +56,17 @@ var AliMQS;
             // emitter
             this._emitter = new Events.EventEmitter();
         }
+        // 获取MQ的属性值
+        MQ.prototype.getAttrsP = function () {
+            return this._openStack.sendP("GET", this._urlAttr);
+        };
+
+        // 设置MQ的属性值
+        MQ.prototype.setAttrsP = function (options) {
+            var body = { Queue: options };
+            return this._openStack.sendP("PUT", this._urlAttr + "?metaoverride=true", body);
+        };
+
         // 发送消息
         MQ.prototype.sendP = function (msg, priority, delaySeconds) {
             var body = { Message: { MessageBody: msg } };
@@ -73,6 +85,11 @@ var AliMQS;
             if (waitSeconds)
                 url += "?waitseconds=" + waitSeconds;
             return this._openStack.sendP("GET", url);
+        };
+
+        // 检查消息
+        MQ.prototype.peekP = function () {
+            return this._openStack.sendP("GET", this._url + "?peekonly=true");
         };
 
         // 删除消息
@@ -138,8 +155,12 @@ var AliMQS;
             });
         };
 
-        MQ.prototype.makeURL = function () {
+        MQ.prototype.makeAttrURL = function () {
             return Util.format(this._pattern, this._account.getOwnerId(), this._region, this._name);
+        };
+
+        MQ.prototype.makeURL = function () {
+            return this.makeAttrURL() + "/messages";
         };
         return MQ;
     })();
@@ -165,7 +186,7 @@ var AliMQS;
             this._openStack = new AliMQS.OpenStack(account);
         }
         // List all mqs.
-        MQS.prototype.listP = function (prefix, pageMarker, pageSize) {
+        MQS.prototype.listP = function (prefix, pageSize, pageMarker) {
             var headers = {};
             if (prefix)
                 headers["x-mqs-prefix"] = prefix;
@@ -182,16 +203,13 @@ var AliMQS;
             if (options)
                 body.Queue = options;
             var url = Url.resolve(this._url, name);
-            return this._openStack.sendP("PUT", url, body).then(function () {
-                return url;
-            });
+            return this._openStack.sendP("PUT", url, body);
         };
 
+        // Delete a message queue
         MQS.prototype.deleteP = function (name) {
             var url = Url.resolve(this._url, name);
-            return this._openStack.sendP("DELETE", url).then(function () {
-                return 0;
-            });
+            return this._openStack.sendP("DELETE", url);
         };
 
         MQS.prototype.makeURL = function () {
@@ -239,10 +257,17 @@ var AliMQS;
                     return response;
                 });
             }).then(function (response) {
-                if (response.statusCode < 400)
-                    return response.bodyJSON;
-                else
-                    return Promise.reject(response.bodyJSON);
+                if (response.statusCode < 400) {
+                    if (response.bodyJSON)
+                        return response.bodyJSON;
+                    else
+                        return response.statusCode;
+                } else {
+                    if (response.bodyJSON)
+                        return Promise.reject(response.bodyJSON);
+                    else
+                        return Promise.reject(response.statusCode);
+                }
             });
         };
 

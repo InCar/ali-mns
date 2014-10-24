@@ -15,7 +15,7 @@ Use 'npm install ali-mqs' to install the package.
     var account = new AliMQS.Account("<your-owner-id>", "<your-key-id>", "<your-key-secret>");
     var mq = new AliMQS.MQ("<your-mq-name>", account, "hangzhou");
     // send message
-    mq.sendP("Hello ali-mqs").then(console.log, console.log);
+    mq.sendP("Hello ali-mqs").then(console.log, console.error);
 
 #Promised
 The ali-mqs use the [promise](https://www.npmjs.org/package/promise) pattern.
@@ -54,18 +54,18 @@ The 1st argument is an account object.
 The 2nd argument is optional. it can be "hangzhou", "beijing" or "qingdao", the 3 data center that provide mqs service.
 Default is "hangzhou".
 
-##mqs.listP(prefix, pageMarker, pageSize)
+##mqs.listP(prefix, pageSize, pageMarker)
 List all of the queue in a data center.
 
 prefix: string, optional. Return only mq with the prefix.
 
-pageMarker: string, optional. Request the next page, the value is returned in last call.
-
 pageSize: number, optional. How many mqs will be returned in a page, 1~1000, default is 1000.
+
+pageMarker: string, optional. Request the next page, the value is returned in last call.
 
     mqs.listP().then(console.log, console.log);
 
-##mqs.createP(name, options)
+##mqs.createP(name, <a name="options">options</a>)
 Create a mq.
 
 name: string. The queue name.
@@ -90,8 +90,8 @@ options.PollingWaitSeconds: numer. How many seconds will the receive request wai
         PollingWaitSeconds: 0
     }).then(console.log, console.log);
 
-If a mq with same name exists, calling createP will succeed only when all of the mq variables are all same.
-Any mismatched variables will cause an "exists already" failure.
+If a mq with same name exists, calling createP will succeed only when all of the mq attributes are all same.
+Any mismatched attributes will cause an "QueueAlreadyExist" failure.
 
 ##mqs.deleteP(name)
 Delete an mq.
@@ -114,20 +114,30 @@ The 2nd argument is an account object.
 The 3rd argument is optional. it can be "hangzhou", "beijing" or "qingdao", the 3 data center that provide mqs service.
 Default is "hangzhou".
 
-##mq.sendP(message)
+##mq.sendP(message, priority, delaySeconds)
 Send a message to the queue.
 
 message: String. The content that sent to queue.
 
+priority: number, optional. 1(lowest)~16(highest), default is 8.
+
+delaySeconds: number, optional. How many seconds will the messages be visible after sent. 0~604800(7days), default is 0.
+This argument is prior to the options.DelaySeconds in attributes of message queue.
+
 ##mq.recvP(waitSeconds)
 Receive a message from queue.
+This will change the message to invisible for a while.
 
 waitSeconds: number. optional.
 The max seconds to wait if queue is empty, after that an error *MessageNotExist* will be returned.
 
+##mq.peekP()
+Peek a message.
+This will not change the message to invisible.
+
 ##mq.deleteP(receiptHandle)
 Delete a message from queue.
-A message will be invisible for a short time when be received.
+A message will be invisible for a short time after received.
 A message must be deleted after processed, otherwise it can be received again.
 
 receiptHandle: String.
@@ -159,6 +169,16 @@ Stop mq.notifyRecv working.
     mq.notifyStopP().then(function(){
         console.log("The receiving loop has been stopped!");
     });
+
+##mq.getAttrsP()
+Get the attributes of the mq.
+
+    mq.getAttrsP().then(console.log);
+
+##mq.setAttrsP(options)
+Modify the attributes of mq.
+
+options: the queue attributes. See the [options](#options) of mqs.createP.
 
 #License
 MIT

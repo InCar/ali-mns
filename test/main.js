@@ -24,7 +24,7 @@ function runTest(){
     var mqs = new AliMQS.MQS(account, aliCfg.region);
     var mq = new AliMQS.MQ(aliCfg.mqName, account, aliCfg.region);
 
-    return mqs.createP("dev", {
+    return mqs.createP(aliCfg.mqName, {
         DelaySeconds: 0,
         MaximumMessageSize: 65536,
         MessageRetentionPeriod: 345600,
@@ -33,13 +33,24 @@ function runTest(){
     }).then(function(){
         var testAll = [];
         // test: list all of the mqs queue.
-        testAll.push(mqs.listP().then(function(data){
-            return data.Queues.Queue;
+        testAll.push(mqs.listP("de").then(function(data){
+            console.log(data.Queues.Queue);
+            return data;
         }));
 
-        // test: send, receive then delete
+        // test: set and get attributes;
+        testAll.push(mq.setAttrsP({ VisibilityTimeout: 36 }).then(function(data){
+            console.log(data);
+            return mq.getAttrsP();
+        }));
+
+        // test: send,peek, receive then delete
         testAll.push(mq.sendP("test").then(function(dataSend){
             console.log(dataSend);
+            console.log("\t-----");
+            return mq.peekP();
+        }).then(function(dataPeek){
+            console.log(dataPeek);
             console.log("\t-----");
             return mq.recvP(10);
         }).then(function(dataRecv){
@@ -98,8 +109,11 @@ function runTest(){
         });
     }).then(function(data){
         // test: delete mq
-        mqs.deleteP("dev");
+        mqs.deleteP(aliCfg.mqName);
         return data;
+    }, function(ex){
+        mqs.deleteP(aliCfg.mqName);
+        return Promise.reject(ex);
     });
 }
 

@@ -10,6 +10,7 @@ module AliMQS{
             if(region) this._region = region;
 
             // make url
+            this._urlAttr = this.makeAttrURL();
             this._url = this.makeURL();
 
             // create the OpenStack object
@@ -17,6 +18,17 @@ module AliMQS{
 
             // emitter
             this._emitter = new Events.EventEmitter();
+        }
+
+        // 获取MQ的属性值
+        public getAttrsP(){
+            return this._openStack.sendP("GET", this._urlAttr);
+        }
+
+        // 设置MQ的属性值
+        public setAttrsP(options:any){
+            var body = { Queue: options };
+            return this._openStack.sendP("PUT", this._urlAttr + "?metaoverride=true", body);
         }
 
         // 发送消息
@@ -34,6 +46,11 @@ module AliMQS{
             var url = this._url;
             if(waitSeconds) url += "?waitseconds=" + waitSeconds;
             return this._openStack.sendP("GET", url);
+        }
+
+        // 检查消息
+        public peekP(){
+            return this._openStack.sendP("GET", this._url + "?peekonly=true");
         }
 
         // 删除消息
@@ -98,15 +115,20 @@ module AliMQS{
             });
         }
 
-        private makeURL(){
+        private makeAttrURL(){
             return Util.format(this._pattern, this._account.getOwnerId(), this._region, this._name);
+        }
+
+        private makeURL(){
+            return this.makeAttrURL() + "/messages";
         }
 
         private _name: string;
         private _region = "hangzhou";
         private _account: Account;
         private _url:string; // mq url
-        private _pattern = "http://%s.mqs-cn-%s.aliyuncs.com/%s/messages";
+        private _urlAttr: string; // mq attr url
+        private _pattern = "http://%s.mqs-cn-%s.aliyuncs.com/%s";
         private _openStack: OpenStack;
         private _signalSTOP = true;
         private _evStopped = "AliMQS_MQ_NOTIFY_STOPPED";

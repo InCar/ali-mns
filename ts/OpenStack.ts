@@ -33,8 +33,14 @@ module AliMQS{
                         return response;
                     });
             }).then((response)=>{
-                if(response.statusCode < 400) return response.bodyJSON; // 200 okay!
-                else return Promise.reject(response.bodyJSON);
+                if(response.statusCode < 400) { // 200 okay!
+                    if(response.bodyJSON) return response.bodyJSON;
+                    else return response.statusCode;
+                }
+                else {
+                    if(response.bodyJSON) return Promise.reject(response.bodyJSON);
+                    else return Promise.reject(response.statusCode);
+                }
             });
         }
 
