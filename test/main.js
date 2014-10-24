@@ -44,7 +44,7 @@ function runTest(){
             return mq.getAttrsP();
         }));
 
-        // test: send,peek, receive then delete
+        // test: send, peek, receive then reserve delete
         testAll.push(mq.sendP("test").then(function(dataSend){
             console.log(dataSend);
             console.log("\t-----");
@@ -56,10 +56,11 @@ function runTest(){
         }).then(function(dataRecv){
             console.log(dataRecv);
             console.log("\t-----");
-            return mq.deleteP(dataRecv.Message.ReceiptHandle)
-                .then(function(){
-                    return "Deleted succeed: " + dataRecv.Message.ReceiptHandle;
-                });
+            return mq.reserveP(dataRecv.Message.ReceiptHandle, 43200);
+        }).then(function(dataReserved){
+            console.log(dataReserved);
+            console.log("\t-----");
+            return mq.deleteP(dataReserved.ChangeVisibility.ReceiptHandle);
         }));
 
         // test: send 3 messages and receive then all by notifyRecv

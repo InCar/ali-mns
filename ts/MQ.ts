@@ -58,6 +58,13 @@ module AliMQS{
             return this._openStack.sendP("DELETE", this._url + "?ReceiptHandle=" + receiptHandle);
         }
 
+        // 保留消息
+        public reserveP(receiptHandle:string, reserveSeconds:number){
+            return this._openStack.sendP("PUT", this._url
+                + "?ReceiptHandle=" + receiptHandle
+                + "&VisibilityTimeout=" + reserveSeconds);
+        }
+
         // 消息通知.每当有消息收到时,都调用cb回调函数
         // 如果cb返回true,那么将删除消息,否则保留消息
         public notifyRecv(cb:(ex:Error, msg:any)=>Boolean){

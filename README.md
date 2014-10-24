@@ -140,13 +140,33 @@ Delete a message from queue.
 A message will be invisible for a short time after received.
 A message must be deleted after processed, otherwise it can be received again.
 
-receiptHandle: String.
+receiptHandle: String. Return by mq.recvP or mq.notifyRecv.
 
     mq.recvP(5).then(function(data){
         return mq.deleteP(data.Message.ReceiptHandle);
     }).then(function(){
         console.log("Delete succeeded!");
     });
+
+##mq.reserveP(receiptHandle, reserveSeconds)
+Reserve a received message.
+
+receiptHandle: String. Return by mq.recvP or mq.notifyRecv.
+
+reserveSeconds: number. How long will the message be reserved, in seconds. 1~43200(12hours).
+
+    mq.recvP().then(function(data){
+            return mq.reserveP(data.Message.ReceiptHandle, 120);
+    }).then(function(dataReserved){
+            return mq.deleteP(dataReserved.ChangeVisibility.ReceiptHandle);
+    });
+
+
+If you need more time to process the message after received, you can reserve it for a longer time.
+The message will continue to keep invisible for reserveSeconds from now.
+Set a shorter time is also possible.
+If succeed, a new receiptHandle will be returned to replace the old one, further mq.deleteP or mq.reserveP should use the newer.
+And the newer receiptHandle will expired after reserveSeconds past.
 
 ##mq.notifyRecv(callback)
 Register a callback function to receive messages.
