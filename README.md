@@ -63,7 +63,12 @@ pageSize: number, optional. How many mqs will be returned in a page, 1~1000, def
 
 pageMarker: string, optional. Request the next page, the value is returned in last call.
 
-    mqs.listP().then(console.log, console.log);
+    mqs.listP("my", 20).then(function(data){
+        console.log(data);
+        return mqs.listP("my", 20, data.Queues.NextMarker);
+    }).then(function(dataP2){
+        console.log(dataP2);
+    }, console.error);
 
 ##mqs.createP(name, <a name="options">options</a>)
 Create a mq.
@@ -124,6 +129,8 @@ priority: number, optional. 1(lowest)~16(highest), default is 8.
 delaySeconds: number, optional. How many seconds will the messages be visible after sent. 0~604800(7days), default is 0.
 This argument is prior to the options.DelaySeconds in attributes of message queue.
 
+    mq.sendP("Hello Ali-MQS", 8, 0).then(console.log, console.error);
+
 ##mq.recvP(waitSeconds)
 Receive a message from queue.
 This will change the message to invisible for a while.
@@ -131,9 +138,13 @@ This will change the message to invisible for a while.
 waitSeconds: number. optional.
 The max seconds to wait if queue is empty, after that an error *MessageNotExist* will be returned.
 
+    mq.recvP(5).then(console.log, console.error);
+
 ##mq.peekP()
 Peek a message.
 This will not change the message to invisible.
+
+    mq.peekP(5).then(console.log, console.error);
 
 ##mq.deleteP(receiptHandle)
 Delete a message from queue.
@@ -146,7 +157,7 @@ receiptHandle: String. Return by mq.recvP or mq.notifyRecv.
         return mq.deleteP(data.Message.ReceiptHandle);
     }).then(function(){
         console.log("Delete succeeded!");
-    });
+    }, console.error);
 
 ##mq.reserveP(receiptHandle, reserveSeconds)
 Reserve a received message.

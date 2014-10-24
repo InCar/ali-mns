@@ -33,7 +33,7 @@ function runTest(){
     }).then(function(){
         var testAll = [];
         // test: list all of the mqs queue.
-        testAll.push(mqs.listP("de").then(function(data){
+        testAll.push(mqs.listP("MQ", 1).then(function(data){
             console.log(data.Queues.Queue);
             return data;
         }));
