@@ -129,7 +129,7 @@ var AliMQS;
                 }
                 _this.notifyRecvInternal(cb, waitSeconds);
             }, function (ex) {
-                if (ex.Error.Code !== "MessageNotExist") {
+                if ((!ex.Error) || (ex.Error.Code !== "MessageNotExist")) {
                     try  {
                         cb(ex, null);
                     } catch (ex) {

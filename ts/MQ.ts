@@ -91,7 +91,7 @@ module AliMQS{
                 }
                 this.notifyRecvInternal(cb, waitSeconds);
             }, (ex)=>{
-                if(ex.Error.Code !== "MessageNotExist") {
+                if((!ex.Error) || (ex.Error.Code !== "MessageNotExist")) {
                     try {
                         cb(ex, null);
                     }
