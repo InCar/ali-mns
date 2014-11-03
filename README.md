@@ -25,7 +25,11 @@ Any functions suffix with 'P' indicate a promise object will be returned from it
 Most source files are written in typescript instead of javascript.
 Visit [http://www.typescriptlang.org/](http://www.typescriptlang.org/) for more information about typescript.
 
+If you interest in source file, visit GitHub [https://github.com/InCar/ali-mqs](https://github.com/InCar/ali-mqs)
+
 Please use 'grunt' to compile ts files into a single index.js file after downloading source files. 
+
+If you only want to use it, forget this.
 
 #API Reference
 ##Account(ownerId, keyId, keySecret)
