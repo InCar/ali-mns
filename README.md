@@ -1,5 +1,6 @@
 #ali-mqs
 -----
+[![npm version](https://badge.fury.io/js/ali-mqs.svg)](http://badge.fury.io/js/ali-mqs)
 
 The nodejs sdk for aliyun mqs service.
 
