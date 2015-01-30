@@ -23,29 +23,39 @@ function runTest(){
     var account = new AliMQS.Account(aliCfg.ownerId, aliCfg.keyId, aliCfg.keySecret);
     var mqs = new AliMQS.MQS(account, aliCfg.region);
     var mq = new AliMQS.MQ(aliCfg.mqName, account, aliCfg.region);
+    
+    var testCase = [];
+    
+    // test#0 create mq
+    testCase.push(function(){
+        return mqs.createP(aliCfg.mqName, {
+            DelaySeconds: 0,
+            MaximumMessageSize: 65536,
+            MessageRetentionPeriod: 345600,
+            VisibilityTimeout: 30,
+            PollingWaitSeconds: 0
+        });
+    });
 
-    return mqs.createP(aliCfg.mqName, {
-        DelaySeconds: 0,
-        MaximumMessageSize: 65536,
-        MessageRetentionPeriod: 345600,
-        VisibilityTimeout: 30,
-        PollingWaitSeconds: 0
-    }).then(function(){
-        var testAll = [];
-        // test: list all of the mqs queue.
-        testAll.push(mqs.listP("MQ", 1).then(function(data){
+    // test#1 list all of the mqs queue.
+    testCase.push(function(){
+        return mqs.listP("MQ", 1).then(function(data){
             console.log(data.Queues.Queue);
             return data;
-        }));
+        });
+    });
 
-        // test: set and get attributes;
-        testAll.push(mq.setAttrsP({ VisibilityTimeout: 36 }).then(function(data){
+    // test#2 set and get attributes;
+    testCase.push(function(){
+        return mq.setAttrsP({ VisibilityTimeout: 36 }).then(function(data){
             console.log(data);
             return mq.getAttrsP();
-        }));
+        });
+    });
 
-        // test: send, peek, receive then reserve delete
-        testAll.push(mq.sendP("test").then(function(dataSend){
+    // test#3 send, peek, receive then reserve delete
+    testCase.push(function(){
+        return mq.sendP("test").then(function(dataSend){
             console.log(dataSend);
             console.log("\t-----");
             return mq.peekP();
@@ -61,11 +71,13 @@ function runTest(){
             console.log(dataReserved);
             console.log("\t-----");
             return mq.deleteP(dataReserved.ChangeVisibility.ReceiptHandle);
-        }));
+        });
+    });
 
-        // test: send 3 messages and receive then all by notifyRecv
+    // test#4 send 3 messages and receive then all by notifyRecv
+    testCase.push(function(){
         var notifyCount = 0, notifyConfirmed = 0;
-        testAll.push(Promise.all([mq.sendP("testA"), mq.sendP("testB"), mq.sendP("testC")]).then(function(){
+        return Promise.all([mq.sendP("testA"), mq.sendP("testB"), mq.sendP("testC")]).then(function(){
             return new Promise(function(resolve, reject){
                 mq.notifyRecv(function(ex, dataRecv){
                     notifyCount++;
@@ -88,34 +100,41 @@ function runTest(){
                     return true;
                 }, 5);
             });
-        }));
-
-        var i = 0;
-        testAll.forEach(function(any){
-            any.done(function(ret){
-                i++;
-                console.log("Test " + i + " succeed!");
-                console.log(ret);
-                console.log("-----");
-            }, function(ex){
-                i++;
-                console.log("Test " + i + " failed!");
-                console.log(ex);
-                console.log("-----");
-            });
         });
-
-        return Promise.all(testAll).then(function(){
-            return "Test finished!";
-        });
-    }).then(function(data){
-        // test: delete mq
-        mqs.deleteP(aliCfg.mqName);
-        return data;
-    }, function(ex){
-        mqs.deleteP(aliCfg.mqName);
-        return Promise.reject(ex);
     });
+    
+    // test#5 中文测试
+    testCase.push(function(){
+        return mq.sendP("中文测试").then(function(){
+            return mq.recvP(5);
+        });
+    });
+
+    // test#6 delete mq
+    testCase.push(function(){
+        return mqs.deleteP(aliCfg.mqName);
+    });
+    
+    var testAction = [0, 1, 2, 3, 4, 5, 6];
+    // var testAction = [0, 5, 6];
+    function testOneByOne(i){
+        if(i < testAction.length){
+            var testFn = testCase[testAction[i]];
+            return testFn().then(function(){
+                console.log("Test case " + testAction[i] + " succeed.");
+                return testOneByOne(i+1);
+            }, function(ex){
+                console.log("Test case " + testAction[i] + " failed.");
+                console.log(ex);
+                return testOneByOne(i+1);
+            });
+        }
+        else{
+            return Promise.resolve("Test finished.");
+        }
+    }
+    
+    return testOneByOne(0);
 }
 
 runTest().done(function(data){
