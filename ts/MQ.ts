@@ -34,8 +34,7 @@ module AliMQS{
         // 发送消息
         public sendP(msg:string, priority?:number, delaySeconds?:number){
             
-            var buf = new Buffer.Buffer(msg, 'utf8');
-            var b64 = buf.toString('base64');
+            var b64 = this.utf8ToBase64(msg);
             
             var body :any = { Message: { MessageBody: b64 } };
             if(!isNaN(priority)) body.Message.Priority = priority;
@@ -47,12 +46,12 @@ module AliMQS{
         // 接收消息
         // waitSeconds, 最久等待多少秒0~30
         public recvP(waitSeconds?:number){
+            var _this = this;
             var url = this._url;
             if(waitSeconds) url += "?waitseconds=" + waitSeconds;
             return this._openStack.sendP("GET", url).then(function(data){
                 if(data && data.Message && data.Message.MessageBody){
-                    var buf = new Buffer.Buffer(data.Message.MessageBody, 'base64');
-                    data.Message.MessageBody = buf.toString('utf8');
+                    data.Message.MessageBody = _this.base64ToUtf8(data.Message.MessageBody)
                 }
                 return data;
             });
@@ -60,7 +59,13 @@ module AliMQS{
 
         // 检查消息
         public peekP(){
-            return this._openStack.sendP("GET", this._url + "?peekonly=true");
+            var _this = this;
+            return this._openStack.sendP("GET", this._url + "?peekonly=true").then(function(data){
+                if(data && data.Message && data.Message.MessageBody){
+                    data.Message.MessageBody = _this.base64ToUtf8(data.Message.MessageBody)
+                }
+                return data;
+            });
         }
 
         // 删除消息
@@ -89,31 +94,43 @@ module AliMQS{
                 return;
             }
 
-            this.recvP(waitSeconds).done((dataRecv)=>{
-                try {
-                    if(cb(null, dataRecv)){
-                        this.deleteP(dataRecv.Message.ReceiptHandle)
-                            .done(null, (ex)=>{ console.log(ex); });
-                    }
-                }
-                catch(ex){
-                    // ignore any ex throw from cb
-                }
-                this.notifyRecvInternal(cb, waitSeconds);
-            }, (ex)=>{
-                if((!ex.Error) || (ex.Error.Code !== "MessageNotExist")) {
+            try {
+                this.recvP(waitSeconds).done((dataRecv)=> {
                     try {
-                        cb(ex, null);
+                        if (cb(null, dataRecv)) {
+                            this.deleteP(dataRecv.Message.ReceiptHandle)
+                                .done(null, (ex)=> {
+                                    console.log(ex);
+                                });
+                        }
                     }
                     catch (ex) {
                         // ignore any ex throw from cb
                     }
-                }
-
-                process.nextTick(()=>{
                     this.notifyRecvInternal(cb, waitSeconds);
+                }, (ex)=> {
+                    if ((!ex.Error) || (ex.Error.Code !== "MessageNotExist")) {
+                        try {
+                            cb(ex, null);
+                        }
+                        catch (ex) {
+                            // ignore any ex throw from cb
+                        }
+                    }
+
+                    process.nextTick(()=> {
+                        this.notifyRecvInternal(cb, waitSeconds);
+                    });
                 });
-            });
+            }
+            catch(ex){
+                // ignore any ex 
+                console.log(ex.toString());
+                // 过5秒重试
+                setTimeout(()=>{
+                    this.notifyRecvInternal(cb, waitSeconds);
+                }, 5000);
+            }
         }
 
         // 停止消息通知
@@ -135,6 +152,16 @@ module AliMQS{
 
         private makeURL(){
             return this.makeAttrURL() + "/messages";
+        }
+        
+        private utf8ToBase64(src){
+            var buf = new Buffer.Buffer(src, 'utf8');
+            return buf.toString('base64');
+        }
+        
+        private base64ToUtf8(src){
+            var buf = new Buffer.Buffer(src, 'base64');
+            return buf.toString('utf8');
         }
 
         private _name: string;

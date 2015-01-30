@@ -116,7 +116,7 @@ function runTest(){
     });
     
     var testAction = [0, 1, 2, 3, 4, 5, 6];
-    // var testAction = [0, 5, 6];
+    // var testAction = [0, 4, 6];
     function testOneByOne(i){
         if(i < testAction.length){
             var testFn = testCase[testAction[i]];

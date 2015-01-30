@@ -69,8 +69,7 @@ var AliMQS;
 
         // 发送消息
         MQ.prototype.sendP = function (msg, priority, delaySeconds) {
-            var buf = new Buffer.Buffer(msg, 'utf8');
-            var b64 = buf.toString('base64');
+            var b64 = this.utf8ToBase64(msg);
 
             var body = { Message: { MessageBody: b64 } };
             if (!isNaN(priority))
@@ -84,13 +83,13 @@ var AliMQS;
         // 接收消息
         // waitSeconds, 最久等待多少秒0~30
         MQ.prototype.recvP = function (waitSeconds) {
+            var _this = this;
             var url = this._url;
             if (waitSeconds)
                 url += "?waitseconds=" + waitSeconds;
             return this._openStack.sendP("GET", url).then(function (data) {
                 if (data && data.Message && data.Message.MessageBody) {
-                    var buf = new Buffer.Buffer(data.Message.MessageBody, 'base64');
-                    data.Message.MessageBody = buf.toString('utf8');
+                    data.Message.MessageBody = _this.base64ToUtf8(data.Message.MessageBody);
                 }
                 return data;
             });
@@ -98,7 +97,13 @@ var AliMQS;
 
         // 检查消息
         MQ.prototype.peekP = function () {
-            return this._openStack.sendP("GET", this._url + "?peekonly=true");
+            var _this = this;
+            return this._openStack.sendP("GET", this._url + "?peekonly=true").then(function (data) {
+                if (data && data.Message && data.Message.MessageBody) {
+                    data.Message.MessageBody = _this.base64ToUtf8(data.Message.MessageBody);
+                }
+                return data;
+            });
         };
 
         // 删除消息
@@ -126,30 +131,40 @@ var AliMQS;
                 return;
             }
 
-            this.recvP(waitSeconds).done(function (dataRecv) {
-                try  {
-                    if (cb(null, dataRecv)) {
-                        _this.deleteP(dataRecv.Message.ReceiptHandle).done(null, function (ex) {
-                            console.log(ex);
-                        });
-                    }
-                } catch (ex) {
-                    // ignore any ex throw from cb
-                }
-                _this.notifyRecvInternal(cb, waitSeconds);
-            }, function (ex) {
-                if ((!ex.Error) || (ex.Error.Code !== "MessageNotExist")) {
+            try  {
+                this.recvP(waitSeconds).done(function (dataRecv) {
                     try  {
-                        cb(ex, null);
+                        if (cb(null, dataRecv)) {
+                            _this.deleteP(dataRecv.Message.ReceiptHandle).done(null, function (ex) {
+                                console.log(ex);
+                            });
+                        }
                     } catch (ex) {
                         // ignore any ex throw from cb
                     }
-                }
-
-                process.nextTick(function () {
                     _this.notifyRecvInternal(cb, waitSeconds);
+                }, function (ex) {
+                    if ((!ex.Error) || (ex.Error.Code !== "MessageNotExist")) {
+                        try  {
+                            cb(ex, null);
+                        } catch (ex) {
+                            // ignore any ex throw from cb
+                        }
+                    }
+
+                    process.nextTick(function () {
+                        _this.notifyRecvInternal(cb, waitSeconds);
+                    });
                 });
-            });
+            } catch (ex) {
+                // ignore any ex
+                console.log(ex.toString());
+
+                // 过5秒重试
+                setTimeout(function () {
+                    _this.notifyRecvInternal(cb, waitSeconds);
+                }, 5000);
+            }
         };
 
         // 停止消息通知
@@ -172,6 +187,16 @@ var AliMQS;
 
         MQ.prototype.makeURL = function () {
             return this.makeAttrURL() + "/messages";
+        };
+
+        MQ.prototype.utf8ToBase64 = function (src) {
+            var buf = new Buffer.Buffer(src, 'utf8');
+            return buf.toString('base64');
+        };
+
+        MQ.prototype.base64ToUtf8 = function (src) {
+            var buf = new Buffer.Buffer(src, 'base64');
+            return buf.toString('utf8');
         };
         return MQ;
     })();
