@@ -69,7 +69,10 @@ var AliMQS;
 
         // 发送消息
         MQ.prototype.sendP = function (msg, priority, delaySeconds) {
-            var body = { Message: { MessageBody: msg } };
+            var buf = new Buffer.Buffer(msg, 'utf8');
+            var b64 = buf.toString('base64');
+
+            var body = { Message: { MessageBody: b64 } };
             if (!isNaN(priority))
                 body.Message.Priority = priority;
             if (!isNaN(delaySeconds))
@@ -84,7 +87,13 @@ var AliMQS;
             var url = this._url;
             if (waitSeconds)
                 url += "?waitseconds=" + waitSeconds;
-            return this._openStack.sendP("GET", url);
+            return this._openStack.sendP("GET", url).then(function (data) {
+                if (data && data.Message && data.Message.MessageBody) {
+                    var buf = new Buffer.Buffer(data.Message.MessageBody, 'base64');
+                    data.Message.MessageBody = buf.toString('utf8');
+                }
+                return data;
+            });
         };
 
         // 检查消息
