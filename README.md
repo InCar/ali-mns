@@ -1,4 +1,4 @@
-#ali-mqs
+# ali-mqs
 [![npm version](https://badge.fury.io/js/ali-mqs.svg)](http://badge.fury.io/js/ali-mqs)
 
 The nodejs sdk for aliyun mqs service.
@@ -8,7 +8,7 @@ The world largest online sales website www.taobao.com is heavily relying on it.
 
 You can visit [http://www.aliyun.com/product/mqs](http://www.aliyun.com/product/mqs) for more details. 
 
-#QuickStart
+# QuickStart
 Use 'npm install ali-mqs' to install the package.
 
     var AliMQS = require("ali-mqs");
@@ -17,11 +17,11 @@ Use 'npm install ali-mqs' to install the package.
     // send message
     mq.sendP("Hello ali-mqs").then(console.log, console.error);
 
-#Promised
+# Promised
 The ali-mqs use the [promise](https://www.npmjs.org/package/promise) pattern.
 Any functions suffix with 'P' indicate a promise object will be returned from it.
 
-#Typescript
+# Typescript
 Most source files are written in typescript instead of javascript.
 Visit [http://www.typescriptlang.org/](http://www.typescriptlang.org/) for more information about typescript.
 
@@ -31,8 +31,8 @@ Please use 'grunt' to compile ts files into a single index.js file after downloa
 
 If you only want to use it, forget this.
 
-#API Reference
-##Account(ownerId, keyId, keySecret)
+# API Reference
+## Account(ownerId, keyId, keySecret)
 The *Account* class store your ali account information. Construct an account object is simple:
 
 ownerId: String, ali owner id.
@@ -46,13 +46,13 @@ keySecret: String, ali key secret.
 
 The account object is usually passed as an argument for other class such as *MQS*, *MQ*
 
-##account.getOwnerId()
+## account.getOwnerId()
 Return the ali owner id.
 
-##account.getKeyId()
+## account.getKeyId()
 Return the ali key id.
 
-##MQS(account, region)
+## MQS(account, region)
 The *MQS* operate the mqs queue.
 
 account: An account object.
@@ -64,7 +64,7 @@ Default is "hangzhou". It can also be internal address "hangzhou-internal", "bei
     var account = new AliMQS.Account("<your-owner-id>", "<your-key-id>", "<your-key-secret>");
     var mqs = new AliMQS.MQS(account, "hangzhou");
 
-##mqs.listP(prefix, pageSize, pageMarker)
+## mqs.listP(prefix, pageSize, pageMarker)
 List all of the queue in a data center.
 
 prefix: String, optional. Return only mq with the prefix.
@@ -80,7 +80,7 @@ pageMarker: String, optional. Request the next page, the value is returned in la
         console.log(dataP2);
     }, console.error);
 
-##mqs.createP(name, <a name="options">options</a>)
+## mqs.createP(name, <a name="options">options</a>)
 Create a mq.
 
 name: String. The queue name.
@@ -108,14 +108,14 @@ options.PollingWaitSeconds: numer. How many seconds will the receive request wai
 If a mq with same name exists, calling createP will succeed only when all of the mq attributes are all same.
 Any mismatched attributes will cause an "QueueAlreadyExist" failure.
 
-##mqs.deleteP(name)
+## mqs.deleteP(name)
 Delete an mq.
 
 name: String. The queue name.
 
     mqs.deleteP("myAliMQ").then(console.log, console.error);;
 
-##MQ(name, account, region)
+## MQ(name, account, region)
 The *MQ* operate the message in a queue.
 
 name: String. The name of mq.
@@ -129,7 +129,7 @@ Default is "hangzhou". It can also be internal address "hangzhou-internal", "bei
     var account = new AliMQS.Account("<your-owner-id>", "<your-key-id>", "<your-key-secret>");
     var mq = new AliMQS.MQ("myAliMQ", account, "hangzhou");
 
-##mq.sendP(message, priority, delaySeconds)
+## mq.sendP(message, priority, delaySeconds)
 Send a message to the queue.
 
 message: String. The content that sent to queue.
@@ -141,7 +141,7 @@ This argument is prior to the options.DelaySeconds in attributes of message queu
 
     mq.sendP("Hello Ali-MQS", 8, 0).then(console.log, console.error);
 
-##mq.recvP(waitSeconds)
+## mq.recvP(waitSeconds)
 Receive a message from queue.
 This will change the message to invisible for a while.
 
@@ -150,13 +150,13 @@ The max seconds to wait if queue is empty, after that an error *MessageNotExist*
 
     mq.recvP(5).then(console.log, console.error);
 
-##mq.peekP()
+## mq.peekP()
 Peek a message.
 This will not change the message to invisible.
 
     mq.peekP(5).then(console.log, console.error);
 
-##mq.deleteP(receiptHandle)
+## mq.deleteP(receiptHandle)
 Delete a message from queue.
 A message will be invisible for a short time after received.
 A message must be deleted after processed, otherwise it can be received again.
@@ -167,7 +167,7 @@ receiptHandle: String. Return by mq.recvP or mq.notifyRecv.
         return mq.deleteP(data.Message.ReceiptHandle);
     }).then(console.log, console.error);
 
-##mq.reserveP(receiptHandle, reserveSeconds)
+## mq.reserveP(receiptHandle, reserveSeconds)
 Reserve a received message.
 
 receiptHandle: String. Return by mq.recvP or mq.notifyRecv.
@@ -187,7 +187,7 @@ Set a shorter time is also possible.
 If succeed, a new receiptHandle will be returned to replace the old one, further mq.deleteP or mq.reserveP should use the newer.
 And the newer receiptHandle will expired after reserveSeconds past.
 
-##mq.notifyRecv(callback, waitSeconds)
+## mq.notifyRecv(callback, waitSeconds)
 Register a callback function to receive messages.
 
 callback: The callback function will be called once for each received message.
@@ -208,18 +208,18 @@ Set waitSeconds to 0 ,will actually use the default value 5 seconds instead.
 Both callback functions will work if you call notifyRecv twice for 2 different callback functions.
 But each received message only will trigger one of them only. 
 
-##mq.notifyStopP()
+## mq.notifyStopP()
 Stop mq.notifyRecv working. The promise object returned will not be resolved until the receiving loop stopped actually.
 The max time wait for notifyRecv() stop is determined by waitSeconds passed to mq.notifyRecv.
 
     mq.notifyStopP().then(console.log, console.error);
 
-##mq.getAttrsP()
+## mq.getAttrsP()
 Get the attributes of the mq.
 
     mq.getAttrsP().then(console.log, console.error);
 
-##mq.setAttrsP(options)
+## mq.setAttrsP(options)
 Modify the attributes of mq.
 
 options: the queue attributes. See the [options](#options) of mqs.createP.
@@ -232,5 +232,5 @@ options: the queue attributes. See the [options](#options) of mqs.createP.
         PollingWaitSeconds: 0
     }).then(console.log, console.error);
 
-#License
+# License
 MIT
