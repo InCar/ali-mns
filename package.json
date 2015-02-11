@@ -1,6 +1,6 @@
 {
     "name": "ali-mqs",
-    "version": "1.1.13",
+    "version": "1.1.14",
     "description": "The nodejs SDK for aliyun mqs service",
     "main": "index.js",
     "dependencies": {
