@@ -58,7 +58,7 @@ The *MQS* operate the mqs queue.
 account: An account object.
 
 region: String, optional. It can be "hangzhou", "beijing" or "qingdao", the 3 data center that provide mqs service.
-Default is "hangzhou".
+Default is "hangzhou". It can also be internal address "hangzhou-internal", "beijing-internal" or "qingdao-internal".
 
     var AliMQS = require("ali-mqs");
     var account = new AliMQS.Account("<your-owner-id>", "<your-key-id>", "<your-key-secret>");
@@ -123,7 +123,7 @@ name: String. The name of mq.
 account: An account object.
 
 region: String, optional. It can be "hangzhou", "beijing" or "qingdao", the 3 data center that provide mqs service.
-Default is "hangzhou".
+Default is "hangzhou". It can also be internal address "hangzhou-internal", "beijing-internal" or "qingdao-internal".
 
     var AliMQS = require("ali-mqs");
     var account = new AliMQS.Account("<your-owner-id>", "<your-key-id>", "<your-key-secret>");
