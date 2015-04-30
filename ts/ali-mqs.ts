@@ -5,10 +5,11 @@ module.exports = AliMQS;
 
 // dependencies
 var Buffer:any  = require("buffer");
-var Crypto:any  = require("crypto");
+var CryptoA:any  = require("crypto");
 var Events:any  = require("events");
 var Util:any    = require("util");
 var Url:any     = require("url");
+var debug:any   = require("debug")("ali-mqs");
 
 var Promise:any = require("promise");
 

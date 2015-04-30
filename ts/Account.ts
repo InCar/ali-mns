@@ -13,12 +13,12 @@ module AliMQS{
 
         // encoding: "hex", "binary" or "base64"
         public hmac_sha1(text:string, encoding?:string){
-            var hmacSHA1:any = Crypto.createHmac("sha1", this._keySecret);
+            var hmacSHA1:any = CryptoA.createHmac("sha1", this._keySecret);
             return hmacSHA1.update(text).digest(encoding);
         }
 
         public b64md5(text:string){
-            var cryptoMD5 = Crypto.createHash("md5");
+            var cryptoMD5 = CryptoA.createHash("md5");
             var md5HEX = cryptoMD5.update(text).digest("hex");
             var buf = new Buffer.Buffer(md5HEX, "utf8");
             return buf.toString("base64");
