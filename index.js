@@ -53,11 +53,13 @@ var AliMQS;
         }
         // 获取MQ的属性值
         MQ.prototype.getAttrsP = function () {
+            debug("GET " + this._urlAttr);
             return this._openStack.sendP("GET", this._urlAttr);
         };
         // 设置MQ的属性值
         MQ.prototype.setAttrsP = function (options) {
             var body = { Queue: options };
+            debug("PUT " + this._urlAttr, body);
             return this._openStack.sendP("PUT", this._urlAttr + "?metaoverride=true", body);
         };
         // 发送消息
@@ -68,6 +70,7 @@ var AliMQS;
                 body.Message.Priority = priority;
             if (!isNaN(delaySeconds))
                 body.Message.DelaySeconds = delaySeconds;
+            debug("PUT " + this._url, body);
             return this._openStack.sendP("POST", this._url, body);
         };
         // 接收消息
@@ -77,7 +80,9 @@ var AliMQS;
             var url = this._url;
             if (waitSeconds)
                 url += "?waitseconds=" + waitSeconds;
+            debug("GET " + url);
             return this._openStack.sendP("GET", url).then(function (data) {
+                debug(data);
                 if (data && data.Message && data.Message.MessageBody) {
                     data.Message.MessageBody = _this.base64ToUtf8(data.Message.MessageBody);
                 }
@@ -87,7 +92,9 @@ var AliMQS;
         // 检查消息
         MQ.prototype.peekP = function () {
             var _this = this;
+            debug("GET " + this._url);
             return this._openStack.sendP("GET", this._url + "?peekonly=true").then(function (data) {
+                debug(data);
                 if (data && data.Message && data.Message.MessageBody) {
                     data.Message.MessageBody = _this.base64ToUtf8(data.Message.MessageBody);
                 }
@@ -96,10 +103,12 @@ var AliMQS;
         };
         // 删除消息
         MQ.prototype.deleteP = function (receiptHandle) {
+            debug("DELETE " + this._url);
             return this._openStack.sendP("DELETE", this._url + "?ReceiptHandle=" + receiptHandle);
         };
         // 保留消息
         MQ.prototype.reserveP = function (receiptHandle, reserveSeconds) {
+            debug("PUT " + this._url);
             return this._openStack.sendP("PUT", this._url + "?ReceiptHandle=" + receiptHandle + "&VisibilityTimeout=" + reserveSeconds);
         };
         // 消息通知.每当有消息收到时,都调用cb回调函数
@@ -112,12 +121,15 @@ var AliMQS;
             var _this = this;
             // This signal will be triggered by notifyStopP()
             if (this._signalSTOP) {
+                debug("notifyStopped");
                 this._emitter.emit(this._evStopped);
                 return;
             }
+            debug("notifyRecvInternal()");
             try {
                 this.recvP(waitSeconds).done(function (dataRecv) {
                     try {
+                        debug(dataRecv);
                         if (cb(null, dataRecv)) {
                             _this.deleteP(dataRecv.Message.ReceiptHandle).done(null, function (ex) {
                                 console.log(ex);
@@ -128,6 +140,7 @@ var AliMQS;
                     }
                     _this.notifyRecvInternal(cb, waitSeconds);
                 }, function (ex) {
+                    debug(ex);
                     if ((!ex.Error) || (ex.Error.Code !== "MessageNotExist")) {
                         try {
                             cb(ex, null);
@@ -144,6 +157,7 @@ var AliMQS;
                 // ignore any ex 
                 console.log(ex.toString());
                 // 过5秒重试
+                debug("Retry after 5 seconds");
                 setTimeout(function () {
                     _this.notifyRecvInternal(cb, waitSeconds);
                 }, 5000);
@@ -340,6 +354,7 @@ var CryptoA = require("crypto");
 var Events = require("events");
 var Util = require("util");
 var Url = require("url");
+var debug = require("debug")("ali-mqs");
 var Promise = require("promise");
 var Request = require("request");
 Request.requestP = Promise.denodeify(Request);

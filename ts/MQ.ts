@@ -1,4 +1,3 @@
-
 module AliMQS{
     // The MQ
     export class MQ{
@@ -22,12 +21,14 @@ module AliMQS{
 
         // 获取MQ的属性值
         public getAttrsP(){
+            debug("GET " + this._urlAttr);
             return this._openStack.sendP("GET", this._urlAttr);
         }
 
         // 设置MQ的属性值
         public setAttrsP(options:any){
             var body = { Queue: options };
+            debug("PUT " + this._urlAttr, body);
             return this._openStack.sendP("PUT", this._urlAttr + "?metaoverride=true", body);
         }
 
@@ -40,6 +41,7 @@ module AliMQS{
             if(!isNaN(priority)) body.Message.Priority = priority;
             if(!isNaN(delaySeconds)) body.Message.DelaySeconds = delaySeconds;
 
+            debug("PUT " + this._url, body);
             return this._openStack.sendP("POST", this._url, body);
         }
 
@@ -49,7 +51,9 @@ module AliMQS{
             var _this = this;
             var url = this._url;
             if(waitSeconds) url += "?waitseconds=" + waitSeconds;
+            debug("GET " + url);
             return this._openStack.sendP("GET", url).then(function(data){
+                debug(data);
                 if(data && data.Message && data.Message.MessageBody){
                     data.Message.MessageBody = _this.base64ToUtf8(data.Message.MessageBody)
                 }
@@ -60,7 +64,9 @@ module AliMQS{
         // 检查消息
         public peekP(){
             var _this = this;
+            debug("GET " + this._url);
             return this._openStack.sendP("GET", this._url + "?peekonly=true").then(function(data){
+                debug(data);
                 if(data && data.Message && data.Message.MessageBody){
                     data.Message.MessageBody = _this.base64ToUtf8(data.Message.MessageBody)
                 }
@@ -70,11 +76,13 @@ module AliMQS{
 
         // 删除消息
         public deleteP(receiptHandle:string){
+            debug("DELETE " + this._url);
             return this._openStack.sendP("DELETE", this._url + "?ReceiptHandle=" + receiptHandle);
         }
 
         // 保留消息
         public reserveP(receiptHandle:string, reserveSeconds:number){
+            debug("PUT " + this._url);
             return this._openStack.sendP("PUT", this._url
                 + "?ReceiptHandle=" + receiptHandle
                 + "&VisibilityTimeout=" + reserveSeconds);
@@ -90,13 +98,17 @@ module AliMQS{
         private notifyRecvInternal(cb:(ex:Error, msg:any)=>Boolean, waitSeconds:number){
             // This signal will be triggered by notifyStopP()
             if(this._signalSTOP){
+                debug("notifyStopped");
                 this._emitter.emit(this._evStopped);
                 return;
             }
 
+            debug("notifyRecvInternal()");
+
             try {
                 this.recvP(waitSeconds).done((dataRecv)=> {
                     try {
+                        debug(dataRecv);
                         if (cb(null, dataRecv)) {
                             this.deleteP(dataRecv.Message.ReceiptHandle)
                                 .done(null, (ex)=> {
@@ -109,6 +121,7 @@ module AliMQS{
                     }
                     this.notifyRecvInternal(cb, waitSeconds);
                 }, (ex)=> {
+                    debug(ex);
                     if ((!ex.Error) || (ex.Error.Code !== "MessageNotExist")) {
                         try {
                             cb(ex, null);
@@ -127,6 +140,7 @@ module AliMQS{
                 // ignore any ex 
                 console.log(ex.toString());
                 // 过5秒重试
+                debug("Retry after 5 seconds");
                 setTimeout(()=>{
                     this.notifyRecvInternal(cb, waitSeconds);
                 }, 5000);

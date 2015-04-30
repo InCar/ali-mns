@@ -1,37 +1,38 @@
 {
-    "name": "ali-mqs",
-    "version": "1.1.14",
-    "description": "The nodejs SDK for aliyun mqs service",
-    "main": "index.js",
-    "dependencies": {
-        "promise": "6.*.*",
-        "request": "2.*.*",
-        "xml2js": "0.*.*"
-    },
-    "devDependencies": {
-        "grunt": "0.*.*",
-        "grunt-newer": "^0.*.*",
-        "grunt-contrib-clean": "0.*.*",
-        "grunt-typescript": "0.*.*",
-        "load-grunt-tasks": "0.*.*"
-    },
-    "scripts": {
-        "prepublish": "grunt",
-        "test": "node ./test/main"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/InCar/ali-mqs.git"
-    },
-    "keywords": [
-        "aliyun",
-        "mqs",
-        "incar"
-    ],
-    "author": "ghxiong@incardata.com.cn",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/InCar/ali-mqs/issues"
-    },
-    "homepage": "https://github.com/InCar/ali-mqs"
+  "name": "ali-mqs",
+  "version": "1.1.15",
+  "description": "The nodejs SDK for aliyun mqs service",
+  "main": "index.js",
+  "dependencies": {
+    "debug": "^2.1.3",
+    "promise": "^6.0.0",
+    "request": "^2.55.0",
+    "xml2js": "^0.4.8"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-newer": "^0.8.0",
+    "grunt-contrib-clean": "^0.6.0",
+    "grunt-typescript": "^0.6.1",
+    "load-grunt-tasks": "^0.6.0"
+  },
+  "scripts": {
+    "prepublish": "grunt",
+    "test": "node ./test/main"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/InCar/ali-mqs.git"
+  },
+  "keywords": [
+    "aliyun",
+    "mqs",
+    "incar"
+  ],
+  "author": "ghxiong@incardata.com.cn",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/InCar/ali-mqs/issues"
+  },
+  "homepage": "https://github.com/InCar/ali-mqs"
 }

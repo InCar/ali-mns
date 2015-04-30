@@ -243,5 +243,15 @@ options: the queue attributes. See the [options](#options) of mqs.createP.
     }).then(console.log, console.error);
 ```
 
+# DEBUG Trace
+Set the DEBUG environment to "ali-mqs" to enable the debug trace output.
+```SHELL
+# linux bash
+export DEBUG=ali-mqs
+
+# windows
+set DEBUG=ali-mqs
+```
+
 # License
 MIT
