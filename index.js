@@ -81,12 +81,28 @@ var AliMQS;
             if (waitSeconds)
                 url += "?waitseconds=" + waitSeconds;
             debug("GET " + url);
-            return this._openStack.sendP("GET", url).then(function (data) {
-                debug(data);
-                if (data && data.Message && data.Message.MessageBody) {
-                    data.Message.MessageBody = _this.base64ToUtf8(data.Message.MessageBody);
-                }
-                return data;
+            return new Promise(function (resolve, reject) {
+                var bGotResponse = false;
+                // wait more 5 seconds to trigger timeout error
+                var timeOutSeconds = 5;
+                if (waitSeconds)
+                    timeOutSeconds += waitSeconds;
+                setTimeout(function () {
+                    if (!bGotResponse)
+                        reject(new Error("timeout"));
+                }, 1000 * timeOutSeconds);
+                _this._openStack.sendP("GET", url).done(function (data) {
+                    debug(data);
+                    bGotResponse = true;
+                    if (data && data.Message && data.Message.MessageBody) {
+                        data.Message.MessageBody = _this.base64ToUtf8(data.Message.MessageBody);
+                    }
+                    resolve(data);
+                }, function (ex) {
+                    debug(ex);
+                    bGotResponse = true;
+                    reject(ex);
+                });
             });
         };
         // 检查消息
