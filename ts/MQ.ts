@@ -109,6 +109,7 @@ module AliMQS{
         // 如果cb返回true,那么将删除消息,否则保留消息
         public notifyRecv(cb:(ex:Error, msg:any)=>Boolean, waitSeconds?:number){
             this._signalSTOP = false;
+            this._timeoutCount = 0;
             this.notifyRecvInternal(cb, waitSeconds || 5);
         }
 
@@ -126,6 +127,7 @@ module AliMQS{
                 this.recvP(waitSeconds).done((dataRecv)=> {
                     try {
                         debug(dataRecv);
+                        this._timeoutCount = 0;
                         if (cb(null, dataRecv)) {
                             this.deleteP(dataRecv.Message.ReceiptHandle)
                                 .done(null, (ex)=> {
@@ -140,12 +142,18 @@ module AliMQS{
                 }, (ex)=> {
                     debug(ex);
                     if ((!ex.Error) || (ex.Error.Code !== "MessageNotExist")) {
-                        try {
-                            cb(ex, null);
+                        cb(ex, null);
+                    }
+
+                    if(ex.Error.Code === "timeout"){
+                        this._timeoutCount++;
+                        if(this._timeoutCount > this._timeoutMax){
+                            // 极度可能网络底层断了
+                            cb(new Error("NetworkBroken"), null);
                         }
-                        catch (ex) {
-                            // ignore any ex throw from cb
-                        }
+                    }
+                    else if(ex.Error.Code === "MessageNotExist"){
+                        this._timeoutCount = 0;
                     }
 
                     process.nextTick(()=> {
@@ -205,5 +213,13 @@ module AliMQS{
         private _signalSTOP = true;
         private _evStopped = "AliMQS_MQ_NOTIFY_STOPPED";
         private _emitter:any;
+
+        // 连续timeout计数器
+        // 在某种未知的原因下,网络底层链接断了
+        // 这时在程序内部的重试无法促使网络重连,以后的重试都是徒劳的
+        // 如果连续发生反复重试都依然timeout,那么极有可能已经发生此种情况了
+        // 这时抛出NetworkBroken异常
+        private _timeoutCount = 0;
+        private _timeoutMax = 128;
     }
 }
