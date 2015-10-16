@@ -169,15 +169,17 @@ var AliMQS;
                     if ((!ex.Error) || (ex.Error.Code !== "MessageNotExist")) {
                         cb(ex, null);
                     }
-                    if (ex.Error.Code === "timeout") {
-                        _this._timeoutCount++;
-                        if (_this._timeoutCount > _this._timeoutMax) {
-                            // 极度可能网络底层断了
-                            cb(new Error("NetworkBroken"), null);
+                    if (ex) {
+                        if (ex.message === "timeout") {
+                            _this._timeoutCount++;
+                            if (_this._timeoutCount > _this._timeoutMax) {
+                                // 极度可能网络底层断了
+                                cb(new Error("NetworkBroken"), null);
+                            }
                         }
-                    }
-                    else if (ex.Error.Code === "MessageNotExist") {
-                        _this._timeoutCount = 0;
+                        else if (ex.Error && ex.Error.Code === "MessageNotExist") {
+                            _this._timeoutCount = 0;
+                        }
                     }
                     process.nextTick(function () {
                         _this.notifyRecvInternal(cb, waitSeconds);

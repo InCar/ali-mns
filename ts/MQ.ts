@@ -145,15 +145,17 @@ module AliMQS{
                         cb(ex, null);
                     }
 
-                    if(ex.Error.Code === "timeout"){
-                        this._timeoutCount++;
-                        if(this._timeoutCount > this._timeoutMax){
-                            // 极度可能网络底层断了
-                            cb(new Error("NetworkBroken"), null);
+                    if(ex) {
+                        if (ex.message === "timeout") {
+                            this._timeoutCount++;
+                            if (this._timeoutCount > this._timeoutMax) {
+                                // 极度可能网络底层断了
+                                cb(new Error("NetworkBroken"), null);
+                            }
                         }
-                    }
-                    else if(ex.Error.Code === "MessageNotExist"){
-                        this._timeoutCount = 0;
+                        else if (ex.Error && ex.Error.Code === "MessageNotExist") {
+                            this._timeoutCount = 0;
+                        }
                     }
 
                     process.nextTick(()=> {
