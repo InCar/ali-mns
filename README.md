@@ -210,7 +210,7 @@ Set waitSeconds to 0 ,will actually use the default value 5 seconds instead.
 ```javascript
     mq.notifyRecv(function(err, message){
         console.log(message);
-        if(err && err.Error.Code === "NetworkBroken"){
+        if(err && err.message === "NetworkBroken"){
             // Best to restart the process when this occurs
             throw err;
         }
