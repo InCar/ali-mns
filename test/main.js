@@ -3,12 +3,12 @@
 var Path = require("path");
 var fs = require("fs");
 var Promise = require("promise");
-var AliMQS = require(Path.join(__dirname, "../index.js"));
+var AliMNS = require(Path.join(__dirname, "../index.js"));
 
 function runTest(){
     // ali account configuration
     var aliCfg = {
-        ownerId: "your-owner-id",
+        accountId: "your-owner-id",
         keyId: "your-key-id",
         keySecret: "your-key-secret",
         region: "hangzhou",
@@ -20,15 +20,15 @@ function runTest(){
     if(fs.existsSync(cfgPath)){
         aliCfg = require(cfgPath);
     }
-    var account = new AliMQS.Account(aliCfg.ownerId, aliCfg.keyId, aliCfg.keySecret);
-    var mqs = new AliMQS.MQS(account, aliCfg.region);
-    var mq = new AliMQS.MQ(aliCfg.mqName, account, aliCfg.region);
+    var account = new AliMNS.Account(aliCfg.accountId, aliCfg.keyId, aliCfg.keySecret);
+    var mns = new AliMNS.MNS(account, aliCfg.region);
+    var mq = new AliMNS.MQ(aliCfg.mqName, account, aliCfg.region);
     
     var testCase = [];
     
     // test#0 create mq
     testCase.push(function(){
-        return mqs.createP(aliCfg.mqName, {
+        return mns.createP(aliCfg.mqName, {
             DelaySeconds: 0,
             MaximumMessageSize: 65536,
             MessageRetentionPeriod: 345600,
@@ -37,9 +37,9 @@ function runTest(){
         });
     });
 
-    // test#1 list all of the mqs queue.
+    // test#1 list all of the mns queue.
     testCase.push(function(){
-        return mqs.listP("MQ", 1).then(function(data){
+        return mns.listP("MQ", 1).then(function(data){
             console.log(data.Queues.Queue);
             return data;
         });
@@ -112,7 +112,7 @@ function runTest(){
 
     // test#6 delete mq
     testCase.push(function(){
-        return mqs.deleteP(aliCfg.mqName);
+        return mns.deleteP(aliCfg.mqName);
     });
     
     var testAction = [0, 1, 2, 3, 4, 5, 6];

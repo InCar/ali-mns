@@ -1,4 +1,4 @@
-module AliMQS{
+module AliMNS{
     // The MQ
     export class MQ{
         // The constructor. name & account is required.
@@ -188,7 +188,7 @@ module AliMQS{
         }
 
         private makeAttrURL(){
-            return Util.format(this._pattern, this._account.getOwnerId(), this._region, this._name);
+            return Util.format(this._pattern, this._account.getAccountId(), this._region, this._name);
         }
 
         private makeURL(){
@@ -210,10 +210,10 @@ module AliMQS{
         private _account: Account;
         private _url:string; // mq url
         private _urlAttr: string; // mq attr url
-        private _pattern = "http://%s.mqs-cn-%s.aliyuncs.com/%s";
+        private _pattern = "http://%s.mns-cn-%s.aliyuncs.com/%s";
         private _openStack: OpenStack;
         private _signalSTOP = true;
-        private _evStopped = "AliMQS_MQ_NOTIFY_STOPPED";
+        private _evStopped = "AliMNS_MQ_NOTIFY_STOPPED";
         private _emitter:any;
 
         // 连续timeout计数器

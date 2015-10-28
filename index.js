@@ -1,14 +1,14 @@
-var AliMQS;
-(function (AliMQS) {
+var AliMNS;
+(function (AliMNS) {
     // The Ali account, it holds the key id and secret.
     var Account = (function () {
-        function Account(ownerId, keyId, keySecret) {
-            this._ownerId = ownerId;
+        function Account(accountId, keyId, keySecret) {
+            this._accountId = accountId;
             this._keyId = keyId;
             this._keySecret = keySecret;
         }
-        Account.prototype.getOwnerId = function () {
-            return this._ownerId;
+        Account.prototype.getAccountId = function () {
+            return this._accountId;
         };
         Account.prototype.getKeyId = function () {
             return this._keyId;
@@ -26,19 +26,67 @@ var AliMQS;
         };
         return Account;
     })();
-    AliMQS.Account = Account;
-})(AliMQS || (AliMQS = {}));
-var AliMQS;
-(function (AliMQS) {
+    AliMNS.Account = Account;
+})(AliMNS || (AliMNS = {}));
+var AliMNS;
+(function (AliMNS) {
+    // The MNS can list, create, delete, modify the mq.
+    var MNS = (function () {
+        // The constructor. account: ali account; region: can be "hangzhou", "beijing" or "qingdao", default is "hangzhou"
+        function MNS(account, region) {
+            this._region = "hangzhou"; // region: hangzhou, beijing, qingdao
+            this._pattern = "http://%s.mns.cn-%s.aliyuncs.com";
+            // save the input arguments
+            this._account = account;
+            if (region)
+                this._region = region;
+            // make url
+            this._url = this.makeURL();
+            // create the OpenStack object
+            this._openStack = new AliMNS.OpenStack(account);
+        }
+        // List all mns.
+        MNS.prototype.listP = function (prefix, pageSize, pageMarker) {
+            var headers = {};
+            if (prefix)
+                headers["x-mns-prefix"] = prefix;
+            if (pageMarker)
+                headers["x-mns-marker"] = pageMarker;
+            if (pageSize)
+                headers["x-mns-ret-number"] = pageSize;
+            return this._openStack.sendP("GET", this._url, null, headers);
+        };
+        // Create a message queue
+        MNS.prototype.createP = function (name, options) {
+            var body = { Queue: "" };
+            if (options)
+                body.Queue = options;
+            var url = Url.resolve(this._url, name);
+            return this._openStack.sendP("PUT", url, body);
+        };
+        // Delete a message queue
+        MNS.prototype.deleteP = function (name) {
+            var url = Url.resolve(this._url, name);
+            return this._openStack.sendP("DELETE", url);
+        };
+        MNS.prototype.makeURL = function () {
+            return Util.format(this._pattern, this._account.getAccountId(), this._region);
+        };
+        return MNS;
+    })();
+    AliMNS.MNS = MNS;
+})(AliMNS || (AliMNS = {}));
+var AliMNS;
+(function (AliMNS) {
     // The MQ
     var MQ = (function () {
         // The constructor. name & account is required.
         // region can be "hangzhou", "beijing" or "qingdao", the default is "hangzhou"
         function MQ(name, account, region) {
             this._region = "hangzhou";
-            this._pattern = "http://%s.mqs-cn-%s.aliyuncs.com/%s";
+            this._pattern = "http://%s.mns-cn-%s.aliyuncs.com/%s";
             this._signalSTOP = true;
-            this._evStopped = "AliMQS_MQ_NOTIFY_STOPPED";
+            this._evStopped = "AliMNS_MQ_NOTIFY_STOPPED";
             // 连续timeout计数器
             // 在某种未知的原因下,网络底层链接断了
             // 这时在程序内部的重试无法促使网络重连,以后的重试都是徒劳的
@@ -54,7 +102,7 @@ var AliMQS;
             this._urlAttr = this.makeAttrURL();
             this._url = this.makeURL();
             // create the OpenStack object
-            this._openStack = new AliMQS.OpenStack(account);
+            this._openStack = new AliMNS.OpenStack(account);
             // emitter
             this._emitter = new Events.EventEmitter();
         }
@@ -209,7 +257,7 @@ var AliMQS;
             });
         };
         MQ.prototype.makeAttrURL = function () {
-            return Util.format(this._pattern, this._account.getOwnerId(), this._region, this._name);
+            return Util.format(this._pattern, this._account.getAccountId(), this._region, this._name);
         };
         MQ.prototype.makeURL = function () {
             return this.makeAttrURL() + "/messages";
@@ -224,66 +272,18 @@ var AliMQS;
         };
         return MQ;
     })();
-    AliMQS.MQ = MQ;
-})(AliMQS || (AliMQS = {}));
-var AliMQS;
-(function (AliMQS) {
-    // The MQS can list, create, delete, modify the mq.
-    var MQS = (function () {
-        // The constructor. account: ali account; region: can be "hangzhou", "beijing" or "qingdao", default is "hangzhou"
-        function MQS(account, region) {
-            this._region = "hangzhou"; // region: hangzhou, beijing, qingdao
-            this._pattern = "http://%s.mqs-cn-%s.aliyuncs.com";
-            // save the input arguments
-            this._account = account;
-            if (region)
-                this._region = region;
-            // make url
-            this._url = this.makeURL();
-            // create the OpenStack object
-            this._openStack = new AliMQS.OpenStack(account);
-        }
-        // List all mqs.
-        MQS.prototype.listP = function (prefix, pageSize, pageMarker) {
-            var headers = {};
-            if (prefix)
-                headers["x-mqs-prefix"] = prefix;
-            if (pageMarker)
-                headers["x-mqs-marker"] = pageMarker;
-            if (pageSize)
-                headers["x-mqs-ret-number"] = pageSize;
-            return this._openStack.sendP("GET", this._url, null, headers);
-        };
-        // Create a message queue
-        MQS.prototype.createP = function (name, options) {
-            var body = { Queue: "" };
-            if (options)
-                body.Queue = options;
-            var url = Url.resolve(this._url, name);
-            return this._openStack.sendP("PUT", url, body);
-        };
-        // Delete a message queue
-        MQS.prototype.deleteP = function (name) {
-            var url = Url.resolve(this._url, name);
-            return this._openStack.sendP("DELETE", url);
-        };
-        MQS.prototype.makeURL = function () {
-            return Util.format(this._pattern, this._account.getOwnerId(), this._region);
-        };
-        return MQS;
-    })();
-    AliMQS.MQS = MQS;
-})(AliMQS || (AliMQS = {}));
+    AliMNS.MQ = MQ;
+})(AliMNS || (AliMNS = {}));
 // The Ali open interface stack
-var AliMQS;
-(function (AliMQS) {
+var AliMNS;
+(function (AliMNS) {
     // the ali open interface stack protocol
     var OpenStack = (function () {
         function OpenStack(account) {
-            this._patternMQS = "MQS %s:%s";
+            this._patternMNS = "MNS %s:%s";
             this._patternSign = "%s\n%s\n%s\n%s\n%s%s";
             this._contentType = "text/xml;charset=utf-8";
-            this._version = "2014-07-08";
+            this._version = "2015-06-06";
             this._account = account;
             // xml builder
             this._xmlBuilder = new Xml2js.Builder();
@@ -338,9 +338,11 @@ var AliMQS;
                 contentMD5 = this._account.b64md5(body);
                 headers["Content-MD5"] = contentMD5;
             }
-            if (!headers["x-mqs-version"])
-                headers["x-mqs-version"] = this._version;
-            // lowercase & sort & extract the x-mqs-<any>
+            // if(!headers["Date"]) headers["Date"] = (new Date()).toUTCString();
+            // if(!headers["Host"]) headers["Host"] = Url.parse(url).Host;
+            if (!headers["x-mns-version"])
+                headers["x-mns-version"] = this._version;
+            // lowercase & sort & extract the x-mns-<any>
             var headsLower = {};
             var keys = [];
             for (var key in headers) {
@@ -351,43 +353,43 @@ var AliMQS;
                 }
             }
             keys.sort();
-            var mqsHeaders = "";
+            var mnsHeaders = "";
             for (var i in keys) {
                 var k = keys[i];
-                if (k.indexOf("x-mqs-") === 0) {
-                    mqsHeaders += Util.format("%s:%s\n", k, headsLower[k]);
+                if (k.indexOf("x-mns-") === 0) {
+                    mnsHeaders += Util.format("%s:%s\n", k, headsLower[k]);
                 }
             }
             var tm = (new Date()).toUTCString();
-            var mqsURL = Url.parse(url);
+            var mnsURL = Url.parse(url);
             headers.Date = tm;
-            headers.Authorization = this.authorize(mothod, mqsURL.path, mqsHeaders, contentType, contentMD5, tm);
-            headers.Host = mqsURL.host;
+            headers.Authorization = this.authorize(mothod, mnsURL.path, mnsHeaders, contentType, contentMD5, tm);
+            headers.Host = mnsURL.host;
             return headers;
         };
-        // ali mqs authorize header
-        OpenStack.prototype.authorize = function (httpVerb, mqsURI, mqsHeaders, contentType, contentMD5, tm) {
-            return Util.format(this._patternMQS, this._account.getKeyId(), this.signature(httpVerb, mqsURI, mqsHeaders, contentType, contentMD5, tm));
+        // ali mns authorize header
+        OpenStack.prototype.authorize = function (httpVerb, mnsURI, mnsHeaders, contentType, contentMD5, tm) {
+            return Util.format(this._patternMNS, this._account.getKeyId(), this.signature(httpVerb, mnsURI, mnsHeaders, contentType, contentMD5, tm));
         };
-        // ali mqs signature
-        OpenStack.prototype.signature = function (httpVerb, mqsURI, mqsHeaders, contentType, contentMD5, tm) {
-            var text = Util.format(this._patternSign, httpVerb, contentMD5, contentType, tm, mqsHeaders, mqsURI);
+        // ali mns signature
+        OpenStack.prototype.signature = function (httpVerb, mnsURI, mnsHeaders, contentType, contentMD5, tm) {
+            var text = Util.format(this._patternSign, httpVerb, contentMD5, contentType, tm, mnsHeaders, mnsURI);
             return this._account.hmac_sha1(text, "base64");
         };
         return OpenStack;
     })();
-    AliMQS.OpenStack = OpenStack;
-})(AliMQS || (AliMQS = {}));
+    AliMNS.OpenStack = OpenStack;
+})(AliMNS || (AliMNS = {}));
 /// <reference path="../dts/external.d.ts" />
-// Exports the AliMQS
-module.exports = AliMQS;
+// Exports the AliMNS
+module.exports = AliMNS;
 // dependencies
 var Buffer = require("buffer");
 var CryptoA = require("crypto");
 var Events = require("events");
 var Util = require("util");
 var Url = require("url");
-var debug = require("debug")("ali-mqs");
+var debug = require("debug")("ali-mns");
 var Promise = require("promise");
 var Request = require("request");
 Request.requestP = Promise.denodeify(Request);

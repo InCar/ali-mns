@@ -1,14 +1,14 @@
 
-module AliMQS{
+module AliMNS{
     // The Ali account, it holds the key id and secret.
     export class Account{
-        constructor(ownerId:string, keyId:string, keySecret:string){
-            this._ownerId = ownerId;
+        constructor(accountId:string, keyId:string, keySecret:string){
+            this._accountId = accountId;
             this._keyId = keyId;
             this._keySecret = keySecret;
         }
 
-        public getOwnerId(){ return this._ownerId; }
+        public getAccountId(){ return this._accountId; }
         public getKeyId(){ return this._keyId; }
 
         // encoding: "hex", "binary" or "base64"
@@ -24,7 +24,7 @@ module AliMQS{
             return buf.toString("base64");
         }
 
-        private _ownerId: string; // Owner id
+        private _accountId: string; // Owner id
         private _keyId: string; // Access key id
         private _keySecret: string; // Access key secret
     }

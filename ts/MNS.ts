@@ -1,6 +1,6 @@
-module AliMQS{
-    // The MQS can list, create, delete, modify the mq.
-    export class MQS{
+module AliMNS{
+    // The MNS can list, create, delete, modify the mq.
+    export class MNS{
         // The constructor. account: ali account; region: can be "hangzhou", "beijing" or "qingdao", default is "hangzhou"
         constructor(account:Account, region?:string){
             // save the input arguments
@@ -14,12 +14,12 @@ module AliMQS{
             this._openStack = new OpenStack(account);
         }
 
-        // List all mqs.
+        // List all mns.
         public listP(prefix?:string, pageSize?:number, pageMarker?:string){
             var headers = {};
-            if(prefix)      headers["x-mqs-prefix"] = prefix;
-            if(pageMarker)  headers["x-mqs-marker"] = pageMarker;
-            if(pageSize)    headers["x-mqs-ret-number"] = pageSize;
+            if(prefix)      headers["x-mns-prefix"] = prefix;
+            if(pageMarker)  headers["x-mns-marker"] = pageMarker;
+            if(pageSize)    headers["x-mns-ret-number"] = pageSize;
             return this._openStack.sendP("GET", this._url, null, headers);
         }
 
@@ -38,13 +38,13 @@ module AliMQS{
         }
 
         private makeURL(){
-            return Util.format(this._pattern, this._account.getOwnerId(), this._region);
+            return Util.format(this._pattern, this._account.getAccountId(), this._region);
         }
 
         private _account:Account; // Ali account
         private _region = "hangzhou"; // region: hangzhou, beijing, qingdao
-        private _pattern = "http://%s.mqs-cn-%s.aliyuncs.com";
-        private _url:string; // mqs url
+        private _pattern = "http://%s.mns.cn-%s.aliyuncs.com";
+        private _url:string; // mns url
         private _openStack: OpenStack;
     }
 }

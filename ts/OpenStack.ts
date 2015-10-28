@@ -1,6 +1,6 @@
 // The Ali open interface stack
 
-module AliMQS{
+module AliMNS{
     // the ali open interface stack protocol
     export class OpenStack{
         constructor(account:Account){
@@ -58,9 +58,11 @@ module AliMQS{
                 headers["Content-MD5"] = contentMD5;
             }
 
-            if(!headers["x-mqs-version"]) headers["x-mqs-version"] = this._version;
+            // if(!headers["Date"]) headers["Date"] = (new Date()).toUTCString();
+            // if(!headers["Host"]) headers["Host"] = Url.parse(url).Host;
+            if(!headers["x-mns-version"]) headers["x-mns-version"] = this._version;
 
-            // lowercase & sort & extract the x-mqs-<any>
+            // lowercase & sort & extract the x-mns-<any>
             var headsLower :any = {};
             var keys : Array<string> = [];
             for(var key in headers) {
@@ -73,44 +75,44 @@ module AliMQS{
 
             keys.sort();
 
-            var mqsHeaders = "";
+            var mnsHeaders = "";
             for(var i in keys){
                 var k = keys[i];
-                if(k.indexOf("x-mqs-") === 0){
-                    mqsHeaders += Util.format("%s:%s\n", k, headsLower[k]);
+                if(k.indexOf("x-mns-") === 0){
+                    mnsHeaders += Util.format("%s:%s\n", k, headsLower[k]);
                 }
             }
 
             var tm = (new Date()).toUTCString();
-            var mqsURL:any = Url.parse(url);
+            var mnsURL:any = Url.parse(url);
             headers.Date = tm;
-            headers.Authorization = this.authorize(mothod, mqsURL.path,
-                mqsHeaders, contentType, contentMD5, tm);
-            headers.Host = mqsURL.host;
+            headers.Authorization = this.authorize(mothod, mnsURL.path,
+                mnsHeaders, contentType, contentMD5, tm);
+            headers.Host = mnsURL.host;
 
             return headers;
         }
 
-        // ali mqs authorize header
-        private authorize(httpVerb:string, mqsURI:string, mqsHeaders:any, contentType:string, contentMD5:string, tm:string){
-            return Util.format(this._patternMQS, this._account.getKeyId(),
-                this.signature(httpVerb, mqsURI, mqsHeaders, contentType, contentMD5, tm));
+        // ali mns authorize header
+        private authorize(httpVerb:string, mnsURI:string, mnsHeaders:any, contentType:string, contentMD5:string, tm:string){
+            return Util.format(this._patternMNS, this._account.getKeyId(),
+                this.signature(httpVerb, mnsURI, mnsHeaders, contentType, contentMD5, tm));
         }
 
-        // ali mqs signature
-        private signature(httpVerb:string, mqsURI:string, mqsHeaders:string, contentType:string, contentMD5:string, tm:string){
+        // ali mns signature
+        private signature(httpVerb:string, mnsURI:string, mnsHeaders:string, contentType:string, contentMD5:string, tm:string){
             var text = Util.format(this._patternSign,
                 httpVerb, contentMD5, contentType, tm,
-                mqsHeaders, mqsURI);
+                mnsHeaders, mnsURI);
 
             return this._account.hmac_sha1(text, "base64");
         }
 
         private _account:Account;
-        private _patternMQS = "MQS %s:%s";
+        private _patternMNS = "MNS %s:%s";
         private _patternSign = "%s\n%s\n%s\n%s\n%s%s";
         private _xmlBuilder: any;
         private _contentType = "text/xml;charset=utf-8";
-        private _version = "2014-07-08";
+        private _version = "2015-06-06";
     }
 }

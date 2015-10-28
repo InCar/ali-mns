@@ -1,90 +1,90 @@
-# ali-mqs
-[![npm version](https://badge.fury.io/js/ali-mqs.svg)](http://badge.fury.io/js/ali-mqs)
+# ali-mns
+[![npm version](https://badge.fury.io/js/ali-mns.svg)](http://badge.fury.io/js/ali-mns)
 
-The nodejs sdk for aliyun mqs service.
+The nodejs sdk for aliyun mns service.
 
-Ali MQS service is a MQ(message queue) service provided by AliYun.
+Ali MNS service is a MQ(message queue) service provided by AliYun.
 The world largest online sales website www.taobao.com is heavily relying on it.
 
-You can visit [http://www.aliyun.com/product/mqs](http://www.aliyun.com/product/mqs) for more details. 
+You can visit [http://www.aliyun.com/product/mns](http://www.aliyun.com/product/mns) for more details.
 
 # QuickStart
-Use 'npm install ali-mqs' to install the package.
+Use 'npm install ali-mns' to install the package.
 
 ```javascript
-    var AliMQS = require("ali-mqs");
-    var account = new AliMQS.Account("<your-owner-id>", "<your-key-id>", "<your-key-secret>");
-    var mq = new AliMQS.MQ("<your-mq-name>", account, "hangzhou");
+    var AliMNS = require("ali-mns");
+    var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
+    var mq = new AliMNS.MQ("<your-mq-name>", account, "hangzhou");
     // send message
-    mq.sendP("Hello ali-mqs").then(console.log, console.error);
+    mq.sendP("Hello ali-mns").then(console.log, console.error);
 ```
 
 # Promised
-The ali-mqs use the [promise](https://www.npmjs.org/package/promise) pattern.
+The ali-mns use the [promise](https://www.npmjs.org/package/promise) pattern.
 Any functions suffix with 'P' indicate a promise object will be returned from it.
 
 # Typescript
 Most source files are written in typescript instead of javascript.
 Visit [http://www.typescriptlang.org/](http://www.typescriptlang.org/) for more information about typescript.
 
-If you interest in source file, visit GitHub [https://github.com/InCar/ali-mqs](https://github.com/InCar/ali-mqs)
+If you interest in source file, visit GitHub [https://github.com/InCar/ali-mns](https://github.com/InCar/ali-mns)
 
 Please use 'grunt' to compile ts files into a single index.js file after downloading source files. 
 
 If you only want to use it, forget this.
 
 # API Reference
-## Account(ownerId, keyId, keySecret)
+## Account(accountId, keyId, keySecret)
 The *Account* class store your ali account information. Construct an account object is simple:
 
-ownerId: String, ali owner id.
+accountId: String, ali account id.
 
 keyId: String, ali key id.
 
 keySecret: String, ali key secret.
 ```javascript
-    var AliMQS = require("ali-mqs");
-    var account = new AliMQS.Account("<your-owner-id>", "<your-key-id>", "<your-key-secret>");
+    var AliMNS = require("ali-mns");
+    var account = new AliMNS.Account("<your-owner-id>", "<your-key-id>", "<your-key-secret>");
 ```
-The account object is usually passed as an argument for other class such as *MQS*, *MQ*
+The account object is usually passed as an argument for other class such as *MNS*, *MQ*
 
-## account.getOwnerId()
-Return the ali owner id.
+## account.getAccountId()
+Return the ali account id.
 
 ## account.getKeyId()
 Return the ali key id.
 
-## MQS(account, region)
-The *MQS* operate the mqs queue.
+## MNS(account, region)
+The *MNS* operate the mns queue.
 
 account: An account object.
 
-region: String, optional. It can be "hangzhou", "beijing" or "qingdao", the 3 data center that provide mqs service.
+region: String, optional. It can be "hangzhou", "beijing" or "qingdao", the 3 data center that provide mns service.
 Default is "hangzhou". It can also be internal address "hangzhou-internal", "beijing-internal" or "qingdao-internal".
 ```javascript
-    var AliMQS = require("ali-mqs");
-    var account = new AliMQS.Account("<your-owner-id>", "<your-key-id>", "<your-key-secret>");
-    var mqs = new AliMQS.MQS(account, "hangzhou");
+    var AliMNS = require("ali-mns");
+    var account = new AliMNS.Account("<your-owner-id>", "<your-key-id>", "<your-key-secret>");
+    var mns = new AliMNS.MNS(account, "hangzhou");
 ```
 
-## mqs.listP(prefix, pageSize, pageMarker)
+## mns.listP(prefix, pageSize, pageMarker)
 List all of the queue in a data center.
 
 prefix: String, optional. Return only mq with the prefix.
 
-pageSize: number, optional. How many mqs will be returned in a page, 1~1000, default is 1000.
+pageSize: number, optional. How many mns will be returned in a page, 1~1000, default is 1000.
 
 pageMarker: String, optional. Request the next page, the value is returned in last call.
 ```javascript
-    mqs.listP("my", 20).then(function(data){
+    mns.listP("my", 20).then(function(data){
         console.log(data);
-        return mqs.listP("my", 20, data.Queues.NextMarker);
+        return mns.listP("my", 20, data.Queues.NextMarker);
     }).then(function(dataP2){
         console.log(dataP2);
     }, console.error);
 ```
 
-## mqs.createP(name, <a name="options">options</a>)
+## mns.createP(name, <a name="options">options</a>)
 Create a mq.
 
 name: String. The queue name.
@@ -101,7 +101,7 @@ optiions.VisibilityTimeout: number. How many seconds will the message keep invis
 
 options.PollingWaitSeconds: numer. How many seconds will the receive request wait for if mq is empty. 0~30, default is 0.
 ```javascript
-    mqs.createP("myAliMQ", {
+    mns.createP("myAliMQ", {
         DelaySeconds: 0,
         MaximumMessageSize: 65536,
         MessageRetentionPeriod: 345600,
@@ -112,12 +112,12 @@ options.PollingWaitSeconds: numer. How many seconds will the receive request wai
 If a mq with same name exists, calling createP will succeed only when all of the mq attributes are all same.
 Any mismatched attributes will cause an "QueueAlreadyExist" failure.
 
-## mqs.deleteP(name)
+## mns.deleteP(name)
 Delete an mq.
 
 name: String. The queue name.
 ```javascript
-    mqs.deleteP("myAliMQ").then(console.log, console.error);;
+    mns.deleteP("myAliMQ").then(console.log, console.error);;
 ```
 
 ## MQ(name, account, region)
@@ -127,12 +127,12 @@ name: String. The name of mq.
 
 account: An account object.
 
-region: String, optional. It can be "hangzhou", "beijing" or "qingdao", the 3 data center that provide mqs service.
+region: String, optional. It can be "hangzhou", "beijing" or "qingdao", the 3 data center that provide mns service.
 Default is "hangzhou". It can also be internal address "hangzhou-internal", "beijing-internal" or "qingdao-internal".
 ```javascript
-    var AliMQS = require("ali-mqs");
-    var account = new AliMQS.Account("<your-owner-id>", "<your-key-id>", "<your-key-secret>");
-    var mq = new AliMQS.MQ("myAliMQ", account, "hangzhou");
+    var AliMNS = require("ali-mns");
+    var account = new AliMNS.Account("<your-owner-id>", "<your-key-id>", "<your-key-secret>");
+    var mq = new AliMNS.MQ("myAliMQ", account, "hangzhou");
 ```
 
 ## mq.sendP(message, priority, delaySeconds)
@@ -145,7 +145,7 @@ priority: number, optional. 1(lowest)~16(highest), default is 8.
 delaySeconds: number, optional. How many seconds will the messages be visible after sent. 0~604800(7days), default is 0.
 This argument is prior to the options.DelaySeconds in attributes of message queue.
 ```javascript
-    mq.sendP("Hello Ali-MQS", 8, 0).then(console.log, console.error);
+    mq.sendP("Hello Ali-MNS", 8, 0).then(console.log, console.error);
 ```
 
 ## mq.recvP(waitSeconds)
@@ -236,7 +236,7 @@ Get the attributes of the mq.
 ## mq.setAttrsP(options)
 Modify the attributes of mq.
 
-options: the queue attributes. See the [options](#options) of mqs.createP.
+options: the queue attributes. See the [options](#options) of mns.createP.
 ```javascript
     mq.setAttrsP({
         DelaySeconds: 0,
@@ -248,13 +248,13 @@ options: the queue attributes. See the [options](#options) of mqs.createP.
 ```
 
 # DEBUG Trace
-Set the DEBUG environment to "ali-mqs" to enable the debug trace output.
+Set the DEBUG environment to "ali-mns" to enable the debug trace output.
 ```SHELL
 # linux bash
-export DEBUG=ali-mqs
+export DEBUG=ali-mns
 
 # windows
-set DEBUG=ali-mqs
+set DEBUG=ali-mns
 ```
 
 # License
