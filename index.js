@@ -35,7 +35,7 @@ var AliMNS;
         // The constructor. account: ali account; region: can be "hangzhou", "beijing" or "qingdao", default is "hangzhou"
         function MNS(account, region) {
             this._region = "hangzhou"; // region: hangzhou, beijing, qingdao
-            this._pattern = "http://%s.mns.cn-%s.aliyuncs.com";
+            this._pattern = "http://%s.mns.cn-%s.aliyuncs.com/queues/";
             // save the input arguments
             this._account = account;
             if (region)
@@ -84,7 +84,7 @@ var AliMNS;
         // region can be "hangzhou", "beijing" or "qingdao", the default is "hangzhou"
         function MQ(name, account, region) {
             this._region = "hangzhou";
-            this._pattern = "http://%s.mns-cn-%s.aliyuncs.com/%s";
+            this._pattern = "http://%s.mns.cn-%s.aliyuncs.com/queues/%s";
             this._signalSTOP = true;
             this._evStopped = "AliMNS_MQ_NOTIFY_STOPPED";
             // 连续timeout计数器
@@ -338,8 +338,7 @@ var AliMNS;
                 contentMD5 = this._account.b64md5(body);
                 headers["Content-MD5"] = contentMD5;
             }
-            // if(!headers["Date"]) headers["Date"] = (new Date()).toUTCString();
-            // if(!headers["Host"]) headers["Host"] = Url.parse(url).Host;
+            // `Dat`e & `Host` will be added by request automatically
             if (!headers["x-mns-version"])
                 headers["x-mns-version"] = this._version;
             // lowercase & sort & extract the x-mns-<any>
@@ -393,7 +392,7 @@ var debug = require("debug")("ali-mns");
 var Promise = require("promise");
 var Request = require("request");
 Request.requestP = Promise.denodeify(Request);
-// Request.debug = true;
+Request.debug = false;
 var Xml2js = require("xml2js");
 Xml2js.parseStringP = Promise.denodeify(Xml2js.parseString);
 //# sourceMappingURL=index.js.map

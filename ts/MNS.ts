@@ -43,7 +43,7 @@ module AliMNS{
 
         private _account:Account; // Ali account
         private _region = "hangzhou"; // region: hangzhou, beijing, qingdao
-        private _pattern = "http://%s.mns.cn-%s.aliyuncs.com";
+        private _pattern = "http://%s.mns.cn-%s.aliyuncs.com/queues/";
         private _url:string; // mns url
         private _openStack: OpenStack;
     }

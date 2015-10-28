@@ -8,7 +8,7 @@ var AliMNS = require(Path.join(__dirname, "../index.js"));
 function runTest(){
     // ali account configuration
     var aliCfg = {
-        accountId: "your-owner-id",
+        accountId: "your-account-id",
         keyId: "your-key-id",
         keySecret: "your-key-secret",
         region: "hangzhou",
@@ -116,16 +116,16 @@ function runTest(){
     });
     
     var testAction = [0, 1, 2, 3, 4, 5, 6];
-    // var testAction = [0, 4, 6];
+    //var testAction = [0, 4, 6];
     function testOneByOne(i){
         if(i < testAction.length){
             var testFn = testCase[testAction[i]];
             return testFn().then(function(){
-                console.log("Test case " + testAction[i] + " succeed.");
+                console.log("=====>Test case " + testAction[i] + " succeed.");
                 return testOneByOne(i+1);
             }, function(ex){
-                console.log("Test case " + testAction[i] + " failed.");
-                console.log(ex);
+                console.error("=====>Test case " + testAction[i] + " failed.");
+                console.error(ex);
                 return testOneByOne(i+1);
             });
         }

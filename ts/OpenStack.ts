@@ -58,8 +58,7 @@ module AliMNS{
                 headers["Content-MD5"] = contentMD5;
             }
 
-            // if(!headers["Date"]) headers["Date"] = (new Date()).toUTCString();
-            // if(!headers["Host"]) headers["Host"] = Url.parse(url).Host;
+            // `Dat`e & `Host` will be added by request automatically
             if(!headers["x-mns-version"]) headers["x-mns-version"] = this._version;
 
             // lowercase & sort & extract the x-mns-<any>

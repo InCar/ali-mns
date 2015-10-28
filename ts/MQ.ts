@@ -210,7 +210,7 @@ module AliMNS{
         private _account: Account;
         private _url:string; // mq url
         private _urlAttr: string; // mq attr url
-        private _pattern = "http://%s.mns-cn-%s.aliyuncs.com/%s";
+        private _pattern = "http://%s.mns.cn-%s.aliyuncs.com/queues/%s";
         private _openStack: OpenStack;
         private _signalSTOP = true;
         private _evStopped = "AliMNS_MQ_NOTIFY_STOPPED";
