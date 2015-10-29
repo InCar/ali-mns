@@ -47,4 +47,7 @@ module AliMNS{
         private _url:string; // mns url
         private _openStack: OpenStack;
     }
+
+    // For compatible v1.x
+    export var MQS = MNS;
 }

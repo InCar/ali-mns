@@ -114,9 +114,20 @@ function runTest(){
     testCase.push(function(){
         return mns.deleteP(aliCfg.mqName);
     });
+
+    // test#7 compatible v1.x
+    testCase.push(function(){
+        return new Promise(function(resolve, reject){
+            var AliMQS = AliMNS;
+            var mqs = new AliMQS.MQS(account, aliCfg.region);
+            var id = account.getOwnerId();
+            console.log("ownerid: ", id);
+            resolve("compatible with 1.x")
+        });
+    });
     
-    var testAction = [0, 1, 2, 3, 4, 5, 6];
-    //var testAction = [0, 4, 6];
+    var testAction = [0, 1, 2, 3, 4, 5, 6, 7];
+    // var testAction = [0, 4, 6];
     function testOneByOne(i){
         if(i < testAction.length){
             var testFn = testCase[testAction[i]];

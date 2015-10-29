@@ -10,6 +10,9 @@ var AliMNS;
         Account.prototype.getAccountId = function () {
             return this._accountId;
         };
+        Account.prototype.getOwnerId = function () {
+            return this._accountId;
+        }; // for compatible v1.x
         Account.prototype.getKeyId = function () {
             return this._keyId;
         };
@@ -75,6 +78,8 @@ var AliMNS;
         return MNS;
     })();
     AliMNS.MNS = MNS;
+    // For compatible v1.x
+    AliMNS.MQS = MNS;
 })(AliMNS || (AliMNS = {}));
 var AliMNS;
 (function (AliMNS) {

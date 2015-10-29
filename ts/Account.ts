@@ -9,6 +9,7 @@ module AliMNS{
         }
 
         public getAccountId(){ return this._accountId; }
+        public getOwnerId(){ return this._accountId; } // for compatible v1.x
         public getKeyId(){ return this._keyId; }
 
         // encoding: "hex", "binary" or "base64"
