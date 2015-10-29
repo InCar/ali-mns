@@ -10,7 +10,7 @@ module.exports = function (grunt) {
                 options: {
                     module: 'commonjs',
                     sourceMap: true,
-                    basePath: "ts/",
+                    rootDir: "ts/",
                     comments: true,
                     target: "ES5"
                 }

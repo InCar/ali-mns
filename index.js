@@ -7,15 +7,9 @@ var AliMNS;
             this._keyId = keyId;
             this._keySecret = keySecret;
         }
-        Account.prototype.getAccountId = function () {
-            return this._accountId;
-        };
-        Account.prototype.getOwnerId = function () {
-            return this._accountId;
-        }; // for compatible v1.x
-        Account.prototype.getKeyId = function () {
-            return this._keyId;
-        };
+        Account.prototype.getAccountId = function () { return this._accountId; };
+        Account.prototype.getOwnerId = function () { return this._accountId; }; // for compatible v1.x
+        Account.prototype.getKeyId = function () { return this._keyId; };
         // encoding: "hex", "binary" or "base64"
         Account.prototype.hmac_sha1 = function (text, encoding) {
             var hmacSHA1 = CryptoA.createHmac("sha1", this._keySecret);
@@ -185,7 +179,9 @@ var AliMNS;
         // 保留消息
         MQ.prototype.reserveP = function (receiptHandle, reserveSeconds) {
             debug("PUT " + this._url);
-            return this._openStack.sendP("PUT", this._url + "?ReceiptHandle=" + receiptHandle + "&VisibilityTimeout=" + reserveSeconds);
+            return this._openStack.sendP("PUT", this._url
+                + "?ReceiptHandle=" + receiptHandle
+                + "&VisibilityTimeout=" + reserveSeconds);
         };
         // 消息通知.每当有消息收到时,都调用cb回调函数
         // 如果cb返回true,那么将删除消息,否则保留消息
@@ -209,7 +205,8 @@ var AliMNS;
                         debug(dataRecv);
                         _this._timeoutCount = 0;
                         if (cb(null, dataRecv)) {
-                            _this.deleteP(dataRecv.Message.ReceiptHandle).done(null, function (ex) {
+                            _this.deleteP(dataRecv.Message.ReceiptHandle)
+                                .done(null, function (ex) {
                                 console.log(ex);
                             });
                         }
@@ -305,7 +302,8 @@ var AliMNS;
             req.headers = this.makeHeaders(method, url, headers, req.body);
             return Request.requestP(req).then(function (response) {
                 // convert the body from xml to json
-                return Xml2js.parseStringP(response.body, { explicitArray: false }).then(function (bodyJSON) {
+                return Xml2js.parseStringP(response.body, { explicitArray: false })
+                    .then(function (bodyJSON) {
                     response.bodyJSON = bodyJSON;
                     return response;
                 }, function () {

@@ -1,12 +1,16 @@
-# ali-mns
+# ali-mns (ali-mqs)
 [![npm version](https://badge.fury.io/js/ali-mns.svg)](http://badge.fury.io/js/ali-mns)
+[![npm version](https://badge.fury.io/js/ali-mqs.svg)](http://badge.fury.io/js/ali-mqs)
 
-The nodejs sdk for aliyun mns service.
+The nodejs sdk for aliyun mns service
 
 Ali MNS service is a MQ(message queue) service provided by AliYun.
 The world largest online sales website www.taobao.com is heavily relying on it.
 
 You can visit [http://www.aliyun.com/product/mns](http://www.aliyun.com/product/mns) for more details.
+
+The original Ali-MQS service has been upgraded and changed it's name to Ali-MNS since June, 2015.
+Go to  [Migrate](#Migrate) part for the old version informations.
 
 # QuickStart
 Use 'npm install ali-mns' to install the package.
@@ -256,6 +260,16 @@ export DEBUG=ali-mns
 # windows
 set DEBUG=ali-mns
 ```
+
+# Migrate
+The ali-mns is fully compatible with ali-mqs, simply replace the ali-mqs package to ali-mns.
+```javascript
+// var AliMQS = require('ali-mqs');
+var AliMQS = require('ali-mns');
+```
+
+In GitHub, [An branch v1.x](https://github.com/InCar/ali-mns/tree/v1.x) keeps tracking for the old mqs services.
+And use `npm install ali-mqs' to install the [ali-mqs](https://www.npmjs.com/package/ali-mqs) package for v1.x.
 
 # License
 MIT
