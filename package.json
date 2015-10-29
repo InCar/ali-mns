@@ -1,6 +1,6 @@
 {
   "name": "ali-mqs",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "The nodejs SDK for aliyun mqs service",
   "main": "index.js",
   "dependencies": {
@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/InCar/ali-mqs.git"
+    "url": "https://github.com/InCar/ali-mns.git"
   },
   "keywords": [
     "aliyun",
@@ -32,7 +32,7 @@
   "author": "ghxiong@incardata.com.cn",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/InCar/ali-mqs/issues"
+    "url": "https://github.com/InCar/ali-mns/issues"
   },
-  "homepage": "https://github.com/InCar/ali-mqs"
+  "homepage": "https://github.com/InCar/ali-mns"
 }

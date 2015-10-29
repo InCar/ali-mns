@@ -1,5 +1,6 @@
-# ali-mqs
+# ali-mqs(ali-mns)
 [![npm version](https://badge.fury.io/js/ali-mqs.svg)](http://badge.fury.io/js/ali-mqs)
+[![npm version](https://badge.fury.io/js/ali-mns.svg)](http://badge.fury.io/js/ali-mns)
 
 The nodejs sdk for aliyun mqs service.
 
@@ -7,6 +8,12 @@ Ali MQS service is a MQ(message queue) service provided by AliYun.
 The world largest online sales website www.taobao.com is heavily relying on it.
 
 You can visit [http://www.aliyun.com/product/mqs](http://www.aliyun.com/product/mqs) for more details. 
+
+# ali-mns
+AliYun has upgrade their mqs service to a new version and changed name to ali mns service.
+There is also a new [ali-mns](https://www.npmjs.com/package/ali-mns) npm package.
+
+The new ali-mns is fully compatible with ali-mqs. Using ali-mns to instead of ali-mqs is recommended.
 
 # QuickStart
 Use 'npm install ali-mqs' to install the package.
@@ -27,7 +34,7 @@ Any functions suffix with 'P' indicate a promise object will be returned from it
 Most source files are written in typescript instead of javascript.
 Visit [http://www.typescriptlang.org/](http://www.typescriptlang.org/) for more information about typescript.
 
-If you interest in source file, visit GitHub [https://github.com/InCar/ali-mqs](https://github.com/InCar/ali-mqs)
+If you interest in source file, visit GitHub [https://github.com/InCar/ali-mns](https://github.com/InCar/ali-mns)
 
 Please use 'grunt' to compile ts files into a single index.js file after downloading source files. 
 
