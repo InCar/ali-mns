@@ -10,7 +10,7 @@ The world largest online sales website www.taobao.com is heavily relying on it.
 You can visit [http://www.aliyun.com/product/mns](http://www.aliyun.com/product/mns) for more details.
 
 The original Ali-MQS service has been upgraded and changed it's name to Ali-MNS since June, 2015.
-Go to  [Migrate](#Migrate) part for the old version informations.
+Go to  [Migrate](#migrate) part for the old version informations.
 
 # QuickStart
 Use 'npm install ali-mns' to install the package.
@@ -52,8 +52,13 @@ keySecret: String, ali key secret.
 ```
 The account object is usually passed as an argument for other class such as *MNS*, *MQ*
 
+Follow [this link](https://ak-console.aliyun.com/#/accesskey) to find yours
+
 ## account.getAccountId()
 Return the ali account id.
+
+## account.getOwnerId()
+Same as account.getAccountId(). For compatible v1.x.
 
 ## account.getKeyId()
 Return the ali key id.
@@ -67,9 +72,12 @@ region: String, optional. It can be "hangzhou", "beijing" or "qingdao", the 3 da
 Default is "hangzhou". It can also be internal address "hangzhou-internal", "beijing-internal" or "qingdao-internal".
 ```javascript
     var AliMNS = require("ali-mns");
-    var account = new AliMNS.Account("<your-owner-id>", "<your-key-id>", "<your-key-secret>");
+    var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
     var mns = new AliMNS.MNS(account, "hangzhou");
 ```
+
+## MQS(account, region)
+Same as MNS. For compatible v1.x.
 
 ## mns.listP(prefix, pageSize, pageMarker)
 List all of the queue in a data center.
@@ -262,11 +270,23 @@ set DEBUG=ali-mns
 ```
 
 # Migrate
-The ali-mns is fully compatible with ali-mqs, simply replace the ali-mqs package to ali-mns.
+Migrate from ali-mqs v1.x to ali-mns v2.x only need 2 steps.
+
+1. The ali-mns is fully compatible with ali-mqs, simply replace the ali-mqs package to ali-mns.
 ```javascript
 // var AliMQS = require('ali-mqs');
 var AliMQS = require('ali-mns');
 ```
+
+2. Change the **ownerId** to **accountId**
+```javascript
+var AliMQS = require("ali-mns");
+// var account = new AliMNS.Account("hl35yqoedp", "<your-key-id>", "<your-key-secret>");
+var account = new AliMNS.Account("1786090012649663", "<your-key-id>", "<your-key-secret>");
+```
+**ownerId** is mixed with number and letter
+**accountId** is 16-digits number,
+follow [this link](https://account.console.aliyun.com/#/secure) to find your accountId.
 
 In GitHub, [An branch v1.x](https://github.com/InCar/ali-mns/tree/v1.x) keeps tracking for the old mqs services.
 And use `npm install ali-mqs' to install the [ali-mqs](https://www.npmjs.com/package/ali-mqs) package for v1.x.
