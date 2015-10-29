@@ -270,22 +270,23 @@ set DEBUG=ali-mns
 ```
 
 # Migrate
-Migrate from ali-mqs v1.x to ali-mns v2.x only need 2 steps.
-
-1. The ali-mns is fully compatible with ali-mqs, simply replace the ali-mqs package to ali-mns.
++ 1.The ali-mns is fully compatible with ali-mqs, simply replace the ali-mqs package to ali-mns.
 ```javascript
 // var AliMQS = require('ali-mqs');
 var AliMQS = require('ali-mns');
 ```
 
-2. Change the **ownerId** to **accountId**
++ 2.Optional. Change the **ownerId** to **accountId**
+Ali-Yun upgrade their account system, and recommend to use the newer account id instead of owner id.
+But the old owner id is still available for now.
 ```javascript
 var AliMQS = require("ali-mns");
 // var account = new AliMNS.Account("hl35yqoedp", "<your-key-id>", "<your-key-secret>");
 var account = new AliMNS.Account("1786090012649663", "<your-key-id>", "<your-key-secret>");
 ```
 **ownerId** is mixed with number and letter
-**accountId** is 16-digits number,
+
+**accountId** is a 16-digits number,
 follow [this link](https://account.console.aliyun.com/#/secure) to find your accountId.
 
 In GitHub, [An branch v1.x](https://github.com/InCar/ali-mns/tree/v1.x) keeps tracking for the old mqs services.
