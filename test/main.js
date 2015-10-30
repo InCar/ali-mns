@@ -23,10 +23,22 @@ function runTest(){
     var account = new AliMNS.Account(aliCfg.accountId, aliCfg.keyId, aliCfg.keySecret);
     var mns = new AliMNS.MNS(account, aliCfg.region);
     var mq = new AliMNS.MQ(aliCfg.mqName, account, aliCfg.region);
+    var mqBatch = new AliMNS.MQBatch(aliCfg.mqName, account, aliCfg.region);
     
     var testCase = [];
+
+    // test#0 compatible v1.x
+    testCase.push(function(){
+        return new Promise(function(resolve, reject){
+            var AliMQS = AliMNS;
+            var mqs = new AliMQS.MQS(account, aliCfg.region);
+            var id = account.getOwnerId();
+            console.log("ownerid: ", id);
+            resolve("compatible with 1.x")
+        });
+    });
     
-    // test#0 create mq
+    // test#1 create mq
     testCase.push(function(){
         return mns.createP(aliCfg.mqName, {
             DelaySeconds: 0,
@@ -37,7 +49,7 @@ function runTest(){
         });
     });
 
-    // test#1 list all of the mns queue.
+    // test#2 list all of the mns queue.
     testCase.push(function(){
         return mns.listP("MQ", 1).then(function(data){
             console.log(data.Queues.Queue);
@@ -45,7 +57,7 @@ function runTest(){
         });
     });
 
-    // test#2 set and get attributes;
+    // test#3 set and get attributes;
     testCase.push(function(){
         return mq.setAttrsP({ VisibilityTimeout: 36 }).then(function(data){
             console.log(data);
@@ -53,7 +65,7 @@ function runTest(){
         });
     });
 
-    // test#3 send, peek, receive then reserve delete
+    // test#4 send, peek, receive then reserve delete
     testCase.push(function(){
         return mq.sendP("test").then(function(dataSend){
             console.log(dataSend);
@@ -74,7 +86,7 @@ function runTest(){
         });
     });
 
-    // test#4 send 3 messages and receive then all by notifyRecv
+    // test#5 send 3 messages and receive then all by notifyRecv
     testCase.push(function(){
         var notifyCount = 0, notifyConfirmed = 0;
         return Promise.all([mq.sendP("testA"), mq.sendP("testB"), mq.sendP("testC")]).then(function(){
@@ -103,31 +115,49 @@ function runTest(){
         });
     });
     
-    // test#5 中文测试
+    // test#6 中文测试
     testCase.push(function(){
         return mq.sendP("中文测试").then(function(){
             return mq.recvP(5);
         });
     });
 
-    // test#6 delete mq
+    // test#7 batch send
+    testCase.push(function(){
+        var msgs = [];
+        for(var i=0;i<5;i++){
+            var msg = new AliMNS.Msg("BatchSend" + i);
+            msgs.push(msg);
+        }
+
+        return mqBatch.sendP(msgs).then(function(dataSend){
+            console.log(dataSend);
+            console.log("\t-----");
+            return mq.peekP();
+        })
+    });
+
+    // test#8 delete mq
     testCase.push(function(){
         return mns.deleteP(aliCfg.mqName);
     });
 
-    // test#7 compatible v1.x
     testCase.push(function(){
-        return new Promise(function(resolve, reject){
-            var AliMQS = AliMNS;
-            var mqs = new AliMQS.MQS(account, aliCfg.region);
-            var id = account.getOwnerId();
-            console.log("ownerid: ", id);
-            resolve("compatible with 1.x")
-        });
+        var XmlBuilder = require('xmlbuilder');
+
+        var obj = { Messages: {
+            '#list': [ {Message: { body: "sss" , x: "x" }},
+                {Message: { body: "sss" , x: "x" }}]
+        } };
+
+        var t = XmlBuilder.create(obj).toString();
+        console.log(t);
+        return Promise.resolve(0);
     });
+
     
-    var testAction = [0, 1, 2, 3, 4, 5, 6, 7];
-    // var testAction = [0, 4, 6];
+    var testAction = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+    // var testAction = [1, 7, 8];
     function testOneByOne(i){
         if(i < testAction.length){
             var testFn = testCase[testAction[i]];

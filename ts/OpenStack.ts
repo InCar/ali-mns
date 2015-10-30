@@ -7,7 +7,7 @@ module AliMNS{
             this._account = account;
 
             // xml builder
-            this._xmlBuilder = new Xml2js.Builder();
+            this._xmlBuilder = XmlBuilder;
         }
 
         // Send the request
@@ -17,7 +17,7 @@ module AliMNS{
         // head: optional, request heads
         public sendP(method:string, url:string, body?:any, headers?:any){
             var req :any = { method:method,url:url };
-            if(body) req.body = this._xmlBuilder.buildObject(body);
+            if(body) req.body = this._xmlBuilder.create(body).toString();
 
             req.headers = this.makeHeaders(method, url, headers, req.body);
 

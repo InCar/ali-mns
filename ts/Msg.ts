@@ -9,6 +9,10 @@ module AliMNS {
             if(!isNaN(delaySeconds)) this._delaySeconds = delaySeconds;
         }
 
+        public getMsg(){ return this._msg; }
+        public getPriority(){ return this._priority; }
+        public getDelaySeconds(){ return this._delaySeconds; }
+
         // message content
         private _msg: string;
         // message priority

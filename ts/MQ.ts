@@ -41,7 +41,7 @@ module AliMNS{
             if(!isNaN(priority)) body.Message.Priority = priority;
             if(!isNaN(delaySeconds)) body.Message.DelaySeconds = delaySeconds;
 
-            debug("PUT " + this._url, body);
+            debug("POST " + this._url, body);
             return this._openStack.sendP("POST", this._url, body);
         }
 
@@ -195,7 +195,7 @@ module AliMNS{
             return this.makeAttrURL() + "/messages";
         }
         
-        private utf8ToBase64(src){
+        protected utf8ToBase64(src){
             var buf = new Buffer.Buffer(src, 'utf8');
             return buf.toString('base64');
         }
@@ -205,13 +205,14 @@ module AliMNS{
             return buf.toString('utf8');
         }
 
+        protected _url:string; // mq url
+        protected _openStack: OpenStack;
+
         private _name: string;
         private _region = "hangzhou";
         private _account: Account;
-        private _url:string; // mq url
         private _urlAttr: string; // mq attr url
         private _pattern = "http://%s.mns.cn-%s.aliyuncs.com/queues/%s";
-        private _openStack: OpenStack;
         private _signalSTOP = true;
         private _evStopped = "AliMNS_MQ_NOTIFY_STOPPED";
         private _emitter:any;

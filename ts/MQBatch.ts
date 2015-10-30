@@ -1,3 +1,5 @@
+/// <reference path="ali-mns.ts" />
+
 module AliMNS{
     export class MQBatch extends MQ{
         constructor(name:string, account:Account, region?:string){
@@ -5,11 +7,23 @@ module AliMNS{
         }
 
         public sendP(msg:string | Array<Msg>, priority?:number, delaySeconds?:number){
-            if(msg instanceof String){
+            if(typeof msg === "string"){
                 return super.sendP(msg, priority, delaySeconds);
             }
             else{
-                return Promise.reject("NotImplementation");
+                var body : any = { Messages: { '#list': [] } };
+                for(var i=0;i<msg.length;i++){
+                    var m : Msg = msg[i];
+                    var b64 = this.utf8ToBase64(m.getMsg());
+                    var xMsg:any = {Message: {MessageBody: b64}};
+                    xMsg.Message.Priority = m.getPriority();
+                    xMsg.Message.DelaySeconds = m.getDelaySeconds();
+
+                    body.Messages['#list'].push(xMsg);
+                }
+
+                debug("POST " + this._url, body);
+                return this._openStack.sendP("POST", this._url, body);
             }
         }
 
@@ -32,7 +46,7 @@ module AliMNS{
         }
 
         public deleteP(receiptHandle:string | Array<string>){
-            if(receiptHandle instanceof String) {
+            if(typeof receiptHandle === "string") {
                 super.deleteP(receiptHandle);
             }
             else{
