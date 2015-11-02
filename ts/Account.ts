@@ -1,3 +1,4 @@
+/// <reference path="ali-mns.ts" />
 
 module AliMNS{
     // The Ali account, it holds the key id and secret.

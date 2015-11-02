@@ -1,8 +1,5 @@
 /// <reference path="../dts/external.d.ts" />
 
-// Exports the AliMNS
-module.exports = AliMNS;
-
 // dependencies
 var Buffer:any  = require("buffer");
 var CryptoA:any  = require("crypto");

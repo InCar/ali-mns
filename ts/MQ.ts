@@ -1,3 +1,6 @@
+/// <reference path="Account.ts" />
+/// <reference path="OpenStack.ts" />
+
 module AliMNS{
     // The MQ
     export class MQ{

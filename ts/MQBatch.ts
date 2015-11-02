@@ -1,4 +1,5 @@
-/// <reference path="ali-mns.ts" />
+/// <reference path="MQ.ts" />
+/// <reference path="Msg.ts" />
 
 module AliMNS{
     export class MQBatch extends MQ{

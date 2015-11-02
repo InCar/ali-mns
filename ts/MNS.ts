@@ -1,3 +1,6 @@
+/// <reference path="Account.ts" />
+/// <reference path="OpenStack.ts" />
+
 module AliMNS{
     // The MNS can list, create, delete, modify the mq.
     export class MNS{
@@ -51,3 +54,6 @@ module AliMNS{
     // For compatible v1.x
     export var MQS = MNS;
 }
+
+// Exports the AliMNS
+module.exports = AliMNS;

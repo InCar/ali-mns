@@ -12,14 +12,15 @@
   },
   "devDependencies": {
     "grunt": "^0.4.5",
-    "grunt-newer": "^1.1.1",
     "grunt-contrib-clean": "^0.6.0",
+    "grunt-newer": "^1.1.1",
     "grunt-typescript": "^0.7.0",
-    "load-grunt-tasks": "^3.3.0"
+    "load-grunt-tasks": "^3.3.0",
+    "should": "^7.1.1"
   },
   "scripts": {
     "prepublish": "grunt",
-    "test": "node ./test/main"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",

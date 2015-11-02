@@ -1,11 +1,12 @@
-// test
+// mocha test
 
+var assert = require("assert");
 var Path = require("path");
 var fs = require("fs");
 var Promise = require("promise");
 var AliMNS = require(Path.join(__dirname, "../index.js"));
 
-function runTest(){
+describe('AliMNS', function(){
     // ali account configuration
     var aliCfg = {
         accountId: "your-account-id",
@@ -15,7 +16,7 @@ function runTest(){
         mqName: "dev"
     };
 
-    // test/account.js contains sensitive data, and will not be pushed to github
+    // test/account.js contains sensitive data, and will not be tracked by git
     var cfgPath = Path.join(__dirname, "account.js");
     if(fs.existsSync(cfgPath)){
         aliCfg = require(cfgPath);
@@ -25,161 +26,173 @@ function runTest(){
     var mq = new AliMNS.MQ(aliCfg.mqName, account, aliCfg.region);
     var mqBatch = new AliMNS.MQBatch(aliCfg.mqName, account, aliCfg.region);
     
-    var testCase = [];
-
-    // test#0 compatible v1.x
-    testCase.push(function(){
-        return new Promise(function(resolve, reject){
+    describe('Compatible', function(){
+        it('#MQS', function(){
             var AliMQS = AliMNS;
             var mqs = new AliMQS.MQS(account, aliCfg.region);
+            assert.ok(mqs !== null);
+        });
+        
+        it('#Account.getOwnerId', function(){
             var id = account.getOwnerId();
-            console.log("ownerid: ", id);
-            resolve("compatible with 1.x")
+            assert.ok(id !== null);
         });
     });
     
-    // test#1 create mq
-    testCase.push(function(){
-        return mns.createP(aliCfg.mqName, {
-            DelaySeconds: 0,
-            MaximumMessageSize: 65536,
-            MessageRetentionPeriod: 345600,
-            VisibilityTimeout: 30,
-            PollingWaitSeconds: 0
+    describe('MNS', function(){
+        this.timeout(1000 * 5);
+        
+        it('#createP', function(done){
+            mns.createP(aliCfg.mqName, {
+                DelaySeconds: 0,
+                MaximumMessageSize: 65536,
+                MessageRetentionPeriod: 345600,
+                VisibilityTimeout: 30,
+                PollingWaitSeconds: 0
+            }).then(function(data){ done(); }, done);
         });
-    });
-
-    // test#2 list all of the mns queue.
-    testCase.push(function(){
-        return mns.listP("MQ", 1).then(function(data){
-            console.log(data.Queues.Queue);
-            return data;
+        
+        it('#listP', function(done){
+            mns.listP(aliCfg.mqName, 1).then(function(data){
+                // console.info(data.Queues.Queue);
+                done(); }, done);
         });
-    });
-
-    // test#3 set and get attributes;
-    testCase.push(function(){
-        return mq.setAttrsP({ VisibilityTimeout: 36 }).then(function(data){
-            console.log(data);
-            return mq.getAttrsP();
+        
+        it('#setAttrsP & #getAttrsP', function(done){
+            var testSource = 36;
+            
+            mq.setAttrsP({ VisibilityTimeout: testSource })
+            .then(function(dataSet){
+                // console.info(dataSet);
+                return mq.getAttrsP();
+            })
+            .then(function(dataGet){
+                // console.info(dataGet);
+                assert.equal(dataGet.Queue.VisibilityTimeout, testSource);
+            })
+            .then(function(){ done(); }, done);
         });
-    });
-
-    // test#4 send, peek, receive then reserve delete
-    testCase.push(function(){
-        return mq.sendP("test").then(function(dataSend){
-            console.log(dataSend);
-            console.log("\t-----");
-            return mq.peekP();
-        }).then(function(dataPeek){
-            console.log(dataPeek);
-            console.log("\t-----");
-            return mq.recvP(10);
-        }).then(function(dataRecv){
-            console.log(dataRecv);
-            console.log("\t-----");
-            return mq.reserveP(dataRecv.Message.ReceiptHandle, 43200);
-        }).then(function(dataReserved){
-            console.log(dataReserved);
-            console.log("\t-----");
-            return mq.deleteP(dataReserved.ChangeVisibility.ReceiptHandle);
+        
+        it('#sendP & #peekP &recvP & #reserveP & #deleteP', function(done){
+            var testSource = "test message"
+            
+            mq.sendP(testSource)
+            .then(function(dataSent){
+                // console.info(dataSent);
+                return mq.peekP(); })
+            .then(function(dataPeek){
+                // console.info(dataPeek);
+                return mq.recvP(10); })
+            .then(function(dataRecv){
+                // console.info(dataRecv);
+                return mq.reserveP(dataRecv.Message.ReceiptHandle, 43200); })
+            .then(function(dataReserved){
+                // console.info(dataReserved);
+                return mq.deleteP(dataReserved.ChangeVisibility.ReceiptHandle); })
+            .then(function(){ return Promise.reject("Change Visibility Failed!"); }, function(){ return Promise.resolve("OK"); })
+            .then(function(){ done(); }, done);
         });
-    });
-
-    // test#5 send 3 messages and receive then all by notifyRecv
-    testCase.push(function(){
-        var notifyCount = 0, notifyConfirmed = 0;
-        return Promise.all([mq.sendP("testA"), mq.sendP("testB"), mq.sendP("testC")]).then(function(){
-            return new Promise(function(resolve, reject){
-                mq.notifyRecv(function(ex, dataRecv){
-                    notifyCount++;
-                    if(ex) {
-                        console.log(ex);
-                    }
-                    else {
-                        notifyConfirmed++;
-                        console.log(dataRecv);
-                    }
-                    console.log("\t-----");
-
-                    if(notifyCount >= 3){
-                        mq.notifyStopP().done(function(){
-                            if(notifyConfirmed >= 3) resolve("notifyRecv task succeed!");
-                            else reject("notifyRecv task failed!");
-                        });
-                    }
-
-                    return true;
-                }, 5);
-            });
+        
+        it('#中文字符集', function(done){
+            var testSource = "中文测试";
+            var testTarget;
+            mq.sendP(testSource).then(function(){
+                return mq.recvP(5).then(function(data){
+                    testTarget = data.Message.MessageBody;
+                });
+            })
+            .then(function(){
+                assert.equal(testTarget, testSource);
+            })
+            .then(function(){done();}, done);
+        });
+        
+        it('#deleteP', function(done){
+            mns.deleteP(aliCfg.mqName)
+            .then(function(){ done(); }, done);
         });
     });
     
-    // test#6 中文测试
-    testCase.push(function(){
-        return mq.sendP("中文测试").then(function(){
-            return mq.recvP(5);
+    describe('MNS-notifyRecv', function(){
+        this.timeout(1000 * 5);
+        
+        before(function(done){
+            mns.createP(aliCfg.mqName, {
+                DelaySeconds: 0,
+                MaximumMessageSize: 65536,
+                MessageRetentionPeriod: 345600,
+                VisibilityTimeout: 30,
+                PollingWaitSeconds: 0
+            }).then(function(data){ done(); }, done);
+        });
+        
+        it('#notifyRecv', function(done){
+            var notifyCount = 0, notifyConfirmed = 0;
+            Promise.all([mq.sendP("testA"), mq.sendP("testB"), mq.sendP("testC")])
+            .then(function(){
+                return new Promise(function(resolve, reject){
+                    mq.notifyRecv(function(ex, dataRecv){
+                        notifyCount++;
+                        if(ex) {
+                            // console.info(ex);
+                        }
+                        else {
+                            notifyConfirmed++;
+                            // console.log(dataRecv);
+                        }
+    
+                        if(notifyCount >= 3){
+                            mq.notifyStopP().done(function(){
+                                if(notifyConfirmed >= 3) resolve("notifyRecv task succeed!");
+                                else reject("notifyRecv task failed!");
+                            });
+                        }
+    
+                        return true;
+                    }, 5);
+                });
+            })
+            .then(function(){ done(); }, done);
+        });
+        
+        after(function(done){
+            mns.deleteP(aliCfg.mqName)
+            .then(function(){ done(); }, done);
         });
     });
-
-    // test#7 batch send
-    testCase.push(function(){
-        var msgs = [];
-        for(var i=0;i<5;i++){
-            var msg = new AliMNS.Msg("BatchSend" + i);
-            msgs.push(msg);
-        }
-
-        return mqBatch.sendP(msgs).then(function(dataSend){
-            console.log(dataSend);
-            console.log("\t-----");
-            return mq.peekP();
-        })
-    });
-
-    // test#8 delete mq
-    testCase.push(function(){
-        return mns.deleteP(aliCfg.mqName);
-    });
-
-    testCase.push(function(){
-        var XmlBuilder = require('xmlbuilder');
-
-        var obj = { Messages: {
-            '#list': [ {Message: { body: "sss" , x: "x" }},
-                {Message: { body: "sss" , x: "x" }}]
-        } };
-
-        var t = XmlBuilder.create(obj).toString();
-        console.log(t);
-        return Promise.resolve(0);
-    });
-
     
-    var testAction = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-    // var testAction = [1, 7, 8];
-    function testOneByOne(i){
-        if(i < testAction.length){
-            var testFn = testCase[testAction[i]];
-            return testFn().then(function(){
-                console.log("=====>Test case " + testAction[i] + " succeed.");
-                return testOneByOne(i+1);
-            }, function(ex){
-                console.error("=====>Test case " + testAction[i] + " failed.");
-                console.error(ex);
-                return testOneByOne(i+1);
-            });
-        }
-        else{
-            return Promise.resolve("Test finished.");
-        }
-    }
+    describe('MNS-batchSend', function(){
+        this.timeout(1000 * 5);
+        
+        before(function(done){
+            mns.createP(aliCfg.mqName, {
+                DelaySeconds: 0,
+                MaximumMessageSize: 65536,
+                MessageRetentionPeriod: 345600,
+                VisibilityTimeout: 30,
+                PollingWaitSeconds: 0
+            }).then(function(data){ done(); }, done);
+        });
+        
+        it('#batchSend', function(done){
+            var msgs = [];
+            for(var i=0;i<5;i++){
+                var msg = new AliMNS.Msg("BatchSend" + i);
+                msgs.push(msg);
+            }
     
-    return testOneByOne(0);
-}
-
-runTest().done(function(data){
-    console.log(data);
-}, function (ex) {
-    console.log(ex);
+            mqBatch.sendP(msgs)
+            .then(function(dataSend){
+                console.info(dataSend);
+                console.info("\t-----");
+                return mq.peekP();
+            })
+            .then(function(){ done(); }, done);
+        });
+        
+        after(function(done){
+            mns.deleteP(aliCfg.mqName)
+            .then(function(){ done(); }, done);
+        });
+    });
 });

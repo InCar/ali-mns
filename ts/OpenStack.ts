@@ -1,4 +1,6 @@
 // The Ali open interface stack
+/// <reference path="ali-mns.ts" />
+/// <reference path="Account.ts" />
 
 module AliMNS{
     // the ali open interface stack protocol
