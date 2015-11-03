@@ -84,8 +84,9 @@ module AliMNS{
         // 检查消息
         public peekP(){
             var _this = this;
-            debug("GET " + this._url);
-            return this._openStack.sendP("GET", this._url + "?peekonly=true").then(function(data){
+            var url = this._url + "?peekonly=true";
+            debug("GET " + url);
+            return this._openStack.sendP("GET", url).then(function(data){
                 debug(data);
                 if(data && data.Message && data.Message.MessageBody){
                     data.Message.MessageBody = _this.base64ToUtf8(data.Message.MessageBody)
@@ -96,16 +97,18 @@ module AliMNS{
 
         // 删除消息
         public deleteP(receiptHandle:string){
-            debug("DELETE " + this._url +  "?ReceiptHandle=" + receiptHandle);
-            return this._openStack.sendP("DELETE", this._url + "?ReceiptHandle=" + receiptHandle);
+            var url = this._url +  "?ReceiptHandle=" + receiptHandle;
+            debug("DELETE " + url);
+            return this._openStack.sendP("DELETE", url);
         }
 
         // 保留消息
         public reserveP(receiptHandle:string, reserveSeconds:number){
-            debug("PUT " + this._url);
-            return this._openStack.sendP("PUT", this._url
+            var url = this._url
                 + "?ReceiptHandle=" + receiptHandle
-                + "&VisibilityTimeout=" + reserveSeconds);
+                + "&VisibilityTimeout=" + reserveSeconds;
+            debug("PUT " + url);
+            return this._openStack.sendP("PUT", url);
         }
 
         // 消息通知.每当有消息收到时,都调用cb回调函数

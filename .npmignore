@@ -2,6 +2,7 @@ index.js.map
 Gruntfile.js
 .npmignore
 .idea/
+.vscode/
 dts/
 ts/
 test/

@@ -23,6 +23,7 @@ module AliMNS{
             if(prefix)      headers["x-mns-prefix"] = prefix;
             if(pageMarker)  headers["x-mns-marker"] = pageMarker;
             if(pageSize)    headers["x-mns-ret-number"] = pageSize;
+            debug("GET " + this._url);
             return this._openStack.sendP("GET", this._url, null, headers);
         }
 
@@ -31,12 +32,14 @@ module AliMNS{
             var body = { Queue: "" };
             if(options) body.Queue = options;
             var url = Url.resolve(this._url, name);
+            debug("PUT " + url, body);
             return this._openStack.sendP("PUT", url, body);
         }
 
         // Delete a message queue
         public deleteP(name:string){
             var url = Url.resolve(this._url, name);
+            debug("DELETE " + url);
             return this._openStack.sendP("DELETE", url);
         }
 

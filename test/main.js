@@ -39,8 +39,8 @@ describe('AliMNS', function(){
         });
     });
     
-    describe('MNS', function(){
-        this.timeout(1000 * 5);
+    describe.only('MNS', function(){
+        this.timeout(1000 * 8);
         
         it('#createP', function(done){
             mns.createP(aliCfg.mqName, {
