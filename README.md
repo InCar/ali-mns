@@ -38,7 +38,7 @@ Please use 'grunt' to compile ts files into a single index.js file after downloa
 If you only want to use it, forget this.
 
 # API Reference
-## Account(accountId, keyId, keySecret)
+## Account(accountId:string, keyId:string, keySecret:string)
 The *Account* class store your ali account information. Construct an account object is simple:
 
 accountId: String, ali account id.
@@ -63,7 +63,7 @@ Same as account.getAccountId(). For compatible v1.x.
 ## account.getKeyId()
 Return the ali key id.
 
-## MNS(account, region)
+## MNS(account:Account, region?:string)
 The *MNS* operate the mns queue.
 
 account: An account object.
@@ -76,10 +76,10 @@ Default is "hangzhou". It can also be internal address "hangzhou-internal", "bei
     var mns = new AliMNS.MNS(account, "hangzhou");
 ```
 
-## MQS(account, region)
+## MQS(account:Account, region?:string)
 Same as MNS. For compatible v1.x.
 
-## mns.listP(prefix, pageSize, pageMarker)
+## mns.listP(prefix?:string, pageSize?:number, pageMarker?:string)
 List all of the queue in a data center.
 
 prefix: String, optional. Return only mq with the prefix.
@@ -96,7 +96,7 @@ pageMarker: String, optional. Request the next page, the value is returned in la
     }, console.error);
 ```
 
-## mns.createP(name, <a name="options">options</a>)
+## mns.createP(name:string, <a name="options">options</a>?:any)
 Create a mq.
 
 name: String. The queue name.
@@ -124,7 +124,7 @@ options.PollingWaitSeconds: numer. How many seconds will the receive request wai
 If a mq with same name exists, calling createP will succeed only when all of the mq attributes are all same.
 Any mismatched attributes will cause an "QueueAlreadyExist" failure.
 
-## mns.deleteP(name)
+## mns.deleteP(name:string)
 Delete an mq.
 
 name: String. The queue name.
@@ -132,7 +132,7 @@ name: String. The queue name.
     mns.deleteP("myAliMQ").then(console.log, console.error);;
 ```
 
-## MQ(name, account, region)
+## MQ(name:string, account:Account, region?:string)
 The *MQ* operate the message in a queue.
 
 name: String. The name of mq.
@@ -147,7 +147,7 @@ Default is "hangzhou". It can also be internal address "hangzhou-internal", "bei
     var mq = new AliMNS.MQ("myAliMQ", account, "hangzhou");
 ```
 
-## mq.sendP(message, priority, delaySeconds)
+## mq.sendP(msg:string, priority?:number, delaySeconds?:number)
 Send a message to the queue.
 
 message: String. The content that sent to queue.
@@ -160,7 +160,7 @@ This argument is prior to the options.DelaySeconds in attributes of message queu
     mq.sendP("Hello Ali-MNS", 8, 0).then(console.log, console.error);
 ```
 
-## mq.recvP(waitSeconds)
+## mq.recvP(waitSeconds?:number)
 Receive a message from queue.
 This will change the message to invisible for a while.
 
@@ -177,7 +177,7 @@ This will not change the message to invisible.
     mq.peekP(5).then(console.log, console.error);
 ```
 
-## mq.deleteP(receiptHandle)
+## mq.deleteP(receiptHandle:string)
 Delete a message from queue.
 A message will be invisible for a short time after received.
 A message must be deleted after processed, otherwise it can be received again.
@@ -189,7 +189,7 @@ receiptHandle: String. Return by mq.recvP or mq.notifyRecv.
     }).then(console.log, console.error);
 ```
 
-## mq.reserveP(receiptHandle, reserveSeconds)
+## mq.reserveP(receiptHandle:string, reserveSeconds:number)
 Reserve a received message.
 
 receiptHandle: String. Return by mq.recvP or mq.notifyRecv.
@@ -208,10 +208,10 @@ Set a shorter time is also possible.
 If succeed, a new receiptHandle will be returned to replace the old one, further mq.deleteP or mq.reserveP should use the newer.
 And the newer receiptHandle will expired after reserveSeconds past.
 
-## mq.notifyRecv(callback, waitSeconds)
+## mq.notifyRecv(cb:(ex:Error, msg:any)=>Boolean, waitSeconds?:number)
 Register a callback function to receive messages.
 
-callback: The callback function will be called once for each received message.
+cb: The callback function will be called once for each received message.
 And if the callback function return *true*, the message received will be delete automatically,
 while you should delete the message manually, if return *false*.
 
@@ -245,7 +245,7 @@ Get the attributes of the mq.
 
     mq.getAttrsP().then(console.log, console.error);
 
-## mq.setAttrsP(options)
+## mq.setAttrsP(options:any)
 Modify the attributes of mq.
 
 options: the queue attributes. See the [options](#options) of mns.createP.
@@ -256,6 +256,93 @@ options: the queue attributes. See the [options](#options) of mns.createP.
         MessageRetentionPeriod: 345600,
         VisibilityTimeout: 30,
         PollingWaitSeconds: 0
+    }).then(console.log, console.error);
+```
+
+# Msg(msg: string, priority?:number, delaySeconds?:number)
+A simple message define, used in MQBatch.
+
+msg: string. The content of message.
+
+priority: number, optional. 1(lowest)~16(highest), default is 8.
+
+delaySeconds: number, optional. How many seconds will the messages be visible after sent. 0~604800(7days), default is 0.
+This argument is prior to the options.DelaySeconds in attributes of message queue.
+```javascript
+var msg = new AliMNS.Msg("Make a test");
+```
+
+## msg.getMsg()
+Return the content of message.
+
+## msg.getPriority()
+Return the priority of message.
+
+## msg.getDelaySeconds()
+Return the delay seconds of message.
+
+# MQBatch
+Provide the batch process model introduced in a new edtion of Ali-MNS service in June, 2015.
+```javascript
+var mqBatch = new AliMNS.MQBatch(aliCfg.mqName, account, aliCfg.region);
+```
+
+## mqBatch.sendP(msg:string | Array<Msg>, priority?:number, delaySeconds?:number)
+Send a message or batch send messages to the queue.
+
+msg: String or an array of Msg. The message(s) up to 16 that sent to queue.
+
+priority: number, optional. Only valid when `msg` is a string, 1(lowest)~16(highest), default is 8.
+
+delaySeconds: number, optional. Only valid when `msg` is a string. How many seconds will the messages be visible after sent. 0~604800(7days), default is 0.
+This argument is prior to the options.DelaySeconds in attributes of message queue.
+
+If `msg` is an array of `Msg`, use the priority & delaySeconds properties of `Msg`, and ignore the 2nd and 3rd arguments.
+```javascript
+    var msgs = [];
+    for(var i=0;i<5;i++){
+        var msg = new AliMNS.Msg("BatchSend" + i, 8, 0);
+        msgs.push(msg);
+    }
+
+    mqBatch.sendP(msgs);
+```
+
+## mqBatch.recvP(waitSeconds?:number, numOfMessages?:number)
+Receive a message or batch receive messages from queue.
+This will change the messages to invisible for a while.
+
+waitSeconds: number. optional.
+The max seconds to wait if queue is empty, after that an error *MessageNotExist* will be returned.
+
+numOfMessages: number. optional. The max number of message can be received in a batch, can be 1~16.
+```javascript
+    mqBatch.recvP(5, 16).then(console.log, console.error);
+```
+
+## mqBatch.peekP(numOfMessages?:number)
+Peek message(s).
+This will not change the message to invisible.
+
+numOfMessages: number. optional. The max number of message can be peeked in a batch, can be 1~16.
+```javascript
+    mqBatch.peekP(5, 16).then(console.log, console.error);
+```
+
+## mqBatch.deleteP(receiptHandle:string | Array<string>)
+Delete a message or messages from queue.
+Messages will be invisible for a short time after received.
+Messages must be deleted after processed, otherwise it can be received again.
+
+receiptHandle: String or an array of string. Return by mq.recvP mq.notifyRecv or mqBatch.recvP mqBatch.notifyRecv.
+```javascript
+    var rhsToDel = [];
+    mqBatch.recvP(5, 16).then(function(dataRecv){
+        for(var i=0;i<dataRecv.Messages.Message.length;i++){
+            rhsToDel.push(dataRecv.Messages.Message[i].ReceiptHandle);
+        }
+    }).then(function(){
+        return mqBatch.deleteP(rhsToDel);
     }).then(console.log, console.error);
 ```
 

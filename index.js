@@ -1,3 +1,19 @@
+/// <reference path="../dts/external.d.ts" />
+// dependencies
+var Buffer = require("buffer");
+var CryptoA = require("crypto");
+var Events = require("events");
+var Util = require("util");
+var Url = require("url");
+var debug = require("debug")("ali-mns");
+var Promise = require("promise");
+var Request = require("request");
+Request.requestP = Promise.denodeify(Request);
+Request.debug = false;
+var Xml2js = require("xml2js");
+Xml2js.parseStringP = Promise.denodeify(Xml2js.parseString);
+var XmlBuilder = require("xmlbuilder");
+/// <reference path="ali-mns.ts" />
 var AliMNS;
 (function (AliMNS) {
     // The Ali account, it holds the key id and secret.
@@ -25,6 +41,116 @@ var AliMNS;
     })();
     AliMNS.Account = Account;
 })(AliMNS || (AliMNS = {}));
+// The Ali open interface stack
+/// <reference path="ali-mns.ts" />
+/// <reference path="Account.ts" />
+var AliMNS;
+(function (AliMNS) {
+    // the ali open interface stack protocol
+    var OpenStack = (function () {
+        function OpenStack(account) {
+            this._patternMNS = "MNS %s:%s";
+            this._patternSign = "%s\n%s\n%s\n%s\n%s%s";
+            this._contentType = "text/xml;charset=utf-8";
+            this._version = "2015-06-06";
+            this._account = account;
+            // xml builder
+            this._xmlBuilder = XmlBuilder;
+        }
+        // Send the request
+        // method: GET, POST, PUT, DELETE
+        // url: request url
+        // body: optional, request body
+        // head: optional, request heads
+        OpenStack.prototype.sendP = function (method, url, body, headers) {
+            var req = { method: method, url: url };
+            if (body)
+                req.body = this._xmlBuilder.create(body).toString();
+            req.headers = this.makeHeaders(method, url, headers, req.body);
+            return Request.requestP(req).then(function (response) {
+                // convert the body from xml to json
+                return Xml2js.parseStringP(response.body, { explicitArray: false })
+                    .then(function (bodyJSON) {
+                    response.bodyJSON = bodyJSON;
+                    return response;
+                }, function () {
+                    // cannot parse as xml
+                    response.bodyJSON = response.body;
+                    return response;
+                });
+            }).then(function (response) {
+                if (response.statusCode < 400) {
+                    if (response.bodyJSON)
+                        return response.bodyJSON;
+                    else
+                        return response.statusCode;
+                }
+                else {
+                    if (response.bodyJSON)
+                        return Promise.reject(response.bodyJSON);
+                    else
+                        return Promise.reject(response.statusCode);
+                }
+            });
+        };
+        OpenStack.prototype.makeHeaders = function (mothod, url, headers, body) {
+            // if not exist, create one
+            if (!headers)
+                headers = {};
+            var contentMD5 = "";
+            var contentType = "";
+            if (body) {
+                if (!headers["Content-Length"])
+                    headers["Content-Length"] = body.length;
+                if (!headers["Content-Type"])
+                    headers["Content-Type"] = this._contentType;
+                contentType = headers["Content-Type"];
+                contentMD5 = this._account.b64md5(body);
+                headers["Content-MD5"] = contentMD5;
+            }
+            // `Dat`e & `Host` will be added by request automatically
+            if (!headers["x-mns-version"])
+                headers["x-mns-version"] = this._version;
+            // lowercase & sort & extract the x-mns-<any>
+            var headsLower = {};
+            var keys = [];
+            for (var key in headers) {
+                if (headers.hasOwnProperty(key)) {
+                    var lower = key.toLowerCase();
+                    keys.push(lower);
+                    headsLower[lower] = headers[key];
+                }
+            }
+            keys.sort();
+            var mnsHeaders = "";
+            for (var i in keys) {
+                var k = keys[i];
+                if (k.indexOf("x-mns-") === 0) {
+                    mnsHeaders += Util.format("%s:%s\n", k, headsLower[k]);
+                }
+            }
+            var tm = (new Date()).toUTCString();
+            var mnsURL = Url.parse(url);
+            headers.Date = tm;
+            headers.Authorization = this.authorize(mothod, mnsURL.path, mnsHeaders, contentType, contentMD5, tm);
+            headers.Host = mnsURL.host;
+            return headers;
+        };
+        // ali mns authorize header
+        OpenStack.prototype.authorize = function (httpVerb, mnsURI, mnsHeaders, contentType, contentMD5, tm) {
+            return Util.format(this._patternMNS, this._account.getKeyId(), this.signature(httpVerb, mnsURI, mnsHeaders, contentType, contentMD5, tm));
+        };
+        // ali mns signature
+        OpenStack.prototype.signature = function (httpVerb, mnsURI, mnsHeaders, contentType, contentMD5, tm) {
+            var text = Util.format(this._patternSign, httpVerb, contentMD5, contentType, tm, mnsHeaders, mnsURI);
+            return this._account.hmac_sha1(text, "base64");
+        };
+        return OpenStack;
+    })();
+    AliMNS.OpenStack = OpenStack;
+})(AliMNS || (AliMNS = {}));
+/// <reference path="Account.ts" />
+/// <reference path="OpenStack.ts" />
 var AliMNS;
 (function (AliMNS) {
     // The MNS can list, create, delete, modify the mq.
@@ -51,6 +177,7 @@ var AliMNS;
                 headers["x-mns-marker"] = pageMarker;
             if (pageSize)
                 headers["x-mns-ret-number"] = pageSize;
+            debug("GET " + this._url);
             return this._openStack.sendP("GET", this._url, null, headers);
         };
         // Create a message queue
@@ -59,11 +186,13 @@ var AliMNS;
             if (options)
                 body.Queue = options;
             var url = Url.resolve(this._url, name);
+            debug("PUT " + url, body);
             return this._openStack.sendP("PUT", url, body);
         };
         // Delete a message queue
         MNS.prototype.deleteP = function (name) {
             var url = Url.resolve(this._url, name);
+            debug("DELETE " + url);
             return this._openStack.sendP("DELETE", url);
         };
         MNS.prototype.makeURL = function () {
@@ -75,6 +204,8 @@ var AliMNS;
     // For compatible v1.x
     AliMNS.MQS = MNS;
 })(AliMNS || (AliMNS = {}));
+/// <reference path="Account.ts" />
+/// <reference path="OpenStack.ts" />
 var AliMNS;
 (function (AliMNS) {
     // The MQ
@@ -124,7 +255,7 @@ var AliMNS;
                 body.Message.Priority = priority;
             if (!isNaN(delaySeconds))
                 body.Message.DelaySeconds = delaySeconds;
-            debug("PUT " + this._url, body);
+            debug("POST " + this._url, body);
             return this._openStack.sendP("POST", this._url, body);
         };
         // 接收消息
@@ -162,8 +293,9 @@ var AliMNS;
         // 检查消息
         MQ.prototype.peekP = function () {
             var _this = this;
-            debug("GET " + this._url);
-            return this._openStack.sendP("GET", this._url + "?peekonly=true").then(function (data) {
+            var url = this._url + "?peekonly=true";
+            debug("GET " + url);
+            return this._openStack.sendP("GET", url).then(function (data) {
                 debug(data);
                 if (data && data.Message && data.Message.MessageBody) {
                     data.Message.MessageBody = _this.base64ToUtf8(data.Message.MessageBody);
@@ -173,15 +305,17 @@ var AliMNS;
         };
         // 删除消息
         MQ.prototype.deleteP = function (receiptHandle) {
-            debug("DELETE " + this._url);
-            return this._openStack.sendP("DELETE", this._url + "?ReceiptHandle=" + receiptHandle);
+            var url = this._url + "?ReceiptHandle=" + receiptHandle;
+            debug("DELETE " + url);
+            return this._openStack.sendP("DELETE", url);
         };
         // 保留消息
         MQ.prototype.reserveP = function (receiptHandle, reserveSeconds) {
-            debug("PUT " + this._url);
-            return this._openStack.sendP("PUT", this._url
+            var url = this._url
                 + "?ReceiptHandle=" + receiptHandle
-                + "&VisibilityTimeout=" + reserveSeconds);
+                + "&VisibilityTimeout=" + reserveSeconds;
+            debug("PUT " + url);
+            return this._openStack.sendP("PUT", url);
         };
         // 消息通知.每当有消息收到时,都调用cb回调函数
         // 如果cb返回true,那么将删除消息,否则保留消息
@@ -276,126 +410,149 @@ var AliMNS;
     })();
     AliMNS.MQ = MQ;
 })(AliMNS || (AliMNS = {}));
-// The Ali open interface stack
 var AliMNS;
 (function (AliMNS) {
-    // the ali open interface stack protocol
-    var OpenStack = (function () {
-        function OpenStack(account) {
-            this._patternMNS = "MNS %s:%s";
-            this._patternSign = "%s\n%s\n%s\n%s\n%s%s";
-            this._contentType = "text/xml;charset=utf-8";
-            this._version = "2015-06-06";
-            this._account = account;
-            // xml builder
-            this._xmlBuilder = new Xml2js.Builder();
+    // The Message class
+    var Msg = (function () {
+        function Msg(msg, priority, delaySeconds) {
+            // message priority
+            this._priority = 8;
+            // message delay to visible, in seconds
+            this._delaySeconds = 0;
+            this._msg = msg;
+            if (!isNaN(priority))
+                this._priority = priority;
+            if (!isNaN(delaySeconds))
+                this._delaySeconds = delaySeconds;
         }
-        // Send the request
-        // method: GET, POST, PUT, DELETE
-        // url: request url
-        // body: optional, request body
-        // head: optional, request heads
-        OpenStack.prototype.sendP = function (method, url, body, headers) {
-            var req = { method: method, url: url };
-            if (body)
-                req.body = this._xmlBuilder.buildObject(body);
-            req.headers = this.makeHeaders(method, url, headers, req.body);
-            return Request.requestP(req).then(function (response) {
-                // convert the body from xml to json
-                return Xml2js.parseStringP(response.body, { explicitArray: false })
-                    .then(function (bodyJSON) {
-                    response.bodyJSON = bodyJSON;
-                    return response;
-                }, function () {
-                    // cannot parse as xml
-                    response.bodyJSON = response.body;
-                    return response;
-                });
-            }).then(function (response) {
-                if (response.statusCode < 400) {
-                    if (response.bodyJSON)
-                        return response.bodyJSON;
-                    else
-                        return response.statusCode;
-                }
-                else {
-                    if (response.bodyJSON)
-                        return Promise.reject(response.bodyJSON);
-                    else
-                        return Promise.reject(response.statusCode);
-                }
-            });
-        };
-        OpenStack.prototype.makeHeaders = function (mothod, url, headers, body) {
-            // if not exist, create one
-            if (!headers)
-                headers = {};
-            var contentMD5 = "";
-            var contentType = "";
-            if (body) {
-                if (!headers["Content-Length"])
-                    headers["Content-Length"] = body.length;
-                if (!headers["Content-Type"])
-                    headers["Content-Type"] = this._contentType;
-                contentType = headers["Content-Type"];
-                contentMD5 = this._account.b64md5(body);
-                headers["Content-MD5"] = contentMD5;
-            }
-            // `Dat`e & `Host` will be added by request automatically
-            if (!headers["x-mns-version"])
-                headers["x-mns-version"] = this._version;
-            // lowercase & sort & extract the x-mns-<any>
-            var headsLower = {};
-            var keys = [];
-            for (var key in headers) {
-                if (headers.hasOwnProperty(key)) {
-                    var lower = key.toLowerCase();
-                    keys.push(lower);
-                    headsLower[lower] = headers[key];
-                }
-            }
-            keys.sort();
-            var mnsHeaders = "";
-            for (var i in keys) {
-                var k = keys[i];
-                if (k.indexOf("x-mns-") === 0) {
-                    mnsHeaders += Util.format("%s:%s\n", k, headsLower[k]);
-                }
-            }
-            var tm = (new Date()).toUTCString();
-            var mnsURL = Url.parse(url);
-            headers.Date = tm;
-            headers.Authorization = this.authorize(mothod, mnsURL.path, mnsHeaders, contentType, contentMD5, tm);
-            headers.Host = mnsURL.host;
-            return headers;
-        };
-        // ali mns authorize header
-        OpenStack.prototype.authorize = function (httpVerb, mnsURI, mnsHeaders, contentType, contentMD5, tm) {
-            return Util.format(this._patternMNS, this._account.getKeyId(), this.signature(httpVerb, mnsURI, mnsHeaders, contentType, contentMD5, tm));
-        };
-        // ali mns signature
-        OpenStack.prototype.signature = function (httpVerb, mnsURI, mnsHeaders, contentType, contentMD5, tm) {
-            var text = Util.format(this._patternSign, httpVerb, contentMD5, contentType, tm, mnsHeaders, mnsURI);
-            return this._account.hmac_sha1(text, "base64");
-        };
-        return OpenStack;
+        Msg.prototype.getMsg = function () { return this._msg; };
+        Msg.prototype.getPriority = function () { return this._priority; };
+        Msg.prototype.getDelaySeconds = function () { return this._delaySeconds; };
+        return Msg;
     })();
-    AliMNS.OpenStack = OpenStack;
+    AliMNS.Msg = Msg;
 })(AliMNS || (AliMNS = {}));
-/// <reference path="../dts/external.d.ts" />
+/// <reference path="MQ.ts" />
+/// <reference path="Msg.ts" />
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+var AliMNS;
+(function (AliMNS) {
+    var MQBatch = (function (_super) {
+        __extends(MQBatch, _super);
+        function MQBatch(name, account, region) {
+            _super.call(this, name, account, region);
+        }
+        MQBatch.prototype.sendP = function (msg, priority, delaySeconds) {
+            if (typeof msg === "string") {
+                return _super.prototype.sendP.call(this, msg, priority, delaySeconds);
+            }
+            else {
+                var body = { Messages: { '#list': [] } };
+                for (var i = 0; i < msg.length; i++) {
+                    var m = msg[i];
+                    var b64 = this.utf8ToBase64(m.getMsg());
+                    var xMsg = { Message: { MessageBody: b64 } };
+                    xMsg.Message.Priority = m.getPriority();
+                    xMsg.Message.DelaySeconds = m.getDelaySeconds();
+                    body.Messages['#list'].push(xMsg);
+                }
+                debug("POST " + this._url, body);
+                return this._openStack.sendP("POST", this._url, body);
+            }
+        };
+        MQBatch.prototype.recvP = function (waitSeconds, numOfMessages) {
+            if (numOfMessages && numOfMessages > 1) {
+                var _this = this;
+                var url = this._url;
+                url += "?numOfMessages=" + numOfMessages;
+                if (waitSeconds)
+                    url += "&waitseconds=" + waitSeconds;
+                debug("GET " + url);
+                return new Promise(function (resolve, reject) {
+                    var bGotResponse = false;
+                    // wait more 5 seconds to trigger timeout error
+                    var timeOutSeconds = 5;
+                    if (waitSeconds)
+                        timeOutSeconds += waitSeconds;
+                    setTimeout(function () {
+                        if (!bGotResponse)
+                            reject(new Error("timeout"));
+                    }, 1000 * timeOutSeconds);
+                    _this._openStack.sendP("GET", url).done(function (data) {
+                        debug(data);
+                        bGotResponse = true;
+                        _this.decodeB64Messages(data);
+                        resolve(data);
+                    }, function (ex) {
+                        debug(ex);
+                        bGotResponse = true;
+                        reject(ex);
+                    });
+                });
+            }
+            else {
+                return _super.prototype.recvP.call(this, waitSeconds);
+            }
+        };
+        MQBatch.prototype.peekP = function (numOfMessages) {
+            if (numOfMessages && numOfMessages > 1) {
+                var _this = this;
+                var url = this._url + "?peekonly=true";
+                url += "&numOfMessages=" + numOfMessages;
+                debug("GET " + url);
+                return this._openStack.sendP("GET", url).then(function (data) {
+                    debug(data);
+                    _this.decodeB64Messages(data);
+                    return data;
+                });
+            }
+            else {
+                return _super.prototype.peekP.call(this);
+            }
+        };
+        MQBatch.prototype.deleteP = function (receiptHandle) {
+            if (typeof receiptHandle === "string") {
+                _super.prototype.deleteP.call(this, receiptHandle);
+            }
+            else {
+                debug("DELETE " + this._url);
+                var body = { ReceiptHandles: { '#list': [] } };
+                for (var i = 0; i < receiptHandle.length; i++) {
+                    var r = { ReceiptHandle: receiptHandle[i] };
+                    body.ReceiptHandles['#list'].push(r);
+                }
+                return this._openStack.sendP("DELETE", this._url, body);
+            }
+        };
+        MQBatch.prototype.decodeB64Messages = function (data) {
+            if (data) {
+                if (data.Message && data.Message.MessageBody) {
+                    data.Message.MessageBody = this.base64ToUtf8(data.Message.MessageBody);
+                }
+                else if (data.Messages && data.Messages.Message) {
+                    for (var i = 0; i < data.Messages.Message.length; i++) {
+                        var msg = data.Messages.Message[i];
+                        if (msg.MessageBody)
+                            msg.MessageBody = this.base64ToUtf8(msg.MessageBody);
+                    }
+                }
+            }
+        };
+        return MQBatch;
+    })(AliMNS.MQ);
+    AliMNS.MQBatch = MQBatch;
+})(AliMNS || (AliMNS = {}));
+/// <reference path="ali-mns.ts" />
+/// <reference path="MNS.ts" />
+/// <reference path="Account.ts" />
+/// <reference path="Msg.ts" />
+/// <reference path="MQ.ts" />
+/// <reference path="MQBatch.ts" />
 // Exports the AliMNS
 module.exports = AliMNS;
-// dependencies
-var Buffer = require("buffer");
-var CryptoA = require("crypto");
-var Events = require("events");
-var Util = require("util");
-var Url = require("url");
-var debug = require("debug")("ali-mns");
-var Promise = require("promise");
-var Request = require("request");
-Request.requestP = Promise.denodeify(Request);
-Request.debug = false;
-var Xml2js = require("xml2js");
-Xml2js.parseStringP = Promise.denodeify(Xml2js.parseString);
 //# sourceMappingURL=index.js.map
