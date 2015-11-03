@@ -30,7 +30,44 @@ module AliMNS{
 
         public recvP(waitSeconds?:number, numOfMessages?:number){
             if(numOfMessages && numOfMessages > 1){
-                return Promise.reject("NotImplementation");
+                var _this = this;
+                var url = this._url;
+                url += "?numOfMessages=" + numOfMessages;
+                if(waitSeconds) url += "&waitseconds=" + waitSeconds;
+                
+                debug("GET " + url);
+    
+                return new Promise(function(resolve, reject){
+                    var bGotResponse = false;
+                    // wait more 5 seconds to trigger timeout error
+                    var timeOutSeconds = 5;
+                    if(waitSeconds) timeOutSeconds += waitSeconds;
+                    setTimeout(function(){
+                        if(!bGotResponse) reject(new Error("timeout"));
+                    }, 1000*timeOutSeconds);
+    
+    
+                    _this._openStack.sendP("GET", url).done(function(data){
+                        debug(data);
+                        bGotResponse = true;
+                        if(data){
+                            if(data.Message && data.Message.MessageBody){
+                                data.Message.MessageBody = _this.base64ToUtf8(data.Message.MessageBody);
+                            }
+                            else if(data.Messages && data.Messages.Message){
+                                for(var i=0;i<data.Messages.Message.length;i++){
+                                    var msg = data.Messages.Message[i];
+                                    if(msg.MessageBody) msg.MessageBody = _this.base64ToUtf8(msg.MessageBody);
+                                }
+                            }
+                        }
+                        resolve(data);
+                    }, function(ex){
+                        debug(ex);
+                        bGotResponse = true;
+                        reject(ex);
+                    });
+                })
             }
             else{
                 return super.recvP(waitSeconds);

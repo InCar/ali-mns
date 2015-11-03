@@ -203,7 +203,7 @@ module AliMNS{
             return buf.toString('base64');
         }
         
-        private base64ToUtf8(src){
+        protected base64ToUtf8(src){
             var buf = new Buffer.Buffer(src, 'base64');
             return buf.toString('utf8');
         }

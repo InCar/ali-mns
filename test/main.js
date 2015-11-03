@@ -160,7 +160,7 @@ describe('AliMNS', function(){
         });
     });
     
-    describe('MNS-batchSend', function(){
+    describe.only('MNS-batchSend', function(){
         this.timeout(1000 * 5);
         
         before(function(done){
@@ -184,6 +184,17 @@ describe('AliMNS', function(){
             .then(function(dataSend){
                 // console.info(dataSend);
                 return mq.peekP();
+            })
+            .then(function(){ done(); }, done);
+        });
+        
+        it('#batchRecv', function(done){
+            mqBatch.recvP(5, 4)
+            .then(function(dataRecv){
+                // console.info(dataRecv);
+                for(var i=0;i<dataRecv.Messages.Message.length;i++){
+                    assert.ok(dataRecv.Messages.Message[i].MessageBody.indexOf("BatchSend") === 0);
+                }
             })
             .then(function(){ done(); }, done);
         });
