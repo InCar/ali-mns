@@ -85,8 +85,14 @@ module AliMNS{
             if(typeof receiptHandle === "string") {
                 super.deleteP(receiptHandle);
             }
-            else{
-                return Promise.reject("NotImplementation");
+            else{ 
+                debug("DELETE " + this._url);
+                var body : any = { ReceiptHandles: { '#list': [] } };
+                for(var i=0;i<receiptHandle.length;i++){
+                    var r:any = { ReceiptHandle: receiptHandle[i] };
+                    body.ReceiptHandles['#list'].push(r);
+                }
+                return this._openStack.sendP("DELETE", this._url, body);
             }
         }
         

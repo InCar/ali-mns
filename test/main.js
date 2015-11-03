@@ -160,7 +160,7 @@ describe('AliMNS', function(){
         });
     });
     
-    describe.only('MNS-batchSend', function(){
+    describe('MNS-batchSend', function(){
         this.timeout(1000 * 5);
         
         before(function(done){
@@ -188,11 +188,13 @@ describe('AliMNS', function(){
             .then(function(){ done(); }, done);
         });
         
+        var readyToDel = [];
         it('#batchRecv', function(done){
             mqBatch.recvP(5, 3)
             .then(function(dataRecv){
                 for(var i=0;i<dataRecv.Messages.Message.length;i++){
                     // console.info(dataRecv.Messages.Message[i].MessageBody);
+                    readyToDel.push(dataRecv.Messages.Message[i].ReceiptHandle);
                     assert.ok(dataRecv.Messages.Message[i].MessageBody.indexOf("BatchSend") === 0);
                 }
             })
@@ -207,6 +209,11 @@ describe('AliMNS', function(){
                     assert.ok(dataPeek.Messages.Message[i].MessageBody.indexOf("BatchSend") === 0);
                 }
             })
+            .then(function(){ done(); }, done);
+        });
+        
+        it('#batchDelete', function(done){
+            mqBatch.deleteP(readyToDel)
             .then(function(){ done(); }, done);
         });
         
