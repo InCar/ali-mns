@@ -89,7 +89,6 @@ describe('AliMNS', function(){
             .then(function(dataReserved){
                 // console.info(dataReserved);
                 return mq.deleteP(dataReserved.ChangeVisibility.ReceiptHandle); })
-            .then(function(){ return Promise.reject("Change Visibility Failed!"); }, function(){ return Promise.resolve("OK"); })
             .then(function(){ done(); }, done);
         });
         
@@ -147,7 +146,7 @@ describe('AliMNS', function(){
                                 else reject("notifyRecv task failed!");
                             });
                         }
-    
+                        
                         return true;
                     }, 5);
                 });
@@ -183,8 +182,7 @@ describe('AliMNS', function(){
     
             mqBatch.sendP(msgs)
             .then(function(dataSend){
-                console.info(dataSend);
-                console.info("\t-----");
+                // console.info(dataSend);
                 return mq.peekP();
             })
             .then(function(){ done(); }, done);

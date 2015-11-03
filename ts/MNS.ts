@@ -54,6 +54,3 @@ module AliMNS{
     // For compatible v1.x
     export var MQS = MNS;
 }
-
-// Exports the AliMNS
-module.exports = AliMNS;

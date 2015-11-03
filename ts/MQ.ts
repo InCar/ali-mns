@@ -96,7 +96,7 @@ module AliMNS{
 
         // 删除消息
         public deleteP(receiptHandle:string){
-            debug("DELETE " + this._url);
+            debug("DELETE " + this._url +  "?ReceiptHandle=" + receiptHandle);
             return this._openStack.sendP("DELETE", this._url + "?ReceiptHandle=" + receiptHandle);
         }
 
