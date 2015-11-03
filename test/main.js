@@ -189,11 +189,22 @@ describe('AliMNS', function(){
         });
         
         it('#batchRecv', function(done){
-            mqBatch.recvP(5, 4)
+            mqBatch.recvP(5, 3)
             .then(function(dataRecv){
-                // console.info(dataRecv);
                 for(var i=0;i<dataRecv.Messages.Message.length;i++){
+                    // console.info(dataRecv.Messages.Message[i].MessageBody);
                     assert.ok(dataRecv.Messages.Message[i].MessageBody.indexOf("BatchSend") === 0);
+                }
+            })
+            .then(function(){ done(); }, done);
+        });
+        
+        it('#batchPeek', function(done){
+            mqBatch.peekP(2)
+            .then(function(dataPeek){
+                for(var i=0;i<dataPeek.Messages.Message.length;i++){
+                    // console.info(dataPeek.Messages.Message[i].MessageBody);
+                    assert.ok(dataPeek.Messages.Message[i].MessageBody.indexOf("BatchSend") === 0);
                 }
             })
             .then(function(){ done(); }, done);

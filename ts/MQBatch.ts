@@ -50,17 +50,7 @@ module AliMNS{
                     _this._openStack.sendP("GET", url).done(function(data){
                         debug(data);
                         bGotResponse = true;
-                        if(data){
-                            if(data.Message && data.Message.MessageBody){
-                                data.Message.MessageBody = _this.base64ToUtf8(data.Message.MessageBody);
-                            }
-                            else if(data.Messages && data.Messages.Message){
-                                for(var i=0;i<data.Messages.Message.length;i++){
-                                    var msg = data.Messages.Message[i];
-                                    if(msg.MessageBody) msg.MessageBody = _this.base64ToUtf8(msg.MessageBody);
-                                }
-                            }
-                        }
+                        _this.decodeB64Messages(data);
                         resolve(data);
                     }, function(ex){
                         debug(ex);
@@ -76,7 +66,15 @@ module AliMNS{
 
         public peekP(numOfMessages?:number){
             if(numOfMessages && numOfMessages > 1){
-                return Promise.reject("NotImplementation");
+                var _this = this;
+                var url = this._url + "?peekonly=true";
+                url += "&numOfMessages=" + numOfMessages;
+                debug("GET " + url);
+                return this._openStack.sendP("GET", url).then(function(data){
+                    debug(data);
+                    _this.decodeB64Messages(data);
+                    return data;
+                });
             }
             else{
                 return super.peekP();
@@ -89,6 +87,20 @@ module AliMNS{
             }
             else{
                 return Promise.reject("NotImplementation");
+            }
+        }
+        
+        private decodeB64Messages(data:any){
+            if(data){
+                if(data.Message && data.Message.MessageBody){
+                    data.Message.MessageBody = this.base64ToUtf8(data.Message.MessageBody);
+                }
+                else if(data.Messages && data.Messages.Message){
+                    for(var i=0;i<data.Messages.Message.length;i++){
+                        var msg = data.Messages.Message[i];
+                        if(msg.MessageBody) msg.MessageBody = this.base64ToUtf8(msg.MessageBody);
+                    }
+                }
             }
         }
     }
