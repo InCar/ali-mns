@@ -23,8 +23,6 @@ describe('AliMNS', function(){
     }
     var account = new AliMNS.Account(aliCfg.accountId, aliCfg.keyId, aliCfg.keySecret);
     var mns = new AliMNS.MNS(account, aliCfg.region);
-    var mq = new AliMNS.MQ(aliCfg.mqName, account, aliCfg.region);
-    var mqBatch = new AliMNS.MQBatch(aliCfg.mqName, account, aliCfg.region);
     
     describe('Compatible', function(){
         it('#MQS', function(){
@@ -39,11 +37,14 @@ describe('AliMNS', function(){
         });
     });
     
-    describe.only('MNS', function(){
-        this.timeout(1000 * 8);
+    describe('MNS', function(){
+        this.timeout(1000 * 5);
+        
+        var mqName = aliCfg.mqName + Math.floor(Math.random() * 10000);
+        var mq = new AliMNS.MQ(mqName, account, aliCfg.region);
         
         it('#createP', function(done){
-            mns.createP(aliCfg.mqName, {
+            mns.createP(mqName, {
                 DelaySeconds: 0,
                 MaximumMessageSize: 65536,
                 MessageRetentionPeriod: 345600,
@@ -53,7 +54,7 @@ describe('AliMNS', function(){
         });
         
         it('#listP', function(done){
-            mns.listP(aliCfg.mqName, 1).then(function(data){
+            mns.listP(mqName, 1).then(function(data){
                 // console.info(data.Queues.Queue);
                 done(); }, done);
         });
@@ -107,7 +108,7 @@ describe('AliMNS', function(){
         });
         
         it('#deleteP', function(done){
-            mns.deleteP(aliCfg.mqName)
+            mns.deleteP(mqName)
             .then(function(){ done(); }, done);
         });
     });
@@ -115,8 +116,11 @@ describe('AliMNS', function(){
     describe('MNS-notifyRecv', function(){
         this.timeout(1000 * 5);
         
+        var mqName = aliCfg.mqName + Math.floor(Math.random() * 10000);
+        var mq = new AliMNS.MQ(mqName, account, aliCfg.region);
+        
         before(function(done){
-            mns.createP(aliCfg.mqName, {
+            mns.createP(mqName, {
                 DelaySeconds: 0,
                 MaximumMessageSize: 65536,
                 MessageRetentionPeriod: 345600,
@@ -155,7 +159,7 @@ describe('AliMNS', function(){
         });
         
         after(function(done){
-            mns.deleteP(aliCfg.mqName)
+            mns.deleteP(mqName)
             .then(function(){ done(); }, done);
         });
     });
@@ -163,8 +167,11 @@ describe('AliMNS', function(){
     describe('MNS-batchSend', function(){
         this.timeout(1000 * 5);
         
+        var mqName = aliCfg.mqName + Math.floor(Math.random() * 10000);
+        var mqBatch = new AliMNS.MQBatch(mqName, account, aliCfg.region);
+        
         before(function(done){
-            mns.createP(aliCfg.mqName, {
+            mns.createP(mqName, {
                 DelaySeconds: 0,
                 MaximumMessageSize: 65536,
                 MessageRetentionPeriod: 345600,
@@ -183,7 +190,7 @@ describe('AliMNS', function(){
             mqBatch.sendP(msgs)
             .then(function(dataSend){
                 // console.info(dataSend);
-                return mq.peekP();
+                return mqBatch.peekP(2);
             })
             .then(function(){ done(); }, done);
         });
@@ -218,7 +225,7 @@ describe('AliMNS', function(){
         });
         
         after(function(done){
-            mns.deleteP(aliCfg.mqName)
+            mns.deleteP(mqName)
             .then(function(){ done(); }, done);
         });
     });
