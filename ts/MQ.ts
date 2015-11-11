@@ -21,6 +21,10 @@ module AliMNS{
             // emitter
             this._emitter = new Events.EventEmitter();
         }
+        
+        public getName(){ return this._name; }
+        public getAccount(){ return this._account; }
+        public getRegion(){ return this._region; }
 
         // 获取MQ的属性值
         public getAttrsP(){

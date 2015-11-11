@@ -147,6 +147,15 @@ Default is "hangzhou". It can also be internal address "hangzhou-internal", "bei
     var mq = new AliMNS.MQ("myAliMQ", account, "hangzhou");
 ```
 
+## getName()
+Gets the name of mq.
+
+## getAccount()
+Gets the account of mq.
+
+## getRegion()
+Gets the region of mq.
+
 ## mq.sendP(msg:string, priority?:number, delaySeconds?:number)
 Send a message to the queue.
 

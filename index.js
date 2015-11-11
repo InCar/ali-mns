@@ -247,6 +247,9 @@ var AliMNS;
             // emitter
             this._emitter = new Events.EventEmitter();
         }
+        MQ.prototype.getName = function () { return this._name; };
+        MQ.prototype.getAccount = function () { return this._account; };
+        MQ.prototype.getRegion = function () { return this._region; };
         // 获取MQ的属性值
         MQ.prototype.getAttrsP = function () {
             debug("GET " + this._urlAttr);

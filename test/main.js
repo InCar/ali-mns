@@ -6,7 +6,7 @@ var fs = require("fs");
 var Promise = require("promise");
 var AliMNS = require(Path.join(__dirname, "../index.js"));
 
-describe('AliMNS', function(){
+describe('AliMNS-main', function(){
     // ali account configuration
     var aliCfg = {
         accountId: "your-account-id",
@@ -37,7 +37,7 @@ describe('AliMNS', function(){
         });
     });
     
-    describe.only('MNS', function(){
+    describe('MNS', function(){
         this.timeout(1000 * 5);
         
         var mqName = aliCfg.mqName + Math.floor(Math.random() * 10000);
