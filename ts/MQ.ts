@@ -65,18 +65,18 @@ module AliMNS{
                 var options = { timeout: 1000 * _this._recvTolerance };
                 if(waitSeconds) options.timeout += (1000 * waitSeconds);
 
-                _this._openStack.sendP("GET", url, options).done(function(data){
+                _this._openStack.sendP("GET", url, null, null, options).done(function(data){
                     debug(data);
                     if(data && data.Message && data.Message.MessageBody){
                         data.Message.MessageBody = _this.base64ToUtf8(data.Message.MessageBody)
                     }
                     resolve(data);
                 }, function(ex){
-                    debug(ex);
                     // for compatible with 1.x, still use literal "timeout"
                     if(ex.code === "ETIMEDOUT"){
                         var exTimeout:any = new Error("timeout");
                         exTimeout.innerException = ex;
+                        exTimeout.code = ex.code;
                         reject(exTimeout);
                     }
                     else{

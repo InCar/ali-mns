@@ -37,7 +37,7 @@ describe('AliMNS', function(){
         });
     });
     
-    describe('MNS', function(){
+    describe.only('MNS', function(){
         this.timeout(1000 * 5);
         
         var mqName = aliCfg.mqName + Math.floor(Math.random() * 10000);
@@ -76,6 +76,7 @@ describe('AliMNS', function(){
         
         it('#sendP & #peekP &recvP & #reserveP & #deleteP', function(done){
             var testSource = "test message"
+            mq.setRecvTolerance(5.0);
             
             mq.sendP(testSource)
             .then(function(dataSent){
@@ -105,6 +106,18 @@ describe('AliMNS', function(){
                 assert.equal(testTarget, testSource);
             })
             .then(function(){done();}, done);
+        });
+        
+        it('#recvP() force timeout', function(done){
+            mq.setRecvTolerance(-4.8); // negative value to force timeout
+            mq.recvP(5.0)
+            .then(function(data){
+                assert.fail(data, "expect timeout");
+            }, function(ex){
+                assert.equal(ex.message, "timeout");
+                assert.equal(ex.code, "ETIMEDOUT");
+            })
+            .then(done, done);
         });
         
         it('#deleteP', function(done){
