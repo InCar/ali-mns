@@ -17,11 +17,22 @@ module AliMNS{
         // url: request url
         // body: optional, request body
         // head: optional, request heads
-        public sendP(method:string, url:string, body?:any, headers?:any){
-            var req :any = { method:method,url:url };
+        // options: optional, request options
+        public sendP(method:string, url:string, body?:any, headers?:any, options?:any){
+            var req :any = { method:method, url:url };
             if(body) req.body = this._xmlBuilder.create(body).toString();
 
             req.headers = this.makeHeaders(method, url, headers, req.body);
+            
+            // combines options
+            if(options){
+                for(var opt in options){
+                    if(opt === "method" || opt === "url" || opt === "uri" || opt === "body" || opt === "headers")
+                        continue; // skip these options for avoid conflict to other arguments
+                    else if(options.hasOwnProperty(opt))
+                        req[opt] = options[opt];
+                }
+            }
 
             return Request.requestP(req).then((response)=>{
                 // convert the body from xml to json

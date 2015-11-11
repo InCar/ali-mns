@@ -160,6 +160,12 @@ This argument is prior to the options.DelaySeconds in attributes of message queu
     mq.sendP("Hello Ali-MNS", 8, 0).then(console.log, console.error);
 ```
 
+## getRecvTolerance() & setRecvTolerance(value:number)
+Gets or sets the tolerance seconds for mq.recvP method.
+
+value: number. Default is 5, in seconds. How long will mq.recvP wait before timeout.
+Due to network lag, the return of mq.recvP method may be later than expected.
+
 ## mq.recvP(waitSeconds?:number)
 Receive a message from queue.
 This will change the message to invisible for a while.
@@ -169,6 +175,7 @@ The max seconds to wait if queue is empty, after that an error *MessageNotExist*
 ```javascript
     mq.recvP(5).then(console.log, console.error);
 ```
+This method will wait `waitSeconds + getRecvTolerance()` totally if queue is empty.
 
 ## mq.peekP()
 Peek a message.

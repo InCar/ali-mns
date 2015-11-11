@@ -62,11 +62,21 @@ var AliMNS;
         // url: request url
         // body: optional, request body
         // head: optional, request heads
-        OpenStack.prototype.sendP = function (method, url, body, headers) {
+        // options: optional, request options
+        OpenStack.prototype.sendP = function (method, url, body, headers, options) {
             var req = { method: method, url: url };
             if (body)
                 req.body = this._xmlBuilder.create(body).toString();
             req.headers = this.makeHeaders(method, url, headers, req.body);
+            // combines options
+            if (options) {
+                for (var opt in options) {
+                    if (opt === "method" || opt === "url" || opt === "uri" || opt === "body" || opt === "headers")
+                        continue; // skip these options for avoid conflict to other arguments
+                    else if (options.hasOwnProperty(opt))
+                        req[opt] = options[opt];
+                }
+            }
             return Request.requestP(req).then(function (response) {
                 // convert the body from xml to json
                 return Xml2js.parseStringP(response.body, { explicitArray: false })
@@ -217,6 +227,7 @@ var AliMNS;
             this._pattern = "http://%s.mns.cn-%s.aliyuncs.com/queues/%s";
             this._signalSTOP = true;
             this._evStopped = "AliMNS_MQ_NOTIFY_STOPPED";
+            this._recvTolerance = 5; // 接收消息的容忍时间(单位:秒)
             // 连续timeout计数器
             // 在某种未知的原因下,网络底层链接断了
             // 这时在程序内部的重试无法促使网络重连,以后的重试都是徒劳的
@@ -258,6 +269,9 @@ var AliMNS;
             debug("POST " + this._url, body);
             return this._openStack.sendP("POST", this._url, body);
         };
+        // 接收消息容忍时间(秒)
+        MQ.prototype.getRecvTolerance = function () { return this._recvTolerance; };
+        MQ.prototype.setRecvTolerance = function (value) { this._recvTolerance = value; };
         // 接收消息
         // waitSeconds, 最久等待多少秒0~30
         MQ.prototype.recvP = function (waitSeconds) {
@@ -267,26 +281,27 @@ var AliMNS;
                 url += "?waitseconds=" + waitSeconds;
             debug("GET " + url);
             return new Promise(function (resolve, reject) {
-                var bGotResponse = false;
-                // wait more 5 seconds to trigger timeout error
-                var timeOutSeconds = 5;
+                // use the timeout mechanism inside the request module
+                var options = { timeout: 1000 * _this._recvTolerance };
                 if (waitSeconds)
-                    timeOutSeconds += waitSeconds;
-                setTimeout(function () {
-                    if (!bGotResponse)
-                        reject(new Error("timeout"));
-                }, 1000 * timeOutSeconds);
-                _this._openStack.sendP("GET", url).done(function (data) {
+                    options.timeout += (1000 * waitSeconds);
+                _this._openStack.sendP("GET", url, options).done(function (data) {
                     debug(data);
-                    bGotResponse = true;
                     if (data && data.Message && data.Message.MessageBody) {
                         data.Message.MessageBody = _this.base64ToUtf8(data.Message.MessageBody);
                     }
                     resolve(data);
                 }, function (ex) {
                     debug(ex);
-                    bGotResponse = true;
-                    reject(ex);
+                    // for compatible with 1.x, still use literal "timeout"
+                    if (ex.code === "ETIMEDOUT") {
+                        var exTimeout = new Error("timeout");
+                        exTimeout.innerException = ex;
+                        reject(exTimeout);
+                    }
+                    else {
+                        reject(ex);
+                    }
                 });
             });
         };

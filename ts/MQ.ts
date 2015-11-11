@@ -47,6 +47,10 @@ module AliMNS{
             debug("POST " + this._url, body);
             return this._openStack.sendP("POST", this._url, body);
         }
+        
+        // 接收消息容忍时间(秒)
+        public getRecvTolerance(){ return this._recvTolerance; }
+        public setRecvTolerance(value:number){ this._recvTolerance = value; }
 
         // 接收消息
         // waitSeconds, 最久等待多少秒0~30
@@ -57,26 +61,27 @@ module AliMNS{
             debug("GET " + url);
 
             return new Promise(function(resolve, reject){
-                var bGotResponse = false;
-                // wait more 5 seconds to trigger timeout error
-                var timeOutSeconds = 5;
-                if(waitSeconds) timeOutSeconds += waitSeconds;
-                setTimeout(function(){
-                    if(!bGotResponse) reject(new Error("timeout"));
-                }, 1000*timeOutSeconds);
+                // use the timeout mechanism inside the request module
+                var options = { timeout: 1000 * _this._recvTolerance };
+                if(waitSeconds) options.timeout += (1000 * waitSeconds);
 
-
-                _this._openStack.sendP("GET", url).done(function(data){
+                _this._openStack.sendP("GET", url, options).done(function(data){
                     debug(data);
-                    bGotResponse = true;
                     if(data && data.Message && data.Message.MessageBody){
                         data.Message.MessageBody = _this.base64ToUtf8(data.Message.MessageBody)
                     }
                     resolve(data);
                 }, function(ex){
                     debug(ex);
-                    bGotResponse = true;
-                    reject(ex);
+                    // for compatible with 1.x, still use literal "timeout"
+                    if(ex.code === "ETIMEDOUT"){
+                        var exTimeout:any = new Error("timeout");
+                        exTimeout.innerException = ex;
+                        reject(exTimeout);
+                    }
+                    else{
+                        reject(ex);
+                    }
                 });
             });
         }
@@ -222,6 +227,7 @@ module AliMNS{
         private _signalSTOP = true;
         private _evStopped = "AliMNS_MQ_NOTIFY_STOPPED";
         private _emitter:any;
+        private _recvTolerance = 5; // 接收消息的容忍时间(单位:秒)
 
         // 连续timeout计数器
         // 在某种未知的原因下,网络底层链接断了
