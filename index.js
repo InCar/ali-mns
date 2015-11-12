@@ -41,6 +41,29 @@ var AliMNS;
     })();
     AliMNS.Account = Account;
 })(AliMNS || (AliMNS = {}));
+var AliMNS;
+(function (AliMNS) {
+    // The Message class
+    var Msg = (function () {
+        function Msg(msg, priority, delaySeconds) {
+            // message priority
+            this._priority = 8;
+            // message delay to visible, in seconds
+            this._delaySeconds = 0;
+            this._msg = msg;
+            if (!isNaN(priority))
+                this._priority = priority;
+            if (!isNaN(delaySeconds))
+                this._delaySeconds = delaySeconds;
+        }
+        Msg.prototype.getMsg = function () { return this._msg; };
+        Msg.prototype.getPriority = function () { return this._priority; };
+        Msg.prototype.getDelaySeconds = function () { return this._delaySeconds; };
+        return Msg;
+    })();
+    AliMNS.Msg = Msg;
+})(AliMNS || (AliMNS = {}));
+/// <reference path="Msg.ts" />
 // The Ali open interface stack
 /// <reference path="ali-mns.ts" />
 /// <reference path="Account.ts" />
@@ -159,6 +182,7 @@ var AliMNS;
     })();
     AliMNS.OpenStack = OpenStack;
 })(AliMNS || (AliMNS = {}));
+/// <reference path="Interfaces.ts" />
 /// <reference path="Account.ts" />
 /// <reference path="OpenStack.ts" />
 var AliMNS;
@@ -214,8 +238,107 @@ var AliMNS;
     // For compatible v1.x
     AliMNS.MQS = MNS;
 })(AliMNS || (AliMNS = {}));
+/// <reference path="Interfaces.ts" />
+var AliMNS;
+(function (AliMNS) {
+    var NotifyRecv = (function () {
+        function NotifyRecv(mq) {
+            this._signalSTOP = true;
+            this._evStopped = "AliMNS_MQ_NOTIFY_STOPPED";
+            // 连续timeout计数器
+            // 在某种未知的原因下,网络底层链接断了
+            // 这时在程序内部的重试无法促使网络重连,以后的重试都是徒劳的
+            // 如果连续发生反复重试都依然timeout,那么极有可能已经发生此种情况了
+            // 这时抛出NetworkBroken异常
+            this._timeoutCount = 0;
+            this._timeoutMax = 128;
+            this._mq = mq;
+            // emitter
+            this._emitter = new Events.EventEmitter();
+        }
+        // 消息通知.每当有消息收到时,都调用cb回调函数
+        // 如果cb返回true,那么将删除消息,否则保留消息
+        NotifyRecv.prototype.notifyRecv = function (cb, waitSeconds) {
+            this._signalSTOP = false;
+            this._timeoutCount = 0;
+            this.notifyRecvInternal(cb, waitSeconds || 5);
+        };
+        NotifyRecv.prototype.notifyRecvInternal = function (cb, waitSeconds) {
+            var _this = this;
+            // This signal will be triggered by notifyStopP()
+            if (this._signalSTOP) {
+                debug("notifyStopped");
+                this._emitter.emit(this._evStopped);
+                return;
+            }
+            debug("notifyRecvInternal()");
+            try {
+                this._mq.recvP(waitSeconds).done(function (dataRecv) {
+                    try {
+                        debug(dataRecv);
+                        _this._timeoutCount = 0;
+                        if (cb(null, dataRecv)) {
+                            _this._mq.deleteP(dataRecv.Message.ReceiptHandle)
+                                .done(null, function (ex) {
+                                console.log(ex);
+                            });
+                        }
+                    }
+                    catch (ex) {
+                    }
+                    _this.notifyRecvInternal(cb, waitSeconds);
+                }, function (ex) {
+                    debug(ex);
+                    if ((!ex.Error) || (ex.Error.Code !== "MessageNotExist")) {
+                        cb(ex, null);
+                    }
+                    if (ex) {
+                        if (ex.message === "timeout") {
+                            _this._timeoutCount++;
+                            if (_this._timeoutCount > _this._timeoutMax) {
+                                // 极度可能网络底层断了
+                                cb(new Error("NetworkBroken"), null);
+                            }
+                        }
+                        else if (ex.Error && ex.Error.Code === "MessageNotExist") {
+                            _this._timeoutCount = 0;
+                        }
+                    }
+                    process.nextTick(function () {
+                        _this.notifyRecvInternal(cb, waitSeconds);
+                    });
+                });
+            }
+            catch (ex) {
+                // ignore any ex 
+                console.log(ex.toString());
+                // 过5秒重试
+                debug("Retry after 5 seconds");
+                setTimeout(function () {
+                    _this.notifyRecvInternal(cb, waitSeconds);
+                }, 5000);
+            }
+        };
+        // 停止消息通知
+        NotifyRecv.prototype.notifyStopP = function () {
+            var _this = this;
+            if (this._signalSTOP)
+                return Promise.resolve(this._evStopped);
+            this._signalSTOP = true;
+            return new Promise(function (resolve) {
+                _this._emitter.once(_this._evStopped, function () {
+                    resolve(_this._evStopped);
+                });
+            });
+        };
+        return NotifyRecv;
+    })();
+    AliMNS.NotifyRecv = NotifyRecv;
+})(AliMNS || (AliMNS = {}));
+/// <reference path="Interfaces.ts" />
 /// <reference path="Account.ts" />
 /// <reference path="OpenStack.ts" />
+/// <reference path="NotifyRecv.ts" />
 var AliMNS;
 (function (AliMNS) {
     // The MQ
@@ -225,16 +348,8 @@ var AliMNS;
         function MQ(name, account, region) {
             this._region = "hangzhou";
             this._pattern = "http://%s.mns.cn-%s.aliyuncs.com/queues/%s";
-            this._signalSTOP = true;
-            this._evStopped = "AliMNS_MQ_NOTIFY_STOPPED";
             this._recvTolerance = 5; // 接收消息的容忍时间(单位:秒)
-            // 连续timeout计数器
-            // 在某种未知的原因下,网络底层链接断了
-            // 这时在程序内部的重试无法促使网络重连,以后的重试都是徒劳的
-            // 如果连续发生反复重试都依然timeout,那么极有可能已经发生此种情况了
-            // 这时抛出NetworkBroken异常
-            this._timeoutCount = 0;
-            this._timeoutMax = 128;
+            this._notifyRecv = null;
             this._name = name;
             this._account = account;
             if (region)
@@ -244,8 +359,6 @@ var AliMNS;
             this._url = this.makeURL();
             // create the OpenStack object
             this._openStack = new AliMNS.OpenStack(account);
-            // emitter
-            this._emitter = new Events.EventEmitter();
         }
         MQ.prototype.getName = function () { return this._name; };
         MQ.prototype.getAccount = function () { return this._account; };
@@ -338,77 +451,17 @@ var AliMNS;
         // 消息通知.每当有消息收到时,都调用cb回调函数
         // 如果cb返回true,那么将删除消息,否则保留消息
         MQ.prototype.notifyRecv = function (cb, waitSeconds) {
-            this._signalSTOP = false;
-            this._timeoutCount = 0;
-            this.notifyRecvInternal(cb, waitSeconds || 5);
-        };
-        MQ.prototype.notifyRecvInternal = function (cb, waitSeconds) {
-            var _this = this;
-            // This signal will be triggered by notifyStopP()
-            if (this._signalSTOP) {
-                debug("notifyStopped");
-                this._emitter.emit(this._evStopped);
-                return;
-            }
-            debug("notifyRecvInternal()");
-            try {
-                this.recvP(waitSeconds).done(function (dataRecv) {
-                    try {
-                        debug(dataRecv);
-                        _this._timeoutCount = 0;
-                        if (cb(null, dataRecv)) {
-                            _this.deleteP(dataRecv.Message.ReceiptHandle)
-                                .done(null, function (ex) {
-                                console.log(ex);
-                            });
-                        }
-                    }
-                    catch (ex) {
-                    }
-                    _this.notifyRecvInternal(cb, waitSeconds);
-                }, function (ex) {
-                    debug(ex);
-                    if ((!ex.Error) || (ex.Error.Code !== "MessageNotExist")) {
-                        cb(ex, null);
-                    }
-                    if (ex) {
-                        if (ex.message === "timeout") {
-                            _this._timeoutCount++;
-                            if (_this._timeoutCount > _this._timeoutMax) {
-                                // 极度可能网络底层断了
-                                cb(new Error("NetworkBroken"), null);
-                            }
-                        }
-                        else if (ex.Error && ex.Error.Code === "MessageNotExist") {
-                            _this._timeoutCount = 0;
-                        }
-                    }
-                    process.nextTick(function () {
-                        _this.notifyRecvInternal(cb, waitSeconds);
-                    });
-                });
-            }
-            catch (ex) {
-                // ignore any ex 
-                console.log(ex.toString());
-                // 过5秒重试
-                debug("Retry after 5 seconds");
-                setTimeout(function () {
-                    _this.notifyRecvInternal(cb, waitSeconds);
-                }, 5000);
-            }
+            // lazy create
+            if (this._notifyRecv === null)
+                this._notifyRecv = new AliMNS.NotifyRecv(this);
+            return this._notifyRecv.notifyRecv(cb, waitSeconds);
         };
         // 停止消息通知
         MQ.prototype.notifyStopP = function () {
-            var _this = this;
-            if (this._signalSTOP)
-                return Promise.resolve(this._evStopped);
-            this._signalSTOP = true;
-            return new Promise(function (resolve) {
-                _this._emitter.once(_this._evStopped, function () {
-                    resolve(_this._evStopped);
-                });
-            });
+            if (this._notifyRecv === null)
+                return Promise.resolve(0);
+            else
+                return this._notifyRecv.notifyStopP();
         };
         MQ.prototype.makeAttrURL = function () {
             return Util.format(this._pattern, this._account.getAccountId(), this._region, this._name);
@@ -427,28 +480,6 @@ var AliMNS;
         return MQ;
     })();
     AliMNS.MQ = MQ;
-})(AliMNS || (AliMNS = {}));
-var AliMNS;
-(function (AliMNS) {
-    // The Message class
-    var Msg = (function () {
-        function Msg(msg, priority, delaySeconds) {
-            // message priority
-            this._priority = 8;
-            // message delay to visible, in seconds
-            this._delaySeconds = 0;
-            this._msg = msg;
-            if (!isNaN(priority))
-                this._priority = priority;
-            if (!isNaN(delaySeconds))
-                this._delaySeconds = delaySeconds;
-        }
-        Msg.prototype.getMsg = function () { return this._msg; };
-        Msg.prototype.getPriority = function () { return this._priority; };
-        Msg.prototype.getDelaySeconds = function () { return this._delaySeconds; };
-        return Msg;
-    })();
-    AliMNS.Msg = Msg;
 })(AliMNS || (AliMNS = {}));
 /// <reference path="MQ.ts" />
 /// <reference path="Msg.ts" />

@@ -2,7 +2,7 @@
 /// <reference path="Msg.ts" />
 
 module AliMNS{
-    export class MQBatch extends MQ{
+    export class MQBatch extends MQ implements IMQBatch{
         constructor(name:string, account:Account, region?:string){
             super(name, account, region);
         }
