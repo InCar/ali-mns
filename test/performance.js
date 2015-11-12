@@ -40,10 +40,13 @@ describe.only('AliMNS-performance', function(){
                 var mqName = mqNameBase + (i<10?"-0":"-") + i;
                 var mq = new AliMNS.MQBatch(mqName, account, aliCfg.region);
                 var taskCreation = mns.createP(mq.getName()).then(function(){
-                    mqs.push(mq);
                     mq.setRecvTolerance(5);
+                    // counters
+                    mq.ccSent = 0;
+                    mq.ccRecv = 0;
                 });
                 task.push(taskCreation);
+                mqs.push(mq);
             })();
         }
         Promise.all(task).then(function(task){ done(); }, done);
@@ -55,7 +58,18 @@ describe.only('AliMNS-performance', function(){
             var taskDeletion = mns.deleteP(mqs[i].getName());
             task.push(taskDeletion);
         }
-        Promise.all(task).then(function(task){ done(); }, done);
+        Promise.all(task).then(function(task){
+            // counters
+            var totalSend = 0, totalRecv = 0;
+            for(var i=0;i<mqs.length;i++){
+                var mq = mqs[i];
+                totalSend += mq.ccSent;
+                totalRecv += mq.ccRecv;
+                debugTest(mq.getName() + " sent:" + mq.ccSent + " recv:" +mq.ccRecv);
+            }
+            debugTest("total " + mqs.length + " queues sent:" + totalSend + " recv:" + totalRecv);
+            done();
+        }, done);
     });
     
     describe('concurrent-queues', function(){
@@ -76,11 +90,12 @@ describe.only('AliMNS-performance', function(){
                     for(var i=0;i<batch_size&&i<max_msg-iSent;i++){
                         msgs.push(new AliMNS.Msg("concurrent-queues-msg" + (iSent + i)));
                     }
-                    task.push(pickMQ(mqs).sendP(msgs));
+                    var mq = pickMQ(mqs);
+                    task.push(mq.sendP(msgs));
                     iSent += msgs.length;
                     
-                    var tm = new Date();
-                    debugTest(tm.getMinutes() + ":" + tm.getSeconds() + "." + tm.getMilliseconds(), iSent + " were sent.")
+                    mq.ccSent += msgs.length;
+                    debugTest(tmNow(), mq.getName() + " - " + iSent + " were sent.");
                 })();
             }
             Promise.all(task).then(function(){ done(); });
@@ -95,8 +110,8 @@ describe.only('AliMNS-performance', function(){
                         if(ex === null){
                             recved++;
                             
-                            var tm = new Date();
-                            debugTest(tm.getMinutes() + ":" + tm.getSeconds() + "." + tm.getMilliseconds(), recved + " - " + mq.getName() + " - " + msg.Message.MessageBody);
+                            mq.ccRecv++;
+                            debugTest(tmNow(), recved + " - " + mq.getName() + " - " + msg.Message.MessageBody);
                             if(recved === max_msg) done(); // all messages have been received
                             return true; // auto delete msg
                         }
@@ -115,12 +130,17 @@ describe.only('AliMNS-performance', function(){
                     mq.notifyStopP().then(function(){
                         stopped++;
                         
-                        var tm = new Date();
-                        debugTest(tm.getMinutes() + ":" + tm.getSeconds() + "." + tm.getMilliseconds(), mq.getName() + " stopped.");
+                        debugTest(tmNow(), mq.getName() + " stopped.");
                         if(stopped === mqs.length) done(); // all mq has stopped.
                     });
                 })(mqs[i]);
             }
         });
     });
+    
+    // help time
+    var tmNow = function(){
+        var tm = new Date();
+        return tm.getMinutes() + ":" + tm.getSeconds() + "." + tm.getMilliseconds()
+    }
 });
