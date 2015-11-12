@@ -29,6 +29,7 @@ describe.only('AliMNS-performance', function(){
     
     var max_queue = 20;
     var max_msg = 2000;
+    var recv_batch_mode = 7;
     
     before(function(done){
         // Make queues
@@ -104,21 +105,36 @@ describe.only('AliMNS-performance', function(){
         it('#recvP', function(done){
             var recved = 0;
             
+            function countMsg(mq, msg){
+                mq.ccRecv++;
+                recved++;
+                debugTest(tmNow(), recved + " - " + mq.getName() + " - " + msg.MessageBody);
+            }
+            
             for(var i=0;i<mqs.length;i++){
                 (function(mq){
                     mq.notifyRecv(function(ex, msg){
                         if(ex === null){
-                            recved++;
+                            if(msg){
+                                if(msg.Messages && msg.Messages.Message){
+                                    // batch mode
+                                    for(var i=0;i<msg.Messages.Message.length;i++){
+                                        countMsg(mq, msg.Messages.Message[i]);
+                                    }
+                                }
+                                else if(msg.Message){
+                                    // single mode
+                                    countMsg(mq, msg.Message);
+                                }
+                            }
                             
-                            mq.ccRecv++;
-                            debugTest(tmNow(), recved + " - " + mq.getName() + " - " + msg.Message.MessageBody);
                             if(recved === max_msg) done(); // all messages have been received
                             return true; // auto delete msg
                         }
                         else{
-                            console.warn(mq.getName(), ex);
+                            debugTest(tmNow(), mq.getName(), ex);
                         }
-                    }, 5);
+                    }, 5, recv_batch_mode);
                 })(mqs[i]);
             }
         });

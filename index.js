@@ -258,12 +258,24 @@ var AliMNS;
         }
         // 消息通知.每当有消息收到时,都调用cb回调函数
         // 如果cb返回true,那么将删除消息,否则保留消息
-        NotifyRecv.prototype.notifyRecv = function (cb, waitSeconds) {
+        NotifyRecv.prototype.notifyRecv = function (cb, waitSeconds, numOfMessages) {
             this._signalSTOP = false;
             this._timeoutCount = 0;
-            this.notifyRecvInternal(cb, waitSeconds || 5);
+            this.notifyRecvInternal(cb, waitSeconds || 5, numOfMessages);
         };
-        NotifyRecv.prototype.notifyRecvInternal = function (cb, waitSeconds) {
+        // 停止消息通知
+        NotifyRecv.prototype.notifyStopP = function () {
+            var _this = this;
+            if (this._signalSTOP)
+                return Promise.resolve(this._evStopped);
+            this._signalSTOP = true;
+            return new Promise(function (resolve) {
+                _this._emitter.once(_this._evStopped, function () {
+                    resolve(_this._evStopped);
+                });
+            });
+        };
+        NotifyRecv.prototype.notifyRecvInternal = function (cb, waitSeconds, numOfMessages) {
             var _this = this;
             // This signal will be triggered by notifyStopP()
             if (this._signalSTOP) {
@@ -273,12 +285,13 @@ var AliMNS;
             }
             debug("notifyRecvInternal()");
             try {
-                this._mq.recvP(waitSeconds).done(function (dataRecv) {
+                var mqBatch = this._mq;
+                mqBatch.recvP(waitSeconds, numOfMessages).done(function (dataRecv) {
                     try {
                         debug(dataRecv);
                         _this._timeoutCount = 0;
                         if (cb(null, dataRecv)) {
-                            _this._mq.deleteP(dataRecv.Message.ReceiptHandle)
+                            _this.deleteP(dataRecv)
                                 .done(null, function (ex) {
                                 console.log(ex);
                             });
@@ -286,7 +299,7 @@ var AliMNS;
                     }
                     catch (ex) {
                     }
-                    _this.notifyRecvInternal(cb, waitSeconds);
+                    _this.notifyRecvInternal(cb, waitSeconds, numOfMessages);
                 }, function (ex) {
                     debug(ex);
                     if ((!ex.Error) || (ex.Error.Code !== "MessageNotExist")) {
@@ -305,7 +318,7 @@ var AliMNS;
                         }
                     }
                     process.nextTick(function () {
-                        _this.notifyRecvInternal(cb, waitSeconds);
+                        _this.notifyRecvInternal(cb, waitSeconds, numOfMessages);
                     });
                 });
             }
@@ -315,21 +328,30 @@ var AliMNS;
                 // 过5秒重试
                 debug("Retry after 5 seconds");
                 setTimeout(function () {
-                    _this.notifyRecvInternal(cb, waitSeconds);
+                    _this.notifyRecvInternal(cb, waitSeconds, numOfMessages);
                 }, 5000);
             }
         };
-        // 停止消息通知
-        NotifyRecv.prototype.notifyStopP = function () {
-            var _this = this;
-            if (this._signalSTOP)
-                return Promise.resolve(this._evStopped);
-            this._signalSTOP = true;
-            return new Promise(function (resolve) {
-                _this._emitter.once(_this._evStopped, function () {
-                    resolve(_this._evStopped);
-                });
-            });
+        NotifyRecv.prototype.deleteP = function (dataRecv) {
+            if (dataRecv) {
+                if (dataRecv.Message) {
+                    return this._mq.deleteP(dataRecv.Message.ReceiptHandle);
+                }
+                else if (dataRecv.Messages && dataRecv.Messages.Message) {
+                    var rhs = [];
+                    for (var i = 0; i < dataRecv.Messages.Message.length; i++) {
+                        rhs.push(dataRecv.Messages.Message[i].ReceiptHandle);
+                    }
+                    var mqBatch = this._mq;
+                    return mqBatch.deleteP(rhs);
+                }
+                else {
+                    return Promise.resolve(dataRecv);
+                }
+            }
+            else {
+                return Promise.resolve(dataRecv);
+            }
         };
         return NotifyRecv;
     })();
@@ -346,10 +368,10 @@ var AliMNS;
         // The constructor. name & account is required.
         // region can be "hangzhou", "beijing" or "qingdao", the default is "hangzhou"
         function MQ(name, account, region) {
+            this._notifyRecv = null;
             this._region = "hangzhou";
             this._pattern = "http://%s.mns.cn-%s.aliyuncs.com/queues/%s";
             this._recvTolerance = 5; // 接收消息的容忍时间(单位:秒)
-            this._notifyRecv = null;
             this._name = name;
             this._account = account;
             if (region)
@@ -495,6 +517,7 @@ var AliMNS;
         __extends(MQBatch, _super);
         function MQBatch(name, account, region) {
             _super.call(this, name, account, region);
+            this._notifyRecv = null;
         }
         MQBatch.prototype.sendP = function (msg, priority, delaySeconds) {
             if (typeof msg === "string") {
@@ -569,7 +592,7 @@ var AliMNS;
                 _super.prototype.deleteP.call(this, receiptHandle);
             }
             else {
-                debug("DELETE " + this._url);
+                debug("DELETE " + this._url, receiptHandle);
                 var body = { ReceiptHandles: { '#list': [] } };
                 for (var i = 0; i < receiptHandle.length; i++) {
                     var r = { ReceiptHandle: receiptHandle[i] };
@@ -577,6 +600,14 @@ var AliMNS;
                 }
                 return this._openStack.sendP("DELETE", this._url, body);
             }
+        };
+        // 消息通知.每当有消息收到时,都调用cb回调函数
+        // 如果cb返回true,那么将删除消息,否则保留消息
+        MQBatch.prototype.notifyRecv = function (cb, waitSeconds, numOfMessages) {
+            // lazy create
+            if (this._notifyRecv === null)
+                this._notifyRecv = new AliMNS.NotifyRecv(this);
+            return this._notifyRecv.notifyRecv(cb, waitSeconds, numOfMessages);
         };
         MQBatch.prototype.decodeB64Messages = function (data) {
             if (data) {

@@ -1,8 +1,8 @@
 /// <reference path="Interfaces.ts" />
 
 module AliMNS{
-    export class NotifyRecv implements INotifyRecv {
-        public constructor(mq:MQ){
+    export class NotifyRecv implements INotifyRecvBatch {
+        public constructor(mq: IMQ){
             this._mq = mq;
 
             // emitter
@@ -11,13 +11,26 @@ module AliMNS{
         
         // 消息通知.每当有消息收到时,都调用cb回调函数
         // 如果cb返回true,那么将删除消息,否则保留消息
-        public notifyRecv(cb:(ex:Error, msg:any)=>Boolean, waitSeconds?:number){
+        public notifyRecv(cb:(ex:Error, msg:any)=>Boolean, waitSeconds?:number, numOfMessages?:number){
             this._signalSTOP = false;
             this._timeoutCount = 0;
-            this.notifyRecvInternal(cb, waitSeconds || 5);
+            this.notifyRecvInternal(cb, waitSeconds || 5, numOfMessages);
         }
 
-        private notifyRecvInternal(cb:(ex:Error, msg:any)=>Boolean, waitSeconds:number){
+        // 停止消息通知
+        public notifyStopP(){
+            if(this._signalSTOP)
+                return Promise.resolve(this._evStopped);
+
+            this._signalSTOP = true;
+            return new Promise((resolve)=>{
+                this._emitter.once(this._evStopped, ()=>{
+                    resolve(this._evStopped);
+                });
+            });
+        }
+
+        private notifyRecvInternal(cb:(ex:Error, msg:any)=>Boolean, waitSeconds:number, numOfMessages?:number){
             // This signal will be triggered by notifyStopP()
             if(this._signalSTOP){
                 debug("notifyStopped");
@@ -28,12 +41,13 @@ module AliMNS{
             debug("notifyRecvInternal()");
 
             try {
-                this._mq.recvP(waitSeconds).done((dataRecv)=> {
+                var mqBatch : IMQBatch = this._mq;
+                mqBatch.recvP(waitSeconds, numOfMessages).done((dataRecv)=> {
                     try {
                         debug(dataRecv);
                         this._timeoutCount = 0;
                         if (cb(null, dataRecv)) {
-                            this._mq.deleteP(dataRecv.Message.ReceiptHandle)
+                            this.deleteP(dataRecv)
                                 .done(null, (ex)=> {
                                     console.log(ex);
                                 });
@@ -42,7 +56,7 @@ module AliMNS{
                     catch (ex) {
                         // ignore any ex throw from cb
                     }
-                    this.notifyRecvInternal(cb, waitSeconds);
+                    this.notifyRecvInternal(cb, waitSeconds, numOfMessages);
                 }, (ex)=> {
                     debug(ex);
                     if ((!ex.Error) || (ex.Error.Code !== "MessageNotExist")) {
@@ -63,7 +77,7 @@ module AliMNS{
                     }
 
                     process.nextTick(()=> {
-                        this.notifyRecvInternal(cb, waitSeconds);
+                        this.notifyRecvInternal(cb, waitSeconds, numOfMessages);
                     });
                 });
             }
@@ -73,25 +87,34 @@ module AliMNS{
                 // 过5秒重试
                 debug("Retry after 5 seconds");
                 setTimeout(()=>{
-                    this.notifyRecvInternal(cb, waitSeconds);
+                    this.notifyRecvInternal(cb, waitSeconds, numOfMessages);
                 }, 5000);
             }
         }
-
-        // 停止消息通知
-        public notifyStopP(){
-            if(this._signalSTOP)
-                return Promise.resolve(this._evStopped);
-
-            this._signalSTOP = true;
-            return new Promise((resolve)=>{
-                this._emitter.once(this._evStopped, ()=>{
-                    resolve(this._evStopped);
-                });
-            });
+        
+        private deleteP(dataRecv:any){
+            if(dataRecv){
+                if(dataRecv.Message){
+                    return this._mq.deleteP(dataRecv.Message.ReceiptHandle);
+                }
+                else if(dataRecv.Messages && dataRecv.Messages.Message){
+                    var rhs = [];
+                    for(var i=0;i<dataRecv.Messages.Message.length;i++){
+                        rhs.push(dataRecv.Messages.Message[i].ReceiptHandle);
+                    }
+                    var mqBatch:IMQBatch = this._mq;
+                    return mqBatch.deleteP(rhs);
+                }
+                else{
+                    return Promise.resolve(dataRecv);
+                }
+            }
+            else{
+                return Promise.resolve(dataRecv);
+            }
         }
         
-        private _mq: MQ;
+        private _mq: IMQ;
         private _signalSTOP = true;
         
         private _evStopped = "AliMNS_MQ_NOTIFY_STOPPED";

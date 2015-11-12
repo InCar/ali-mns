@@ -5,7 +5,7 @@
 
 module AliMNS{
     // The MQ
-    export class MQ implements IMQ{
+    export class MQ implements IMQ, INotifyRecv{
         // The constructor. name & account is required.
         // region can be "hangzhou", "beijing" or "qingdao", the default is "hangzhou"
         constructor(name:string, account:Account, region?:string){
@@ -154,6 +154,7 @@ module AliMNS{
 
         protected _url:string; // mq url
         protected _openStack: OpenStack;
+        protected _notifyRecv: INotifyRecv = null;
 
         private _name: string;
         private _region = "hangzhou";
@@ -162,6 +163,5 @@ module AliMNS{
         private _pattern = "http://%s.mns.cn-%s.aliyuncs.com/queues/%s";
         
         private _recvTolerance = 5; // 接收消息的容忍时间(单位:秒)
-        private _notifyRecv: INotifyRecv = null;
     }
 }
