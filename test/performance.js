@@ -5,8 +5,9 @@ var Path = require("path");
 var fs = require("fs");
 var Promise = require("promise");
 var AliMNS = require(Path.join(__dirname, "../index.js"));
+var debugTest   = require("debug")("ali-mns.test");
 
-describe('AliMNS-performance', function(){
+describe.only('AliMNS-performance', function(){
     this.timeout(1000 * 30);
     // ali account configuration
     var aliCfg = {
@@ -73,11 +74,13 @@ describe('AliMNS-performance', function(){
                 (function(){
                     var msgs = [];
                     for(var i=0;i<batch_size&&i<max_msg-iSent;i++){
-                        msgs.push(new AliMNS.Msg("concurrent-queues-msg" + iSent + i));
+                        msgs.push(new AliMNS.Msg("concurrent-queues-msg" + (iSent + i)));
                     }
                     task.push(pickMQ(mqs).sendP(msgs));
                     iSent += msgs.length;
-                    console.info(iSent + " were sent.")
+                    
+                    var tm = new Date();
+                    debugTest(tm.getMinutes() + ":" + tm.getSeconds() + "." + tm.getMilliseconds(), iSent + " were sent.")
                 })();
             }
             Promise.all(task).then(function(){ done(); });
@@ -93,14 +96,29 @@ describe('AliMNS-performance', function(){
                             recved++;
                             
                             var tm = new Date();
-                            console.info(tm.getMinutes() + ":" + tm.getSeconds() + "." + tm.getMilliseconds(), recved + " - " + mq.getName() + " - " + msg.Message.MessageBody);
-                            if(recved === max_msg) done();
+                            debugTest(tm.getMinutes() + ":" + tm.getSeconds() + "." + tm.getMilliseconds(), recved + " - " + mq.getName() + " - " + msg.Message.MessageBody);
+                            if(recved === max_msg) done(); // all messages have been received
                             return true; // auto delete msg
                         }
                         else{
                             console.warn(mq.getName(), ex);
                         }
                     }, 5);
+                })(mqs[i]);
+            }
+        });
+        
+        it('#stopRecv', function(done){
+            var stopped = 0;
+            for(var i=0;i<mqs.length;i++){
+                (function(mq){
+                    mq.notifyStopP().then(function(){
+                        stopped++;
+                        
+                        var tm = new Date();
+                        debugTest(tm.getMinutes() + ":" + tm.getSeconds() + "." + tm.getMilliseconds(), mq.getName() + " stopped.");
+                        if(stopped === mqs.length) done(); // all mq has stopped.
+                    });
                 })(mqs[i]);
             }
         });
