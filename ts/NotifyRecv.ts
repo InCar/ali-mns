@@ -56,6 +56,7 @@ module AliMNS{
                     }
                     catch (ex) {
                         // ignore any ex throw from cb
+                        console.warn(ex);
                     }
                     this.notifyRecvInternal(cb, waitSeconds, numOfMessages);
                 }, (ex)=> {
@@ -84,7 +85,7 @@ module AliMNS{
             }
             catch(ex){
                 // ignore any ex 
-                console.log(ex.toString());
+                console.warn(ex);
                 // 过5秒重试
                 debug("Retry after 5 seconds");
                 setTimeout(()=>{
