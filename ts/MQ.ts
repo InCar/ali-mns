@@ -96,9 +96,7 @@ module AliMNS{
             debug("GET " + url);
             return this._openStack.sendP("GET", url).then(function(data){
                 debug(data);
-                if(data && data.Message && data.Message.MessageBody){
-                    data.Message.MessageBody = _this.base64ToUtf8(data.Message.MessageBody)
-                }
+                _this.decodeB64Messages(data);
                 return data;
             });
         }
@@ -133,14 +131,6 @@ module AliMNS{
             if(this._notifyRecv === null) return Promise.resolve(0);
             else return this._notifyRecv.notifyStopP();
         }
-
-        private makeAttrURL(){
-            return Util.format(this._pattern, this._account.getAccountId(), this._region, this._name);
-        }
-
-        private makeURL(){
-            return this.makeAttrURL() + "/messages";
-        }
         
         protected utf8ToBase64(src){
             var buf = new Buffer.Buffer(src, 'utf8');
@@ -151,17 +141,30 @@ module AliMNS{
             var buf = new Buffer.Buffer(src, 'base64');
             return buf.toString('utf8');
         }
+        
+        protected decodeB64Messages(data:any){
+            if(data && data.Message && data.Message.MessageBody){
+                data.Message.MessageBody = this.base64ToUtf8(data.Message.MessageBody);
+            }
+        }
+
+        private makeAttrURL(){
+            return Util.format(this._pattern, this._account.getAccountId(), this._region, this._name);
+        }
+
+        private makeURL(){
+            return this.makeAttrURL() + "/messages";
+        }
 
         protected _url:string; // mq url
         protected _openStack: OpenStack;
         protected _notifyRecv: INotifyRecv = null;
+        protected _recvTolerance = 5; // 接收消息的容忍时间(单位:秒)
 
         private _name: string;
         private _region = "hangzhou";
         private _account: Account;
         private _urlAttr: string; // mq attr url
         private _pattern = "http://%s.mns.cn-%s.aliyuncs.com/queues/%s";
-        
-        private _recvTolerance = 5; // 接收消息的容忍时间(单位:秒)
     }
 }

@@ -38,24 +38,25 @@ module AliMNS{
                 debug("GET " + url);
     
                 return new Promise(function(resolve, reject){
-                    var bGotResponse = false;
-                    // wait more 5 seconds to trigger timeout error
-                    var timeOutSeconds = 5;
-                    if(waitSeconds) timeOutSeconds += waitSeconds;
-                    setTimeout(function(){
-                        if(!bGotResponse) reject(new Error("timeout"));
-                    }, 1000*timeOutSeconds);
-    
-    
-                    _this._openStack.sendP("GET", url).done(function(data){
+                    // use the timeout mechanism inside the request module
+                    var options = { timeout: 1000 * _this._recvTolerance };
+                    if(waitSeconds) options.timeout += (1000 * waitSeconds);
+
+                    _this._openStack.sendP("GET", url, null, null, options).done(function(data){
                         debug(data);
-                        bGotResponse = true;
                         _this.decodeB64Messages(data);
                         resolve(data);
                     }, function(ex){
-                        debug(ex);
-                        bGotResponse = true;
-                        reject(ex);
+                        // for compatible with 1.x, still use literal "timeout"
+                        if(ex.code === "ETIMEDOUT"){
+                            var exTimeout:any = new Error("timeout");
+                            exTimeout.innerException = ex;
+                            exTimeout.code = ex.code;
+                            reject(exTimeout);
+                        }
+                        else{
+                            reject(ex);
+                        }
                     });
                 })
             }
@@ -85,7 +86,7 @@ module AliMNS{
             if(typeof receiptHandle === "string") {
                 super.deleteP(receiptHandle);
             }
-            else{ 
+            else{
                 debug("DELETE " + this._url, receiptHandle);
                 var body : any = { ReceiptHandles: { '#list': [] } };
                 for(var i=0;i<receiptHandle.length;i++){
@@ -105,17 +106,15 @@ module AliMNS{
             return this._notifyRecv.notifyRecv(cb, waitSeconds, numOfMessages);
         }
         
-        private decodeB64Messages(data:any){
-            if(data){
-                if(data.Message && data.Message.MessageBody){
-                    data.Message.MessageBody = this.base64ToUtf8(data.Message.MessageBody);
+        protected decodeB64Messages(data:any){
+            if(data && data.Messages && data.Messages.Message){
+                for(var i=0;i<data.Messages.Message.length;i++){
+                    var msg = data.Messages.Message[i];
+                    if(msg.MessageBody) msg.MessageBody = this.base64ToUtf8(msg.MessageBody);
                 }
-                else if(data.Messages && data.Messages.Message){
-                    for(var i=0;i<data.Messages.Message.length;i++){
-                        var msg = data.Messages.Message[i];
-                        if(msg.MessageBody) msg.MessageBody = this.base64ToUtf8(msg.MessageBody);
-                    }
-                }
+            }
+            else{
+                super.decodeB64Messages(data);
             }
         }
         
