@@ -1,8 +1,9 @@
 /// <reference path="MQ.ts" />
 /// <reference path="Msg.ts" />
+/// <reference path="Interfaces.ts" />
 
 module AliMNS{
-    export class MQBatch extends MQ{
+    export class MQBatch extends MQ implements IMQBatch, INotifyRecvBatch{
         constructor(name:string, account:Account, region?:string){
             super(name, account, region);
         }
@@ -38,24 +39,25 @@ module AliMNS{
                 debug("GET " + url);
     
                 return new Promise(function(resolve, reject){
-                    var bGotResponse = false;
-                    // wait more 5 seconds to trigger timeout error
-                    var timeOutSeconds = 5;
-                    if(waitSeconds) timeOutSeconds += waitSeconds;
-                    setTimeout(function(){
-                        if(!bGotResponse) reject(new Error("timeout"));
-                    }, 1000*timeOutSeconds);
-    
-    
-                    _this._openStack.sendP("GET", url).done(function(data){
+                    // use the timeout mechanism inside the request module
+                    var options = { timeout: 1000 * _this._recvTolerance };
+                    if(waitSeconds) options.timeout += (1000 * waitSeconds);
+
+                    _this._openStack.sendP("GET", url, null, null, options).done(function(data){
                         debug(data);
-                        bGotResponse = true;
                         _this.decodeB64Messages(data);
                         resolve(data);
                     }, function(ex){
-                        debug(ex);
-                        bGotResponse = true;
-                        reject(ex);
+                        // for compatible with 1.x, still use literal "timeout"
+                        if(ex.code === "ETIMEDOUT"){
+                            var exTimeout:any = new Error("timeout");
+                            exTimeout.innerException = ex;
+                            exTimeout.code = ex.code;
+                            reject(exTimeout);
+                        }
+                        else{
+                            reject(ex);
+                        }
                     });
                 })
             }
@@ -85,8 +87,8 @@ module AliMNS{
             if(typeof receiptHandle === "string") {
                 super.deleteP(receiptHandle);
             }
-            else{ 
-                debug("DELETE " + this._url);
+            else{
+                debug("DELETE " + this._url, receiptHandle);
                 var body : any = { ReceiptHandles: { '#list': [] } };
                 for(var i=0;i<receiptHandle.length;i++){
                     var r:any = { ReceiptHandle: receiptHandle[i] };
@@ -96,18 +98,32 @@ module AliMNS{
             }
         }
         
-        private decodeB64Messages(data:any){
-            if(data){
-                if(data.Message && data.Message.MessageBody){
-                    data.Message.MessageBody = this.base64ToUtf8(data.Message.MessageBody);
+        // 消息通知.每当有消息收到时,都调用cb回调函数
+        // 如果cb返回true,那么将删除消息,否则保留消息
+        public notifyRecv(cb:(ex:Error, msg:any)=>Boolean, waitSeconds?:number, numOfMessages?:number){
+            // lazy create
+            if(this._notifyRecv === null) this._notifyRecv = new NotifyRecv(this);
+            
+            return this._notifyRecv.notifyRecv(cb, waitSeconds, numOfMessages);
+        }
+        
+        protected decodeB64Messages(data:any){
+            if(data && data.Messages && data.Messages.Message){
+                if(!Util.isArray(data.Messages.Message)){
+                    // Just a single message, use an array to hold it
+                    var msg = data.Messages.Message;
+                    data.Messages.Message = [msg];
                 }
-                else if(data.Messages && data.Messages.Message){
-                    for(var i=0;i<data.Messages.Message.length;i++){
-                        var msg = data.Messages.Message[i];
-                        if(msg.MessageBody) msg.MessageBody = this.base64ToUtf8(msg.MessageBody);
-                    }
+                for(var i=0;i<data.Messages.Message.length;i++){
+                    var msg = data.Messages.Message[i];
+                    if(msg.MessageBody) msg.MessageBody = this.base64ToUtf8(msg.MessageBody);
                 }
             }
+            else{
+                super.decodeB64Messages(data);
+            }
         }
+        
+        protected _notifyRecv: INotifyRecvBatch = null;
     }
 }

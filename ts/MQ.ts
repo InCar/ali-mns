@@ -1,9 +1,11 @@
+/// <reference path="Interfaces.ts" />
 /// <reference path="Account.ts" />
 /// <reference path="OpenStack.ts" />
+/// <reference path="NotifyRecv.ts" />
 
 module AliMNS{
     // The MQ
-    export class MQ{
+    export class MQ implements IMQ, INotifyRecv{
         // The constructor. name & account is required.
         // region can be "hangzhou", "beijing" or "qingdao", the default is "hangzhou"
         constructor(name:string, account:Account, region?:string){
@@ -17,9 +19,6 @@ module AliMNS{
 
             // create the OpenStack object
             this._openStack = new OpenStack(account);
-
-            // emitter
-            this._emitter = new Events.EventEmitter();
         }
         
         public getName(){ return this._name; }
@@ -97,9 +96,7 @@ module AliMNS{
             debug("GET " + url);
             return this._openStack.sendP("GET", url).then(function(data){
                 debug(data);
-                if(data && data.Message && data.Message.MessageBody){
-                    data.Message.MessageBody = _this.base64ToUtf8(data.Message.MessageBody)
-                }
+                _this.decodeB64Messages(data);
                 return data;
             });
         }
@@ -123,91 +120,16 @@ module AliMNS{
         // 消息通知.每当有消息收到时,都调用cb回调函数
         // 如果cb返回true,那么将删除消息,否则保留消息
         public notifyRecv(cb:(ex:Error, msg:any)=>Boolean, waitSeconds?:number){
-            this._signalSTOP = false;
-            this._timeoutCount = 0;
-            this.notifyRecvInternal(cb, waitSeconds || 5);
-        }
-
-        private notifyRecvInternal(cb:(ex:Error, msg:any)=>Boolean, waitSeconds:number){
-            // This signal will be triggered by notifyStopP()
-            if(this._signalSTOP){
-                debug("notifyStopped");
-                this._emitter.emit(this._evStopped);
-                return;
-            }
-
-            debug("notifyRecvInternal()");
-
-            try {
-                this.recvP(waitSeconds).done((dataRecv)=> {
-                    try {
-                        debug(dataRecv);
-                        this._timeoutCount = 0;
-                        if (cb(null, dataRecv)) {
-                            this.deleteP(dataRecv.Message.ReceiptHandle)
-                                .done(null, (ex)=> {
-                                    console.log(ex);
-                                });
-                        }
-                    }
-                    catch (ex) {
-                        // ignore any ex throw from cb
-                    }
-                    this.notifyRecvInternal(cb, waitSeconds);
-                }, (ex)=> {
-                    debug(ex);
-                    if ((!ex.Error) || (ex.Error.Code !== "MessageNotExist")) {
-                        cb(ex, null);
-                    }
-
-                    if(ex) {
-                        if (ex.message === "timeout") {
-                            this._timeoutCount++;
-                            if (this._timeoutCount > this._timeoutMax) {
-                                // 极度可能网络底层断了
-                                cb(new Error("NetworkBroken"), null);
-                            }
-                        }
-                        else if (ex.Error && ex.Error.Code === "MessageNotExist") {
-                            this._timeoutCount = 0;
-                        }
-                    }
-
-                    process.nextTick(()=> {
-                        this.notifyRecvInternal(cb, waitSeconds);
-                    });
-                });
-            }
-            catch(ex){
-                // ignore any ex 
-                console.log(ex.toString());
-                // 过5秒重试
-                debug("Retry after 5 seconds");
-                setTimeout(()=>{
-                    this.notifyRecvInternal(cb, waitSeconds);
-                }, 5000);
-            }
+            // lazy create
+            if(this._notifyRecv === null) this._notifyRecv = new NotifyRecv(this);
+            
+            return this._notifyRecv.notifyRecv(cb, waitSeconds);
         }
 
         // 停止消息通知
         public notifyStopP(){
-            if(this._signalSTOP)
-                return Promise.resolve(this._evStopped);
-
-            this._signalSTOP = true;
-            return new Promise((resolve)=>{
-                this._emitter.once(this._evStopped, ()=>{
-                    resolve(this._evStopped);
-                });
-            });
-        }
-
-        private makeAttrURL(){
-            return Util.format(this._pattern, this._account.getAccountId(), this._region, this._name);
-        }
-
-        private makeURL(){
-            return this.makeAttrURL() + "/messages";
+            if(this._notifyRecv === null) return Promise.resolve(0);
+            else return this._notifyRecv.notifyStopP();
         }
         
         protected utf8ToBase64(src){
@@ -219,26 +141,30 @@ module AliMNS{
             var buf = new Buffer.Buffer(src, 'base64');
             return buf.toString('utf8');
         }
+        
+        protected decodeB64Messages(data:any){
+            if(data && data.Message && data.Message.MessageBody){
+                data.Message.MessageBody = this.base64ToUtf8(data.Message.MessageBody);
+            }
+        }
+
+        private makeAttrURL(){
+            return Util.format(this._pattern, this._account.getAccountId(), this._region, this._name);
+        }
+
+        private makeURL(){
+            return this.makeAttrURL() + "/messages";
+        }
 
         protected _url:string; // mq url
         protected _openStack: OpenStack;
+        protected _notifyRecv: INotifyRecv = null;
+        protected _recvTolerance = 5; // 接收消息的容忍时间(单位:秒)
 
         private _name: string;
         private _region = "hangzhou";
         private _account: Account;
         private _urlAttr: string; // mq attr url
         private _pattern = "http://%s.mns.cn-%s.aliyuncs.com/queues/%s";
-        private _signalSTOP = true;
-        private _evStopped = "AliMNS_MQ_NOTIFY_STOPPED";
-        private _emitter:any;
-        private _recvTolerance = 5; // 接收消息的容忍时间(单位:秒)
-
-        // 连续timeout计数器
-        // 在某种未知的原因下,网络底层链接断了
-        // 这时在程序内部的重试无法促使网络重连,以后的重试都是徒劳的
-        // 如果连续发生反复重试都依然timeout,那么极有可能已经发生此种情况了
-        // 这时抛出NetworkBroken异常
-        private _timeoutCount = 0;
-        private _timeoutMax = 128;
     }
 }

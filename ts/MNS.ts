@@ -1,9 +1,10 @@
+/// <reference path="Interfaces.ts" />
 /// <reference path="Account.ts" />
 /// <reference path="OpenStack.ts" />
 
 module AliMNS{
     // The MNS can list, create, delete, modify the mq.
-    export class MNS{
+    export class MNS implements IMNS {
         // The constructor. account: ali account; region: can be "hangzhou", "beijing" or "qingdao", default is "hangzhou"
         constructor(account:Account, region?:string){
             // save the input arguments

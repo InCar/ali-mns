@@ -41,6 +41,29 @@ var AliMNS;
     })();
     AliMNS.Account = Account;
 })(AliMNS || (AliMNS = {}));
+var AliMNS;
+(function (AliMNS) {
+    // The Message class
+    var Msg = (function () {
+        function Msg(msg, priority, delaySeconds) {
+            // message priority
+            this._priority = 8;
+            // message delay to visible, in seconds
+            this._delaySeconds = 0;
+            this._msg = msg;
+            if (!isNaN(priority))
+                this._priority = priority;
+            if (!isNaN(delaySeconds))
+                this._delaySeconds = delaySeconds;
+        }
+        Msg.prototype.getMsg = function () { return this._msg; };
+        Msg.prototype.getPriority = function () { return this._priority; };
+        Msg.prototype.getDelaySeconds = function () { return this._delaySeconds; };
+        return Msg;
+    })();
+    AliMNS.Msg = Msg;
+})(AliMNS || (AliMNS = {}));
+/// <reference path="Msg.ts" />
 // The Ali open interface stack
 /// <reference path="ali-mns.ts" />
 /// <reference path="Account.ts" />
@@ -159,6 +182,7 @@ var AliMNS;
     })();
     AliMNS.OpenStack = OpenStack;
 })(AliMNS || (AliMNS = {}));
+/// <reference path="Interfaces.ts" />
 /// <reference path="Account.ts" />
 /// <reference path="OpenStack.ts" />
 var AliMNS;
@@ -214,20 +238,14 @@ var AliMNS;
     // For compatible v1.x
     AliMNS.MQS = MNS;
 })(AliMNS || (AliMNS = {}));
-/// <reference path="Account.ts" />
-/// <reference path="OpenStack.ts" />
+/// <reference path="Interfaces.ts" />
+/// <reference path="ali-mns.ts" />
 var AliMNS;
 (function (AliMNS) {
-    // The MQ
-    var MQ = (function () {
-        // The constructor. name & account is required.
-        // region can be "hangzhou", "beijing" or "qingdao", the default is "hangzhou"
-        function MQ(name, account, region) {
-            this._region = "hangzhou";
-            this._pattern = "http://%s.mns.cn-%s.aliyuncs.com/queues/%s";
+    var NotifyRecv = (function () {
+        function NotifyRecv(mq) {
             this._signalSTOP = true;
             this._evStopped = "AliMNS_MQ_NOTIFY_STOPPED";
-            this._recvTolerance = 5; // 接收消息的容忍时间(单位:秒)
             // 连续timeout计数器
             // 在某种未知的原因下,网络底层链接断了
             // 这时在程序内部的重试无法促使网络重连,以后的重试都是徒劳的
@@ -235,6 +253,126 @@ var AliMNS;
             // 这时抛出NetworkBroken异常
             this._timeoutCount = 0;
             this._timeoutMax = 128;
+            this._mq = mq;
+            // emitter
+            this._emitter = new Events.EventEmitter();
+        }
+        // 消息通知.每当有消息收到时,都调用cb回调函数
+        // 如果cb返回true,那么将删除消息,否则保留消息
+        NotifyRecv.prototype.notifyRecv = function (cb, waitSeconds, numOfMessages) {
+            this._signalSTOP = false;
+            this._timeoutCount = 0;
+            this.notifyRecvInternal(cb, waitSeconds || 5, numOfMessages);
+        };
+        // 停止消息通知
+        NotifyRecv.prototype.notifyStopP = function () {
+            var _this = this;
+            if (this._signalSTOP)
+                return Promise.resolve(this._evStopped);
+            this._signalSTOP = true;
+            return new Promise(function (resolve) {
+                _this._emitter.once(_this._evStopped, function () {
+                    resolve(_this._evStopped);
+                });
+            });
+        };
+        NotifyRecv.prototype.notifyRecvInternal = function (cb, waitSeconds, numOfMessages) {
+            var _this = this;
+            // This signal will be triggered by notifyStopP()
+            if (this._signalSTOP) {
+                debug("notifyStopped");
+                this._emitter.emit(this._evStopped);
+                return;
+            }
+            debug("notifyRecvInternal()");
+            try {
+                var mqBatch = this._mq;
+                mqBatch.recvP(waitSeconds, numOfMessages).done(function (dataRecv) {
+                    try {
+                        debug(dataRecv);
+                        _this._timeoutCount = 0;
+                        if (cb(null, dataRecv)) {
+                            _this.deleteP(dataRecv)
+                                .done(null, function (ex) {
+                                console.log(ex);
+                            });
+                        }
+                    }
+                    catch (ex) {
+                    }
+                    _this.notifyRecvInternal(cb, waitSeconds, numOfMessages);
+                }, function (ex) {
+                    debug(ex);
+                    if ((!ex.Error) || (ex.Error.Code !== "MessageNotExist")) {
+                        cb(ex, null);
+                    }
+                    if (ex) {
+                        if (ex.message === "timeout") {
+                            _this._timeoutCount++;
+                            if (_this._timeoutCount > _this._timeoutMax) {
+                                // 极度可能网络底层断了
+                                cb(new Error("NetworkBroken"), null);
+                            }
+                        }
+                        else if (ex.Error && ex.Error.Code === "MessageNotExist") {
+                            _this._timeoutCount = 0;
+                        }
+                    }
+                    process.nextTick(function () {
+                        _this.notifyRecvInternal(cb, waitSeconds, numOfMessages);
+                    });
+                });
+            }
+            catch (ex) {
+                // ignore any ex 
+                console.log(ex.toString());
+                // 过5秒重试
+                debug("Retry after 5 seconds");
+                setTimeout(function () {
+                    _this.notifyRecvInternal(cb, waitSeconds, numOfMessages);
+                }, 5000);
+            }
+        };
+        NotifyRecv.prototype.deleteP = function (dataRecv) {
+            if (dataRecv) {
+                if (dataRecv.Message) {
+                    return this._mq.deleteP(dataRecv.Message.ReceiptHandle);
+                }
+                else if (dataRecv.Messages && dataRecv.Messages.Message) {
+                    var rhs = [];
+                    for (var i = 0; i < dataRecv.Messages.Message.length; i++) {
+                        rhs.push(dataRecv.Messages.Message[i].ReceiptHandle);
+                    }
+                    var mqBatch = this._mq;
+                    return mqBatch.deleteP(rhs);
+                }
+                else {
+                    return Promise.resolve(dataRecv);
+                }
+            }
+            else {
+                return Promise.resolve(dataRecv);
+            }
+        };
+        return NotifyRecv;
+    })();
+    AliMNS.NotifyRecv = NotifyRecv;
+})(AliMNS || (AliMNS = {}));
+/// <reference path="Interfaces.ts" />
+/// <reference path="Account.ts" />
+/// <reference path="OpenStack.ts" />
+/// <reference path="NotifyRecv.ts" />
+var AliMNS;
+(function (AliMNS) {
+    // The MQ
+    var MQ = (function () {
+        // The constructor. name & account is required.
+        // region can be "hangzhou", "beijing" or "qingdao", the default is "hangzhou"
+        function MQ(name, account, region) {
+            this._notifyRecv = null;
+            this._recvTolerance = 5; // 接收消息的容忍时间(单位:秒)
+            this._region = "hangzhou";
+            this._pattern = "http://%s.mns.cn-%s.aliyuncs.com/queues/%s";
             this._name = name;
             this._account = account;
             if (region)
@@ -244,8 +382,6 @@ var AliMNS;
             this._url = this.makeURL();
             // create the OpenStack object
             this._openStack = new AliMNS.OpenStack(account);
-            // emitter
-            this._emitter = new Events.EventEmitter();
         }
         MQ.prototype.getName = function () { return this._name; };
         MQ.prototype.getAccount = function () { return this._account; };
@@ -315,9 +451,7 @@ var AliMNS;
             debug("GET " + url);
             return this._openStack.sendP("GET", url).then(function (data) {
                 debug(data);
-                if (data && data.Message && data.Message.MessageBody) {
-                    data.Message.MessageBody = _this.base64ToUtf8(data.Message.MessageBody);
-                }
+                _this.decodeB64Messages(data);
                 return data;
             });
         };
@@ -338,83 +472,17 @@ var AliMNS;
         // 消息通知.每当有消息收到时,都调用cb回调函数
         // 如果cb返回true,那么将删除消息,否则保留消息
         MQ.prototype.notifyRecv = function (cb, waitSeconds) {
-            this._signalSTOP = false;
-            this._timeoutCount = 0;
-            this.notifyRecvInternal(cb, waitSeconds || 5);
-        };
-        MQ.prototype.notifyRecvInternal = function (cb, waitSeconds) {
-            var _this = this;
-            // This signal will be triggered by notifyStopP()
-            if (this._signalSTOP) {
-                debug("notifyStopped");
-                this._emitter.emit(this._evStopped);
-                return;
-            }
-            debug("notifyRecvInternal()");
-            try {
-                this.recvP(waitSeconds).done(function (dataRecv) {
-                    try {
-                        debug(dataRecv);
-                        _this._timeoutCount = 0;
-                        if (cb(null, dataRecv)) {
-                            _this.deleteP(dataRecv.Message.ReceiptHandle)
-                                .done(null, function (ex) {
-                                console.log(ex);
-                            });
-                        }
-                    }
-                    catch (ex) {
-                    }
-                    _this.notifyRecvInternal(cb, waitSeconds);
-                }, function (ex) {
-                    debug(ex);
-                    if ((!ex.Error) || (ex.Error.Code !== "MessageNotExist")) {
-                        cb(ex, null);
-                    }
-                    if (ex) {
-                        if (ex.message === "timeout") {
-                            _this._timeoutCount++;
-                            if (_this._timeoutCount > _this._timeoutMax) {
-                                // 极度可能网络底层断了
-                                cb(new Error("NetworkBroken"), null);
-                            }
-                        }
-                        else if (ex.Error && ex.Error.Code === "MessageNotExist") {
-                            _this._timeoutCount = 0;
-                        }
-                    }
-                    process.nextTick(function () {
-                        _this.notifyRecvInternal(cb, waitSeconds);
-                    });
-                });
-            }
-            catch (ex) {
-                // ignore any ex 
-                console.log(ex.toString());
-                // 过5秒重试
-                debug("Retry after 5 seconds");
-                setTimeout(function () {
-                    _this.notifyRecvInternal(cb, waitSeconds);
-                }, 5000);
-            }
+            // lazy create
+            if (this._notifyRecv === null)
+                this._notifyRecv = new AliMNS.NotifyRecv(this);
+            return this._notifyRecv.notifyRecv(cb, waitSeconds);
         };
         // 停止消息通知
         MQ.prototype.notifyStopP = function () {
-            var _this = this;
-            if (this._signalSTOP)
-                return Promise.resolve(this._evStopped);
-            this._signalSTOP = true;
-            return new Promise(function (resolve) {
-                _this._emitter.once(_this._evStopped, function () {
-                    resolve(_this._evStopped);
-                });
-            });
-        };
-        MQ.prototype.makeAttrURL = function () {
-            return Util.format(this._pattern, this._account.getAccountId(), this._region, this._name);
-        };
-        MQ.prototype.makeURL = function () {
-            return this.makeAttrURL() + "/messages";
+            if (this._notifyRecv === null)
+                return Promise.resolve(0);
+            else
+                return this._notifyRecv.notifyStopP();
         };
         MQ.prototype.utf8ToBase64 = function (src) {
             var buf = new Buffer.Buffer(src, 'utf8');
@@ -424,34 +492,24 @@ var AliMNS;
             var buf = new Buffer.Buffer(src, 'base64');
             return buf.toString('utf8');
         };
+        MQ.prototype.decodeB64Messages = function (data) {
+            if (data && data.Message && data.Message.MessageBody) {
+                data.Message.MessageBody = this.base64ToUtf8(data.Message.MessageBody);
+            }
+        };
+        MQ.prototype.makeAttrURL = function () {
+            return Util.format(this._pattern, this._account.getAccountId(), this._region, this._name);
+        };
+        MQ.prototype.makeURL = function () {
+            return this.makeAttrURL() + "/messages";
+        };
         return MQ;
     })();
     AliMNS.MQ = MQ;
 })(AliMNS || (AliMNS = {}));
-var AliMNS;
-(function (AliMNS) {
-    // The Message class
-    var Msg = (function () {
-        function Msg(msg, priority, delaySeconds) {
-            // message priority
-            this._priority = 8;
-            // message delay to visible, in seconds
-            this._delaySeconds = 0;
-            this._msg = msg;
-            if (!isNaN(priority))
-                this._priority = priority;
-            if (!isNaN(delaySeconds))
-                this._delaySeconds = delaySeconds;
-        }
-        Msg.prototype.getMsg = function () { return this._msg; };
-        Msg.prototype.getPriority = function () { return this._priority; };
-        Msg.prototype.getDelaySeconds = function () { return this._delaySeconds; };
-        return Msg;
-    })();
-    AliMNS.Msg = Msg;
-})(AliMNS || (AliMNS = {}));
 /// <reference path="MQ.ts" />
 /// <reference path="Msg.ts" />
+/// <reference path="Interfaces.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -464,6 +522,7 @@ var AliMNS;
         __extends(MQBatch, _super);
         function MQBatch(name, account, region) {
             _super.call(this, name, account, region);
+            this._notifyRecv = null;
         }
         MQBatch.prototype.sendP = function (msg, priority, delaySeconds) {
             if (typeof msg === "string") {
@@ -492,24 +551,25 @@ var AliMNS;
                     url += "&waitseconds=" + waitSeconds;
                 debug("GET " + url);
                 return new Promise(function (resolve, reject) {
-                    var bGotResponse = false;
-                    // wait more 5 seconds to trigger timeout error
-                    var timeOutSeconds = 5;
+                    // use the timeout mechanism inside the request module
+                    var options = { timeout: 1000 * _this._recvTolerance };
                     if (waitSeconds)
-                        timeOutSeconds += waitSeconds;
-                    setTimeout(function () {
-                        if (!bGotResponse)
-                            reject(new Error("timeout"));
-                    }, 1000 * timeOutSeconds);
-                    _this._openStack.sendP("GET", url).done(function (data) {
+                        options.timeout += (1000 * waitSeconds);
+                    _this._openStack.sendP("GET", url, null, null, options).done(function (data) {
                         debug(data);
-                        bGotResponse = true;
                         _this.decodeB64Messages(data);
                         resolve(data);
                     }, function (ex) {
-                        debug(ex);
-                        bGotResponse = true;
-                        reject(ex);
+                        // for compatible with 1.x, still use literal "timeout"
+                        if (ex.code === "ETIMEDOUT") {
+                            var exTimeout = new Error("timeout");
+                            exTimeout.innerException = ex;
+                            exTimeout.code = ex.code;
+                            reject(exTimeout);
+                        }
+                        else {
+                            reject(ex);
+                        }
                     });
                 });
             }
@@ -538,7 +598,7 @@ var AliMNS;
                 _super.prototype.deleteP.call(this, receiptHandle);
             }
             else {
-                debug("DELETE " + this._url);
+                debug("DELETE " + this._url, receiptHandle);
                 var body = { ReceiptHandles: { '#list': [] } };
                 for (var i = 0; i < receiptHandle.length; i++) {
                     var r = { ReceiptHandle: receiptHandle[i] };
@@ -547,18 +607,29 @@ var AliMNS;
                 return this._openStack.sendP("DELETE", this._url, body);
             }
         };
+        // 消息通知.每当有消息收到时,都调用cb回调函数
+        // 如果cb返回true,那么将删除消息,否则保留消息
+        MQBatch.prototype.notifyRecv = function (cb, waitSeconds, numOfMessages) {
+            // lazy create
+            if (this._notifyRecv === null)
+                this._notifyRecv = new AliMNS.NotifyRecv(this);
+            return this._notifyRecv.notifyRecv(cb, waitSeconds, numOfMessages);
+        };
         MQBatch.prototype.decodeB64Messages = function (data) {
-            if (data) {
-                if (data.Message && data.Message.MessageBody) {
-                    data.Message.MessageBody = this.base64ToUtf8(data.Message.MessageBody);
+            if (data && data.Messages && data.Messages.Message) {
+                if (!Util.isArray(data.Messages.Message)) {
+                    // Just a single message, use an array to hold it
+                    var msg = data.Messages.Message;
+                    data.Messages.Message = [msg];
                 }
-                else if (data.Messages && data.Messages.Message) {
-                    for (var i = 0; i < data.Messages.Message.length; i++) {
-                        var msg = data.Messages.Message[i];
-                        if (msg.MessageBody)
-                            msg.MessageBody = this.base64ToUtf8(msg.MessageBody);
-                    }
+                for (var i = 0; i < data.Messages.Message.length; i++) {
+                    var msg = data.Messages.Message[i];
+                    if (msg.MessageBody)
+                        msg.MessageBody = this.base64ToUtf8(msg.MessageBody);
                 }
+            }
+            else {
+                _super.prototype.decodeB64Messages.call(this, data);
             }
         };
         return MQBatch;
