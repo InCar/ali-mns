@@ -299,6 +299,8 @@ Return the delay seconds of message.
 
 # MQBatch
 Provide the batch process model introduced in a new edtion of Ali-MNS service in June, 2015.
+It derives from MQ, so all methods in MQ are avaiable in MQBatch too. For example, you can 
+use `mqBatch.setRecvTolerance(1.2)` to adjust the timeout behavior of *mqBatch.recvP()*.
 ```javascript
 var mqBatch = new AliMNS.MQBatch(aliCfg.mqName, account, aliCfg.region);
 ```
@@ -362,8 +364,15 @@ receiptHandle: String or an array of string. Return by mq.recvP mq.notifyRecv or
     }).then(console.log, console.error);
 ```
 
+## mqBatch.notifyRecv(cb:(ex:Error, msg:any)=>Boolean, waitSeconds?:number, numOfMessages?:number)
+Register a callback function to receive messages in batch mode.
+
+numOfMessages: number. optional. The max number of message can be received in a batch, can be 1~16, default is 1.
+
+All other arguments are same as *mq.notifyRecv*.
+
 # DEBUG Trace
-Set the DEBUG environment to "ali-mns" to enable the debug trace output.
+Set the environment variable **DEBUG** to "ali-mns" to enable the debug trace output.
 ```SHELL
 # linux bash
 export DEBUG=ali-mns
@@ -394,6 +403,38 @@ follow [this link](https://account.console.aliyun.com/#/secure) to find your acc
 
 In GitHub, [An branch v1.x](https://github.com/InCar/ali-mns/tree/v1.x) keeps tracking for the old mqs services.
 And use `npm install ali-mqs' to install the [ali-mqs](https://www.npmjs.com/package/ali-mqs) package for v1.x.
+
+# Performance - Serial vs. Batch
+Create 20 queues, then send 2000 messages to any one of queues randomly.
+
+It is about **10 times slower** in serial mode than in batch mode.  
+
+**1st - Serial Mode(batch_size=1)**
+```
+// 20 queues 2000 messages batch_size=1
+  AliMNS-performance
+    concurrent-queues
+      √ #BatchSend (3547ms)
+      √ #recvP (21605ms)
+      √ #stopRecv (6075ms)
+```
+
+**2nd - Batch Mode(Batch_size=16)**
+```
+// 20 queues 2000 messages batch_size=16
+  AliMNS-performance
+    concurrent-queues
+      √ #BatchSend (3472ms)
+      √ #recvP (2125ms)
+      √ #stopRecv (6044ms)
+```
+
+The testing code is in [$/test/performance.js](https://github.com/InCar/ali-mns/blob/master/test/performance.js)
+and a test log sample is in [$/test/performance.log](https://github.com/InCar/ali-mns/blob/master/test/performance.log)
+
+Needs [mocha](https://www.npmjs.com/package/mocha) module to run the test.
+
+Set environment variable **DEBUG** to **ali-mns.test** to turn on output trace(will slow down the test).
 
 # License
 MIT
