@@ -405,7 +405,7 @@ In GitHub, [An branch v1.x](https://github.com/InCar/ali-mns/tree/v1.x) keeps tr
 And use `npm install ali-mqs' to install the [ali-mqs](https://www.npmjs.com/package/ali-mqs) package for v1.x.
 
 # Performance - Serial vs. Batch
-Create 20 queues, then send 2000 messages to any one of queues randomly.
+Create 20 queues, then send 2000 messages to them randomly.
 
 It is about **10 times slower** in serial mode than in batch mode.  
 
