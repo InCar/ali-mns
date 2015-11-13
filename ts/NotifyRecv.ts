@@ -1,4 +1,5 @@
 /// <reference path="Interfaces.ts" />
+/// <reference path="ali-mns.ts" />
 
 module AliMNS{
     export class NotifyRecv implements INotifyRecvBatch {

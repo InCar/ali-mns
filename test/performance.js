@@ -7,7 +7,7 @@ var Promise = require("promise");
 var AliMNS = require(Path.join(__dirname, "../index.js"));
 var debugTest   = require("debug")("ali-mns.test");
 
-describe.only('AliMNS-performance', function(){
+describe('AliMNS-performance', function(){
     this.timeout(1000 * 30);
     // ali account configuration
     var aliCfg = {
@@ -29,7 +29,7 @@ describe.only('AliMNS-performance', function(){
     
     var max_queue = 20;
     var max_msg = 2000;
-    var recv_batch_mode = 7;
+    var recv_batch_mode = 16;
     
     before(function(done){
         // Make queues
@@ -117,6 +117,7 @@ describe.only('AliMNS-performance', function(){
                         if(ex === null){
                             if(msg){
                                 if(msg.Messages && msg.Messages.Message){
+                                    if(!msg.Messages.Message.length) console.log(msg.Messages.Message);
                                     // batch mode
                                     for(var i=0;i<msg.Messages.Message.length;i++){
                                         countMsg(mq, msg.Messages.Message[i]);

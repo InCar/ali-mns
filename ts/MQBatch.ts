@@ -1,5 +1,6 @@
 /// <reference path="MQ.ts" />
 /// <reference path="Msg.ts" />
+/// <reference path="Interfaces.ts" />
 
 module AliMNS{
     export class MQBatch extends MQ implements IMQBatch, INotifyRecvBatch{
@@ -108,6 +109,11 @@ module AliMNS{
         
         protected decodeB64Messages(data:any){
             if(data && data.Messages && data.Messages.Message){
+                if(!Util.isArray(data.Messages.Message)){
+                    // Just a single message, use an array to hold it
+                    var msg = data.Messages.Message;
+                    data.Messages.Message = [msg];
+                }
                 for(var i=0;i<data.Messages.Message.length;i++){
                     var msg = data.Messages.Message[i];
                     if(msg.MessageBody) msg.MessageBody = this.base64ToUtf8(msg.MessageBody);
