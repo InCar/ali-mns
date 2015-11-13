@@ -333,7 +333,7 @@ This will change the messages to invisible for a while.
 waitSeconds: number. optional.
 The max seconds to wait if queue is empty, after that an error *MessageNotExist* will be returned.
 
-numOfMessages: number. optional. The max number of message can be received in a batch, can be 1~16.
+numOfMessages: number. optional. The max number of message can be received in a batch, can be 1~16, default is 16.
 ```javascript
     mqBatch.recvP(5, 16).then(console.log, console.error);
 ```
@@ -342,7 +342,7 @@ numOfMessages: number. optional. The max number of message can be received in a 
 Peek message(s).
 This will not change the message to invisible.
 
-numOfMessages: number. optional. The max number of message can be peeked in a batch, can be 1~16.
+numOfMessages: number. optional. The max number of message can be peeked in a batch, can be 1~16, default is 16.
 ```javascript
     mqBatch.peekP(5, 16).then(console.log, console.error);
 ```
@@ -367,7 +367,7 @@ receiptHandle: String or an array of string. Return by mq.recvP mq.notifyRecv or
 ## mqBatch.notifyRecv(cb:(ex:Error, msg:any)=>Boolean, waitSeconds?:number, numOfMessages?:number)
 Register a callback function to receive messages in batch mode.
 
-numOfMessages: number. optional. The max number of message can be received in a batch, can be 1~16, default is 1.
+numOfMessages: number. optional. The max number of message can be received in a batch, can be 1~16, default is 16.
 
 All other arguments are same as *mq.notifyRecv*.
 
