@@ -262,7 +262,7 @@ var AliMNS;
         NotifyRecv.prototype.notifyRecv = function (cb, waitSeconds, numOfMessages) {
             this._signalSTOP = false;
             this._timeoutCount = 0;
-            this.notifyRecvInternal(cb, waitSeconds || 5, numOfMessages);
+            this.notifyRecvInternal(cb, waitSeconds, numOfMessages);
         };
         // 停止消息通知
         NotifyRecv.prototype.notifyStopP = function () {
@@ -477,7 +477,7 @@ var AliMNS;
             // lazy create
             if (this._notifyRecv === null)
                 this._notifyRecv = new AliMNS.NotifyRecv(this);
-            return this._notifyRecv.notifyRecv(cb, waitSeconds);
+            return this._notifyRecv.notifyRecv(cb, waitSeconds || 5);
         };
         // 停止消息通知
         MQ.prototype.notifyStopP = function () {
@@ -545,6 +545,8 @@ var AliMNS;
             }
         };
         MQBatch.prototype.recvP = function (waitSeconds, numOfMessages) {
+            if (numOfMessages === undefined)
+                numOfMessages = 16;
             if (numOfMessages && numOfMessages > 1) {
                 var _this = this;
                 var url = this._url;
@@ -580,6 +582,8 @@ var AliMNS;
             }
         };
         MQBatch.prototype.peekP = function (numOfMessages) {
+            if (numOfMessages === undefined)
+                numOfMessages = 16;
             if (numOfMessages && numOfMessages > 1) {
                 var _this = this;
                 var url = this._url + "?peekonly=true";
@@ -615,7 +619,7 @@ var AliMNS;
             // lazy create
             if (this._notifyRecv === null)
                 this._notifyRecv = new AliMNS.NotifyRecv(this);
-            return this._notifyRecv.notifyRecv(cb, waitSeconds, numOfMessages);
+            return this._notifyRecv.notifyRecv(cb, waitSeconds || 5, numOfMessages || 16);
         };
         MQBatch.prototype.decodeB64Messages = function (data) {
             if (data && data.Messages && data.Messages.Message) {

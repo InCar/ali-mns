@@ -30,6 +30,7 @@ module AliMNS{
         }
 
         public recvP(waitSeconds?:number, numOfMessages?:number){
+            if(numOfMessages === undefined) numOfMessages = 16;
             if(numOfMessages && numOfMessages > 1){
                 var _this = this;
                 var url = this._url;
@@ -67,6 +68,7 @@ module AliMNS{
         }
 
         public peekP(numOfMessages?:number){
+            if(numOfMessages === undefined) numOfMessages = 16;
             if(numOfMessages && numOfMessages > 1){
                 var _this = this;
                 var url = this._url + "?peekonly=true";
@@ -104,7 +106,7 @@ module AliMNS{
             // lazy create
             if(this._notifyRecv === null) this._notifyRecv = new NotifyRecv(this);
             
-            return this._notifyRecv.notifyRecv(cb, waitSeconds, numOfMessages);
+            return this._notifyRecv.notifyRecv(cb, waitSeconds || 5, numOfMessages || 16);
         }
         
         protected decodeB64Messages(data:any){

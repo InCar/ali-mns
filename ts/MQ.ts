@@ -123,7 +123,7 @@ module AliMNS{
             // lazy create
             if(this._notifyRecv === null) this._notifyRecv = new NotifyRecv(this);
             
-            return this._notifyRecv.notifyRecv(cb, waitSeconds);
+            return this._notifyRecv.notifyRecv(cb, waitSeconds || 5);
         }
 
         // 停止消息通知

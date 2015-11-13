@@ -15,7 +15,7 @@ module AliMNS{
         public notifyRecv(cb:(ex:Error, msg:any)=>Boolean, waitSeconds?:number, numOfMessages?:number){
             this._signalSTOP = false;
             this._timeoutCount = 0;
-            this.notifyRecvInternal(cb, waitSeconds || 5, numOfMessages);
+            this.notifyRecvInternal(cb, waitSeconds, numOfMessages);
         }
 
         // 停止消息通知
