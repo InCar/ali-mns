@@ -24,8 +24,9 @@ module AliMNS{
             if(prefix)      headers["x-mns-prefix"] = prefix;
             if(pageMarker)  headers["x-mns-marker"] = pageMarker;
             if(pageSize)    headers["x-mns-ret-number"] = pageSize;
-            debug("GET " + this._url);
-            return this._openStack.sendP("GET", this._url, null, headers);
+            var url = this._url.slice(0, -1);
+            debug("GET " + url);
+            return this._openStack.sendP("GET", url, null, headers);
         }
 
         // Create a message queue
