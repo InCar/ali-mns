@@ -1,3 +1,8 @@
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 /// <reference path="../dts/external.d.ts" />
 // dependencies
 var Buffer = require("buffer");
@@ -38,7 +43,7 @@ var AliMNS;
             return buf.toString("base64");
         };
         return Account;
-    })();
+    }());
     AliMNS.Account = Account;
 })(AliMNS || (AliMNS = {}));
 var AliMNS;
@@ -60,7 +65,7 @@ var AliMNS;
         Msg.prototype.getPriority = function () { return this._priority; };
         Msg.prototype.getDelaySeconds = function () { return this._delaySeconds; };
         return Msg;
-    })();
+    }());
     AliMNS.Msg = Msg;
 })(AliMNS || (AliMNS = {}));
 /// <reference path="Msg.ts" />
@@ -179,7 +184,7 @@ var AliMNS;
             return this._account.hmac_sha1(text, "base64");
         };
         return OpenStack;
-    })();
+    }());
     AliMNS.OpenStack = OpenStack;
 })(AliMNS || (AliMNS = {}));
 /// <reference path="Interfaces.ts" />
@@ -234,7 +239,7 @@ var AliMNS;
             return Util.format(this._pattern, this._account.getAccountId(), this._region);
         };
         return MNS;
-    })();
+    }());
     AliMNS.MNS = MNS;
     // For compatible v1.x
     AliMNS.MQS = MNS;
@@ -358,7 +363,7 @@ var AliMNS;
             }
         };
         return NotifyRecv;
-    })();
+    }());
     AliMNS.NotifyRecv = NotifyRecv;
 })(AliMNS || (AliMNS = {}));
 /// <reference path="Interfaces.ts" />
@@ -507,18 +512,12 @@ var AliMNS;
             return this.makeAttrURL() + "/messages";
         };
         return MQ;
-    })();
+    }());
     AliMNS.MQ = MQ;
 })(AliMNS || (AliMNS = {}));
 /// <reference path="MQ.ts" />
 /// <reference path="Msg.ts" />
 /// <reference path="Interfaces.ts" />
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
 var AliMNS;
 (function (AliMNS) {
     var MQBatch = (function (_super) {
@@ -640,7 +639,7 @@ var AliMNS;
             }
         };
         return MQBatch;
-    })(AliMNS.MQ);
+    }(AliMNS.MQ));
     AliMNS.MQBatch = MQBatch;
 })(AliMNS || (AliMNS = {}));
 /// <reference path="ali-mns.ts" />
@@ -651,4 +650,5 @@ var AliMNS;
 /// <reference path="MQBatch.ts" />
 // Exports the AliMNS
 module.exports = AliMNS;
+
 //# sourceMappingURL=index.js.map

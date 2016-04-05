@@ -37,7 +37,7 @@ Visit [http://www.typescriptlang.org/](http://www.typescriptlang.org/) for more 
 
 If you interest in source file, visit GitHub [https://github.com/InCar/ali-mns](https://github.com/InCar/ali-mns)
 
-Please use 'grunt' to compile ts files into a single index.js file after downloading source files. 
+Please use 'gulp' to compile ts files into a single index.js file after downloading source files. 
 
 # API Reference
 ## Account(accountId:string, keyId:string, keySecret:string)

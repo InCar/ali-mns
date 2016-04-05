@@ -36,7 +36,7 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
 
 如果你对源代码感兴趣,访问GitHub [https://github.com/InCar/ali-mns](https://github.com/InCar/ali-mns)
 
-克隆源代后,使用`grunt`来编译.ts文件.
+克隆源代后,使用`gulp`来编译.ts文件.
 
 # API参考
 ## Account(accountId:string, keyId:string, keySecret:string)
