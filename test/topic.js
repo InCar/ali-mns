@@ -90,6 +90,13 @@ describe.only('AliMNS-topic', function(){
             .then(function(){ done(); }, done);
         });
         
+        it('#publishP', function(done){
+            topic.publishP("Hello")
+            .then(function(data){
+                // console.info(data); 
+            done(); }, done);
+        });
+        
         it('#unsubscribe', function(done){
             topic.unsubscribeP(subName)
             .then(function(){ done(); }, done);

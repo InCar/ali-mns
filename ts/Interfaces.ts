@@ -67,6 +67,8 @@ module AliMNS{
         subscribeP(name:string, endPoint:string, notifyStrategy?:string, notifyContentFormat?:string);
         // Unsubscribe a topic.
         unsubscribeP(name:string);
+        // Publish a message.
+        publishP(msg:string);
     }
     
     export interface ISubscription{

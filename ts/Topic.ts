@@ -15,6 +15,7 @@ module AliMNS{
             // make url
             this._urlAttr = this.makeAttrURL();
             this._urlSubscription = this.makeSubscriptionURL();
+            this._urlPublish = this.makePublishURL();
 
             // create the OpenStack object
             this._openStack = new OpenStack(account);
@@ -66,6 +67,21 @@ module AliMNS{
             debug("DELETE " + url);
             return this._openStack.sendP("DELETE", url);
         }
+        
+        public publishP(msg:string){
+            var body = {
+                Message: {
+                    MessageBody: this.utf8ToBase64(msg)
+                }
+            };
+            debug("POST " + this._urlPublish, body);
+            return this._openStack.sendP("POST", this._urlPublish, body);
+        }
+        
+        protected utf8ToBase64(src){
+            var buf = new Buffer.Buffer(src, 'utf8');
+            return buf.toString('base64');
+        }
 
         private makeAttrURL(){
             return Util.format(this._pattern, this._account.getAccountId(), this._region, this._name);
@@ -74,8 +90,13 @@ module AliMNS{
         private makeSubscriptionURL(){
             return this.makeAttrURL() + "/subscriptions/";
         }
+        
+        private makePublishURL(){
+            return this.makeAttrURL() + "/messages";
+        }
 
         private _urlSubscription:string; // topic subscription url
+        private _urlPublish:string; // publish message url
         protected _openStack: OpenStack;
 
         private _name: string;
