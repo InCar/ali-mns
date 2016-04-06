@@ -14,7 +14,7 @@ module AliMNS{
 
             // make url
             this._urlAttr = this.makeAttrURL();
-            this._url = this.makeURL();
+            this._urlSubscription = this.makeSubscriptionURL();
 
             // create the OpenStack object
             this._openStack = new OpenStack(account);
@@ -37,31 +37,45 @@ module AliMNS{
             return this._openStack.sendP("PUT", this._urlAttr + "?metaoverride=true", body);
         }
         
-        /*protected utf8ToBase64(src){
-            var buf = new Buffer.Buffer(src, 'utf8');
-            return buf.toString('base64');
+        // List all subscriptions.
+        public listP(prefix?:string, pageSize?:number, pageMarker?:string){
+            var headers = {};
+            if(prefix)      headers["x-mns-prefix"] = prefix;
+            if(pageMarker)  headers["x-mns-marker"] = pageMarker;
+            if(pageSize)    headers["x-mns-ret-number"] = pageSize;
+            var url = this._urlSubscription.slice(0, -1);
+            debug("GET " + url);
+            return this._openStack.sendP("GET", url, null, headers);
         }
         
-        protected base64ToUtf8(src){
-            var buf = new Buffer.Buffer(src, 'base64');
-            return buf.toString('utf8');
+        public subscribeP(name:string, endPoint:string, notifyStrategy?:string, notifyContentFormat?:string){
+            var body = {
+                Subscription: {
+                    Endpoint: endPoint
+                }
+            };
+            if(notifyStrategy) body.Subscription['NotifyStrategy'] = notifyStrategy;
+            if(notifyContentFormat) body.Subscription['NotifyContentFormat'] = notifyContentFormat;
+            var url = Url.resolve(this._urlSubscription, name);
+            debug("PUT " + url, body);
+            return this._openStack.sendP("PUT", url, body);
         }
         
-        protected decodeB64Messages(data:any){
-            if(data && data.Message && data.Message.MessageBody){
-                data.Message.MessageBody = this.base64ToUtf8(data.Message.MessageBody);
-            }
-        }*/
+        public unsubscribeP(name:string){
+            var url = Url.resolve(this._urlSubscription, name);
+            debug("DELETE " + url);
+            return this._openStack.sendP("DELETE", url);
+        }
 
         private makeAttrURL(){
             return Util.format(this._pattern, this._account.getAccountId(), this._region, this._name);
         }
 
-        private makeURL(){
-            return this.makeAttrURL() + "/messages";
+        private makeSubscriptionURL(){
+            return this.makeAttrURL() + "/subscriptions/";
         }
 
-        protected _url:string; // topic url
+        private _urlSubscription:string; // topic subscription url
         protected _openStack: OpenStack;
 
         private _name: string;

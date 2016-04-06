@@ -61,5 +61,18 @@ module AliMNS{
         getAttrsP();
         // 设置Topic的属性值
         setAttrsP(options:any);
+        // List all subscriptions.
+        listP(prefix?:string, pageSize?:number, pageMarker?:string);
+        // Subscribe a topic.
+        subscribeP(name:string, endPoint:string, notifyStrategy?:string, notifyContentFormat?:string);
+        // Unsubscribe a topic.
+        unsubscribeP(name:string);
+    }
+    
+    export interface ISubscription{
+        // 获取Subscription的属性值
+        getAttrsP();
+        // 设置Subscription的属性值
+        setAttrsP(options:any);
     }
 }

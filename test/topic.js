@@ -30,7 +30,9 @@ describe.only('AliMNS-topic', function(){
         this.timeout(1000 * 5);
         
         var topicName = aliCfg.mqName + Math.floor(Math.random() * 10000);
+        var subName = topicName + '-sub' + Math.floor(Math.random() * 10000);
         var topic = new AliMNS.Topic(topicName, account, aliCfg.region);
+        var subscription = new AliMNS.Subscription(subName, topic);
         
         it('#createTopicP', function(done){
             mns.createTopicP(topicName, {
@@ -57,6 +59,39 @@ describe.only('AliMNS-topic', function(){
                 // console.info(dataGet);
                 assert.equal(dataGet.Topic.MaximumMessageSize, testSource);
             })
+            .then(function(){ done(); }, done);
+        });
+        
+        it('#subscribe', function(done){
+            topic.subscribeP(subName, "http://www.baidu.com",
+                AliMNS.Subscription.NotifyStrategy.BACKOFF_RETRY,
+                AliMNS.Subscription.NotifyContentFormat.SIMPLIFIED)
+            .then(function(data){
+                // console.info(data); 
+            done(); }, done);
+        });
+        
+        it('#listP', function(done){
+            topic.listP().then(function(data){
+                // console.info(data.Subscriptions);
+            done(); }, done);
+        });
+        
+        it('Subscription #setAttrsP & #getAttrsP', function(done){
+            subscription.setAttrsP({ NotifyStrategy: AliMNS.Subscription.NotifyStrategy.EXPONENTIAL_DECAY_RETRY })
+            .then(function(dataSet){
+                // console.info(dataSet);
+                return subscription.getAttrsP();
+            })
+            .then(function(dataGet){
+                // console.info(dataGet);
+                assert.equal(dataGet.Subscription.NotifyStrategy, AliMNS.Subscription.NotifyStrategy.EXPONENTIAL_DECAY_RETRY);
+            })
+            .then(function(){ done(); }, done);
+        });
+        
+        it('#unsubscribe', function(done){
+            topic.unsubscribeP(subName)
             .then(function(){ done(); }, done);
         });
         
