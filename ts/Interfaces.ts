@@ -55,4 +55,11 @@ module AliMNS{
     export interface INotifyRecvBatch extends INotifyRecv{
         notifyRecv(cb:(ex:Error, msg:any)=>Boolean, waitSeconds?:number, numOfMessages?:number);
     }
+    
+    export interface ITopic{
+        // 获取Topic的属性值
+        getAttrsP();
+        // 设置Topic的属性值
+        setAttrsP(options:any);
+    }
 }

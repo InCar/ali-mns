@@ -24,31 +24,44 @@ describe.only('AliMNS-topic', function(){
         aliCfg.region = "shenzhen";
     }
     var account = new AliMNS.Account(aliCfg.accountId, aliCfg.keyId, aliCfg.keySecret);
-    var mnsTopic = new AliMNS.MNSTopic(account, aliCfg.region);
+    var mns = new AliMNS.MNSTopic(account, aliCfg.region);
     
     describe('Topic', function(){
         this.timeout(1000 * 5);
         
         var topicName = aliCfg.mqName + Math.floor(Math.random() * 10000);
-        // var topic = new AliMNS.Topic(mqName, account, aliCfg.region);
+        var topic = new AliMNS.Topic(topicName, account, aliCfg.region);
         
         it('#createTopicP', function(done){
-            mnsTopic.createTopicP(topicName, {
+            mns.createTopicP(topicName, {
                 MaximumMessageSize: 65536,
                 LoggingEnabled: false
             }).then(function(data){ done(); }, done);
         });
         
         it('#listTopicP', function(done){
-            mnsTopic.listTopicP(topicName, 1).then(function(data){
+            mns.listTopicP(topicName, 1).then(function(data){
                 // console.info(data.Topics.Topic);
                 done(); }, done);
         });
         
-        
+        it('#setAttrsP & #getAttrsP', function(done){
+            var testSource = 1024;
+            
+            topic.setAttrsP({ MaximumMessageSize: testSource })
+            .then(function(dataSet){
+                // console.info(dataSet);
+                return topic.getAttrsP();
+            })
+            .then(function(dataGet){
+                // console.info(dataGet);
+                assert.equal(dataGet.Topic.MaximumMessageSize, testSource);
+            })
+            .then(function(){ done(); }, done);
+        });
         
         it('#deleteTopicP', function(done){
-            mnsTopic.deleteTopicP(topicName)
+            mns.deleteTopicP(topicName)
             .then(function(){ done(); }, done);
         });
     });
