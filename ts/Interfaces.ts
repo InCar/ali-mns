@@ -10,6 +10,15 @@ module AliMNS{
         deleteP(name:string);
     }
     
+    export interface IMNSTopic extends IMNS{
+        // List all topics.
+        listTopicP(prefix?:string, pageSize?:number, pageMarker?:string);
+        // Create a topic
+        createTopicP(name:string, options?:any);
+        // Delete a topic
+        deleteTopicP(name:string);
+    }
+    
     export interface IMQ{
         // 获取MQ的属性值
         getAttrsP();
