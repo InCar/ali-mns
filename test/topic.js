@@ -111,7 +111,7 @@ describe('AliMNS-topic', ()=>{
         });
     });
     
-    describe.only('Topic-Notify', function(){
+    describe('Topic-Notify', function(){
         this.timeout(1000 * 10);
         
         var topicName = aliCfg.topicName + Math.floor(Math.random() * 10000);
@@ -157,7 +157,7 @@ describe('AliMNS-topic', ()=>{
             });
         });
         
-        it('wait-notify', (done)=>{
+        it.skip('wait-notify', (done)=>{
             var tmo = setTimeout(()=>{
                 done(new Error("timeout"));
             }, 1000*8);

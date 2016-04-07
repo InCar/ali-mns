@@ -7,7 +7,7 @@ var Promise = require("promise");
 var AliMNS = require(Path.join(__dirname, "../index.js"));
 var debugTest   = require("debug")("ali-mns.test");
 
-describe('AliMNS-performance', function(){
+describe.skip('AliMNS-performance', function(){
     this.timeout(1000 * 30);
     // ali account configuration
     var aliCfg = {

@@ -4,7 +4,7 @@
 
 The nodejs sdk for aliyun mns service
 
-[阿里云消息服务中间件-简体中文-帮助手册](https://github.com/InCar/ali-mns/blob/master/README.zh-Hans.md)
+[阿里云消息服务-简体中文-帮助手册](https://github.com/InCar/ali-mns/blob/master/README.zh-Hans.md)
 
 Ali MNS service is a MQ(message queue) service provided by AliYun.
 The world largest online sales website www.taobao.com is heavily relying on it.
@@ -40,6 +40,147 @@ If you interest in source file, visit GitHub [https://github.com/InCar/ali-mns](
 Please use 'gulp' to compile ts files into a single index.js file after downloading source files. 
 
 # API Reference
+<table>
+    <tr>
+        <th>CLASS</th>
+        <th>METHOD</th>
+        <th>DESCRIPTION</th>
+    </tr>
+    <tr>
+        <td rowspan="4">[Account](#accountaccountidstring-keyidstring-keysecretstring)</td>
+        <td colspan="2">The *Account* class store your ali account information.</td>
+    </tr>
+    <tr>
+        <td>[getAccountId](#accountgetaccountid)</td>
+        <td>Return the ali account id.</td>
+    </tr>
+    <tr>
+        <td>[getOwnerId](#accountgetownerid)</td>
+        <td>Same as account.getAccountId(). For compatible v1.x.</td>
+    </tr>
+    <tr>
+        <td>[getKeyId](#accountgetkeyid)</td>
+        <td>Return the ali key id.</td>
+    </tr>
+    <tr>
+        <td rowspan="4">[MNS](#mnsaccountaccount-regionstring)<br/>[MQS](#mqsaccountaccount-regionstring)</td>
+        <td colspan="2">Operate the mns queue. The *MQS* is for compatible v1.x.</td>
+    </tr>
+    <tr>
+        <td>[listP](#mnslistpprefixstring-pagesizenumber-pagemarkerstring)</td>
+        <td>List all of the queue in a data center.</td>
+    </tr>
+    <tr>
+        <td>[createP](#mnscreatepnamestring-optionsany)</td>
+        <td>Create a mq.</td>
+    </tr>
+    <tr>
+        <td>[deleteP](#mnsdeletepnamestring)</td>
+        <td>Delete an mq.</td>
+    </tr>
+    <tr>
+        <td rowspan="15">[MQ](#mqnamestring-accountaccount-regionstring)<br/>[MQBatch](#mqbatch)</td>
+        <td colspan="2">The *MQ* operate the message in a queue.</td>
+    </tr>
+    <tr>
+        <td>[getName](#mqgetname)</td>
+        <td>Gets the name of mq.</td>
+    </tr>
+    <tr>
+        <td>[getAccount](#mqgetaccount)</td>
+        <td>Gets the account of mq.</td>
+    </tr>
+    <tr>
+        <td>[getRegion](#mqgetregion)</td>
+        <td>Gets the region of mq.</td>
+    </tr>
+    <tr>
+        <td>[sendP](#mqsendpmsgstring-prioritynumber-delaysecondsnumber)</td>
+        <td>Send a message to the queue.</td>
+    </tr>
+    <tr>
+        <td>[getRecvTolerance](#mqgetrecvtolerance--mqsetrecvtolerancevaluenumber)</td>
+        <td>Gets the tolerance seconds for mq.recvP method.</td>
+    </tr>
+    <tr>
+        <td>[setRecvTolerance](#mqgetrecvtolerance--mqsetrecvtolerancevaluenumber)</td>
+        <td>Sets the tolerance seconds for mq.recvP method.</td>
+    </tr>
+    <tr>
+        <td>[recvP](#mqrecvpwaitsecondsnumber)</td>
+        <td>Receive a message from queue.</td>
+    </tr>
+    <tr>
+        <td>[peekP](#mqpeekp)</td>
+        <td>Peek a message.</td>
+    </tr>
+    <tr>
+        <td>[deleteP](#mqdeletepreceipthandlestring)</td>
+        <td>Delete a message from queue.</td>
+    </tr>
+    <tr>
+        <td>[reserveP](#mqreservepreceipthandlestring-reservesecondsnumber)</td>
+        <td>Reserve a received message.</td>
+    </tr>
+    <tr>
+        <td>[notifyRecv](#mqnotifyrecvcbexerror-msganyboolean-waitsecondsnumber)</td>
+        <td>Register a callback function to receive messages.</td>
+    </tr>
+    <tr>
+        <td>[notifyStopP](#mqnotifystopp)</td>
+        <td>Stop mq.notifyRecv working.</td>
+    </tr>
+    <tr>
+        <td>[getAttrsP](#mqgetattrsp)</td>
+        <td>Get the attributes of the mq.</td>
+    </tr>
+    <tr>
+        <td>[setAttrsP](#mqsetattrspoptionsany)</td>
+        <td>Modify the attributes of mq.</td>
+    </tr>
+    <tr>
+        <td rowspan="6">[MQBatch](#mqbatch)</td>
+        <td colspan="2">Provide the batch process model introduced in a new edtion of Ali-MNS service in June, 2015.</td>
+    </tr>
+    <tr>
+        <td>[sendP](#mqbatchsendpmsgstring--array-prioritynumber-delaysecondsnumber)</td>
+        <td>Send a message or batch send messages to the queue.</td>
+    </tr>
+    <tr>
+        <td>[recvP](#mqbatchrecvpwaitsecondsnumber-numofmessagesnumber)</td>
+        <td>Receive a message or batch receive messages from queue.</td>
+    </tr>
+    <tr>
+        <td>[peekP](#mqbatchpeekpnumofmessagesnumber)</td>
+        <td>Peek message(s).</td>
+    </tr>
+    <tr>
+        <td>[deleteP](#mqbatchdeletepreceipthandlestring--array)</td>
+        <td>Delete a message or messages from queue.</td>
+    </tr>
+    <tr>
+        <td>[notifyRecv](#mqbatchnotifyrecvcbexerror-msganyboolean-waitsecondsnumber-numofmessagesnumber)</td>
+        <td>Register a callback function to receive messages in batch</td>
+    </tr>
+    <tr>
+        <td rowspan="4">[Msg](#msgmsg-string-prioritynumber-delaysecondsnumber)</td>
+        <td colspan="2">A simple message define, used in MQBatch.</td>
+    </tr>
+    <tr>
+        <td>[getMsg](#msggetmsg)</td>
+        <td>Return the content of message.</td>
+    </tr>
+    <tr>
+        <td>[getPriority](#msggetpriority)</td>
+        <td>Return the priority of message.</td>
+    </tr>
+    <tr>
+        <td>[getDelaySeconds](#msggetdelayseconds)</td>
+        <td>Return the delay seconds of message.</td>
+    </tr>
+<table>
+
+
 ## Account(accountId:string, keyId:string, keySecret:string)
 The *Account* class store your ali account information. Construct an account object is simple:
 
@@ -149,13 +290,13 @@ Default is "hangzhou". It can also be internal address "hangzhou-internal", "bei
     var mq = new AliMNS.MQ("myAliMQ", account, "hangzhou");
 ```
 
-## getName()
+## mq.getName()
 Gets the name of mq.
 
-## getAccount()
+## mq.getAccount()
 Gets the account of mq.
 
-## getRegion()
+## mq.getRegion()
 Gets the region of mq.
 
 ## mq.sendP(msg:string, priority?:number, delaySeconds?:number)
@@ -171,7 +312,7 @@ This argument is prior to the options.DelaySeconds in attributes of message queu
     mq.sendP("Hello Ali-MNS", 8, 0).then(console.log, console.error);
 ```
 
-## getRecvTolerance() & setRecvTolerance(value:number)
+## mq.getRecvTolerance() & mq.setRecvTolerance(value:number)
 Gets or sets the tolerance seconds for mq.recvP method.
 
 value: number. Default is 5, in seconds. How long will mq.recvP wait before timeout.
