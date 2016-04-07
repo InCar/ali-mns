@@ -7,7 +7,7 @@ var http = require("http");
 var Promise = require("promise");
 var AliMNS = require(Path.join(__dirname, "../index.js"));
 
-describe('AliMNS-topic', function(){
+describe('AliMNS-topic', ()=>{
     // ali account configuration
     var aliCfg = {
         accountId: "your-account-id",
@@ -37,77 +37,77 @@ describe('AliMNS-topic', function(){
         var topic = new AliMNS.Topic(topicName, account, aliCfg.region);
         var subscription = new AliMNS.Subscription(subName, topic);
         
-        it('#createTopicP', function(done){
+        it('#createTopicP', (done)=>{
             mns.createTopicP(topicName, {
                 MaximumMessageSize: 65536,
                 LoggingEnabled: false
-            }).then(function(data){ done(); }, done);
+            }).then((data)=>{ done(); }, done);
         });
         
-        it('#listTopicP', function(done){
-            mns.listTopicP(topicName, 1).then(function(data){
+        it('#listTopicP', (done)=>{
+            mns.listTopicP(topicName, 1).then((data)=>{
                 // console.info(data.Topics.Topic);
                 done(); }, done);
         });
         
-        it('#setAttrsP & #getAttrsP', function(done){
+        it('#setAttrsP & #getAttrsP', (done)=>{
             var testSource = 1024;
             
             topic.setAttrsP({ MaximumMessageSize: testSource })
-            .then(function(dataSet){
+            .then((dataSet)=>{
                 // console.info(dataSet);
                 return topic.getAttrsP();
             })
-            .then(function(dataGet){
+            .then((dataGet)=>{
                 // console.info(dataGet);
                 assert.equal(dataGet.Topic.MaximumMessageSize, testSource);
             })
-            .then(function(){ done(); }, done);
+            .then(()=>{ done(); }, done);
         });
         
-        it('#subscribe', function(done){
+        it('#subscribe', (done)=>{
             topic.subscribeP(subName, aliCfg.endPoint,
                 AliMNS.Subscription.NotifyStrategy.BACKOFF_RETRY,
                 AliMNS.Subscription.NotifyContentFormat.SIMPLIFIED)
-            .then(function(data){
+            .then((data)=>{
                 // console.info(data); 
             done(); }, done);
         });
         
-        it('#listP', function(done){
-            topic.listP().then(function(data){
+        it('#listP', (done)=>{
+            topic.listP().then((data)=>{
                 // console.info(data.Subscriptions);
             done(); }, done);
         });
         
-        it('Subscription #setAttrsP & #getAttrsP', function(done){
+        it('Subscription #setAttrsP & #getAttrsP', (done)=>{
             subscription.setAttrsP({ NotifyStrategy: AliMNS.Subscription.NotifyStrategy.EXPONENTIAL_DECAY_RETRY })
-            .then(function(dataSet){
+            .then((dataSet)=>{
                 // console.info(dataSet);
                 return subscription.getAttrsP();
             })
-            .then(function(dataGet){
+            .then((dataGet)=>{
                 // console.info(dataGet);
                 assert.equal(dataGet.Subscription.NotifyStrategy, AliMNS.Subscription.NotifyStrategy.EXPONENTIAL_DECAY_RETRY);
             })
-            .then(function(){ done(); }, done);
+            .then(()=>{ done(); }, done);
         });
         
-        it('#publishP', function(done){
+        it('#publishP', (done)=>{
             topic.publishP("Hello")
-            .then(function(data){
+            .then((data)=>{
                 // console.info(data); 
             done(); }, done);
         });
         
-        it('#unsubscribe', function(done){
+        it('#unsubscribe', (done)=>{
             topic.unsubscribeP(subName)
-            .then(function(){ done(); }, done);
+            .then(()=>{ done(); }, done);
         });
         
-        it('#deleteTopicP', function(done){
+        it('#deleteTopicP', (done)=>{
             mns.deleteTopicP(topicName)
-            .then(function(){ done(); }, done);
+            .then(()=>{ done(); }, done);
         });
     });
     
@@ -118,43 +118,47 @@ describe('AliMNS-topic', function(){
         var subName = topicName + '-sub' + Math.floor(Math.random() * 10000);
         var topic = new AliMNS.Topic(topicName, account, aliCfg.region);
         var server = null;
+        var nx = null;
         
-        it('prepare-create-topic', function(done){
+        it('prepare-create-topic', (done)=>{
             mns.createTopicP(topicName)
-            .then(function(){ done(); }, done);
+            .then(()=>{ done(); }, done);
         });
         
-        it('prepare-subscribe', function(done){
+        it('prepare-subscribe', (done)=>{
             topic.subscribeP(subName, aliCfg.endPoint,
                 AliMNS.Subscription.NotifyStrategy.BACKOFF_RETRY,
                 AliMNS.Subscription.NotifyContentFormat.SIMPLIFIED)
-            .then(function(){ done(); }, done);
+            .then(()=>{ done(); }, done);
         });
         
-        it('prepare-http', function(done){
-            server = http.createServer((request, response)=>{
-                console.info("------> received");
-                response.writeHead(200, {'Content-Type': 'text/plain'});
-                response.end('ok');
+        it('prepare-http', ()=>{
+            nx = new Promise((resolve, reject)=>{
+                server = http.createServer((request, response)=>{
+                    console.info("------> received");
+                    response.writeHead(200, {'Content-Type': 'text/plain'});
+                    response.end('ok');
+                    resolve();
+                });
+                server.listen(aliCfg.port);
             });
-            server.listen(aliCfg.port);
-            done();
         });
         
-        it('publish', function(done){
-            topic.publishP("Hello")
-            .then(function(){ done(); }, done);
-        });
-        
-        it('wait-notify', function(done){
-            setTimeout(()=>{
-                done();
+        it('wait-notify', (done)=>{
+            var tmo = setTimeout(()=>{
+                done(new Error("timeout"));
             }, 1000*8);
+            nx.then(()=>{
+                clearTimeout(tmo);
+                done();
+            });
+            topic.publishP("Hello");
         });
         
-        it('clean-topic', function(done){
+        it('clean', (done)=>{
+            server.close();
             mns.deleteTopicP(topicName)
-            .then(function(){ done(); }, done);
+            .then(()=>{ done(); }, done);
         });
     });
 });
