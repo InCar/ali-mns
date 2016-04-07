@@ -135,10 +135,23 @@ describe('AliMNS-topic', ()=>{
         it('prepare-http', ()=>{
             nx = new Promise((resolve, reject)=>{
                 server = http.createServer((request, response)=>{
-                    console.info("------> received");
-                    response.writeHead(200, {'Content-Type': 'text/plain'});
-                    response.end('ok');
-                    resolve();
+                    var chunks = [];
+                    request.on('data', (chunk)=>{
+                        chunks.push(chunk);
+                    });
+                    request.on('end', ()=>{
+                        var buf = Buffer.concat(chunks);
+                        
+                        response.writeHead(204, {'Content-Type': 'text/plain'});
+                        response.end();
+                        resolve({
+                            url: request.url,
+                            headers: request.headers,
+                            data: buf.toString()
+                        });
+                    });
+                    
+                    
                 });
                 server.listen(aliCfg.port);
             });
@@ -148,7 +161,8 @@ describe('AliMNS-topic', ()=>{
             var tmo = setTimeout(()=>{
                 done(new Error("timeout"));
             }, 1000*8);
-            nx.then(()=>{
+            nx.then((data)=>{
+                console.info(data);
                 clearTimeout(tmo);
                 done();
             });
