@@ -178,6 +178,90 @@ Please use 'gulp' to compile ts files into a single index.js file after download
         <td>[getDelaySeconds](#msggetdelayseconds)</td>
         <td>Return the delay seconds of message.</td>
     </tr>
+    <tr>
+        <td rowspan="4">[MNSTopic]</td>
+        <td colspan="2"></td>
+    </tr>
+    <tr>
+        <td>[listTopicP]</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>[createTopicP]</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>[deleteTopicP]</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td rowspan="10">[Topic]</td>
+        <td colspan="2"></td>
+    </tr>
+    <tr>
+        <td>[getName]</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>[getAccount]</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>[getRegion]</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>[getAttrsP]</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>[setAttrsP]</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>[listP]</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>[subscribeP]</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>[unsubscribeP]</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>[publishP]</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td rowspan="7">[Subscription]</td>
+        <td colspan="2"></td>
+    </tr>
+    <tr>
+        <td>[getName]</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>[getTopic]</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>[getAttrsP]</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>[setAttrsP]</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>[NotifyStrategy]</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>[NotifyContentFormat]</td>
+        <td></td>
+    </tr>
 <table>
 
 
@@ -513,6 +597,170 @@ Register a callback function to receive messages in batch mode.
 numOfMessages: number. optional. The max number of message can be received in a batch, can be 1~16, default is 16.
 
 All other arguments are same as *mq.notifyRecv*.
+
+# MNSTopic(account:Account, region?:string)
+The class `MNSTopic` extends class `MNS` for providing features in topic model.
+All methods in `MNS` class are also available in `MNSTopic`.
+```javascript
+    var AliMNS = require("ali-mns");
+    var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
+    var mns = new AliMNS.MNSTopic(account, "shenzhen");
+```
+*By now(Apr. 2016), the topic model is only provided in shenzhen data center.*
+
+## mns.listTopicP(prefix?:string, pageSize?:number, pageMarker?:string)
+List all topics.
+
+prefix: String, optional. Return only topics with the prefix.
+
+pageSize: number, optional. How many topics will be returned in a page, 1~1000, default is 1000.
+
+pageMarker: String, optional. Request the next page, the value is returned in last call.
+
+## mns.createTopicP(name:string, options?:any)
+Create a topic.
+
+name: topic name.
+
+options: optional.
+
+options.MaximumMessageSize: int. The maximum size of message, 1024(1k)~65536(64k), default is 65536.
+
+options.LoggingEnabled: boolean. Enable logging or not, default is false.
+
+## mns.deleteTopicP(name:string)
+Delete a topic.
+
+name: topic name.
+
+# Topic(name:string, account:Account, region?:string)
+Operate a topic.
+
+name: topic name.
+
+account: An account object.
+
+region: optional. Can be "shenzhen" or "shenzhen-internal", default is "hangzhou".
+
+*By now(Apr. 2016), the topic model is only provided in shenzhen data center*
+```javascript
+var AliMNS = require("ali-mns");
+var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
+var topic = new AliMNS.Topic("t11", account, "shenzhen");
+```
+
+## topic.getName()
+Get topic name.
+
+## topic.getAccount()
+Get topic account.
+
+## topic.getRegion()
+Get topic region.
+
+## topic.getAttrsP() & topic.setAttrsP(options:any)
+Get or set attributes of topic.
+
+options: topic attributes.
+
+options.MaximumMessageSize: int. The maximum size of message, 1024(1k)~65536(64k), default is 65536.
+
+options.LoggingEnabled: boolean. Enable logging or not, default is false.
+
+```javascript
+topic.setAttrsP({ MaximumMessageSize: 1024 });
+topic.getAttrsP().then((data)=>{ console.info(data); });
+```
+
+## topic.listP(prefix?:string, pageSize?:number, pageMarker?:string)
+List all subscriptions.
+
+prefix: String, optional. Return only subscriptions with the prefix.
+
+pageSize: number, optional. How many subscriptions will be returned in a page, 1~1000, default is 1000.
+
+pageMarker: String, optional. Request the next page, the value is returned in last call.
+
+## topic.subscribeP(name:string, endPoint:string, notifyStrategy?:string, notifyContentFormat?:string)
+Subscribe a topic.
+
+name: Name of subscription.
+
+endPoint: Notify end point. eg. `http://www.yoursite.com/mns-ep`
+
+notifyStrategy: optional. BACKOFF_RETRY or EXPONENTIAL_DECAY_RETRY, default is BACKOFF_RETRY.
+
+notifyContentFormat: optional. XML or SIMPLIFIED, default is XML.
+
+```javascript
+topic.subscribeP("subx", "http://www.yoursite.com/mns-ep",
+        AliMNS.Subscription.NotifyStrategy.BACKOFF_RETRY,
+        AliMNS.Subscription.NotifyContentFormat.SIMPLIFIED)
+    .then(
+        (data)=>{ console.info(data);}, 
+        (err)=>{ console.error(err); }
+    );
+```
+
+## topic.unsubscribeP(name:string)
+Unsubscribe a topic.
+
+name: Name of subscription.
+
+## topic.publishP(msg:string, b64:boolean)
+Publish a message to a topic.
+
+msg: content of message
+
+b64: true, encoding msg to base64 format before publishing. 
+false, do not encoding msg before publishing.
+
+If message contains Chinese characters, must set `b64` to `true`.
+Only very simple message can set `b64` to `false`.
+
+# Subscription(name:string, topic:Topic)
+Operate a subscription.
+```javascript
+var AliMNS = require("ali-mns");
+var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
+var topic = new AliMNS.Topic("t11", account, "shenzhen");
+var subscription = new AliMNS.Subscription("s12", topic);
+```
+
+## subscription.getName()
+Get name of subscription.
+
+## subscription.getTopic()
+Get topic of subscription.
+
+
+## subscription.getAttrsP() & subscription.setAttrsP(options:any)
+Get or set attributes of subscription.
+
+options: attributes of subscription.
+
+options.NotifyStrategy: BACKOFF_RETRY or EXPONENTIAL_DECAY_RETRY.
+```javascript
+subscription.setAttrsP({ NotifyStrategy: AliMNS.Subscription.NotifyStrategy.EXPONENTIAL_DECAY_RETRY });
+```
+
+## Subscription.NotifyStrategy
+Contains 2 const string.
+
+AliMNS.Subscription.NotifyStrategy.BACKOFF_RETRY : "BACKOFF_RETRY"
+
+AliMNS.Subscription.NotifyStrategy.EXPONENTIAL_DECAY_RETRY : "EXPONENTIAL_DECAY_RETRY"
+
+[More about NotifyStrategy[zh-Hans]](https://help.aliyun.com/document_detail/mns/api_reference/concepts/NotifyStrategy.html?spm=5176.docmns/api_reference/topic_api_spec/subscription_operation.6.141.tmwb5L)
+
+## Subscription.NotifyContentFormat
+Contains 2 const string.
+
+AliMNS.Subscription.NotifyContentFormat.XML : "XML"
+
+AliMNS.Subscription.NotifyContentFormat.SIMPLIFIED : "SIMPLIFIED"
+
+[More about NotifyContentFormat[zh-Hans]](https://help.aliyun.com/document_detail/mns/api_reference/concepts/NotifyContentFormat.html?spm=5176.docmns/api_reference/concepts/NotifyStrategy.6.142.kWiFyy)
 
 # DEBUG Trace
 Set the environment variable **DEBUG** to "ali-mns" to enable the debug trace output.
