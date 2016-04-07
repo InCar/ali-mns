@@ -39,6 +39,231 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
 克隆源代后,使用`gulp`来编译.ts文件.
 
 # API参考
+<table>
+    <tr>
+        <th>类型</th>
+        <th>方法</th>
+        <th>简述</th>
+    </tr>
+    <tr>
+        <td rowspan="4">[Account](#accountaccountidstring-keyidstring-keysecretstring)</td>
+        <td colspan="2">*Account*类用于存储你的阿里云帐号信息.</td>
+    </tr>
+    <tr>
+        <td>[getAccountId](#accountgetaccountid)</td>
+        <td>返回阿里云帐号id.</td>
+    </tr>
+    <tr>
+        <td>[getOwnerId](#accountgetownerid)</td>
+        <td>和account.getAccountId()功能相同. 为了向下兼容v1.x版本.</td>
+    </tr>
+    <tr>
+        <td>[getKeyId](#accountgetkeyid)</td>
+        <td>返回阿里钥id.</td>
+    </tr>
+    <tr>
+        <td rowspan="4">[MNS](#mnsaccountaccount-regionstring)<br/>[MQS](#mqsaccountaccount-regionstring)<br/>[MNSTopic](#mnstopicaccountaccount-regionstring)</td>
+        <td colspan="2">*MNS*类用于操作mns队列. *MQS*和*MNS*相同.为了向下兼容v1.x版本.</td>
+    </tr>
+    <tr>
+        <td>[listP](#mnslistpprefixstring-pagesizenumber-pagemarkerstring)</td>
+        <td>列出一个数据中心里的所有队列.</td>
+    </tr>
+    <tr>
+        <td>[createP](#mnscreatepnamestring-optionsany)</td>
+        <td>创建一个队列.</td>
+    </tr>
+    <tr>
+        <td>[deleteP](#mnsdeletepnamestring)</td>
+        <td>删除一个队列.</td>
+    </tr>
+    <tr>
+        <td rowspan="15">[MQ](#mqnamestring-accountaccount-regionstring)<br/>[MQBatch](#mqbatch)</td>
+        <td colspan="2">*MQ*操作队列中的消息.</td>
+    </tr>
+    <tr>
+        <td>[getName](#mqgetname)</td>
+        <td>获取队列名称.</td>
+    </tr>
+    <tr>
+        <td>[getAccount](#mqgetaccount)</td>
+        <td>获取队列帐号.</td>
+    </tr>
+    <tr>
+        <td>[getRegion](#mqgetregion)</td>
+        <td>获取队列位置.</td>
+    </tr>
+    <tr>
+        <td>[sendP](#mqsendpmsgstring-prioritynumber-delaysecondsnumber)</td>
+        <td>向队列中发送一个消息.</td>
+    </tr>
+    <tr>
+        <td>[getRecvTolerance](#mqgetrecvtolerance--mqsetrecvtolerancevaluenumber)</td>
+        <td>获取mq.recvP方法的容忍秒数.</td>
+    </tr>
+    <tr>
+        <td>[setRecvTolerance](#mqgetrecvtolerance--mqsetrecvtolerancevaluenumber)</td>
+        <td>设置mq.recvP方法的容忍秒数.</td>
+    </tr>
+    <tr>
+        <td>[recvP](#mqrecvpwaitsecondsnumber)</td>
+        <td>从队列中接收消息.</td>
+    </tr>
+    <tr>
+        <td>[peekP](#mqpeekp)</td>
+        <td>查探消息.</td>
+    </tr>
+    <tr>
+        <td>[deleteP](#mqdeletepreceipthandlestring)</td>
+        <td>删除消息.</td>
+    </tr>
+    <tr>
+        <td>[reserveP](#mqreservepreceipthandlestring-reservesecondsnumber)</td>
+        <td>保留一个消息.</td>
+    </tr>
+    <tr>
+        <td>[notifyRecv](#mqnotifyrecvcbexerror-msganyboolean-waitsecondsnumber)</td>
+        <td>注册一个回调函数来接收消息.</td>
+    </tr>
+    <tr>
+        <td>[notifyStopP](#mqnotifystopp)</td>
+        <td>停止mq.notifyRecv.</td>
+    </tr>
+    <tr>
+        <td>[getAttrsP](#mqgetattrsp)</td>
+        <td>获取队列的属性.</td>
+    </tr>
+    <tr>
+        <td>[setAttrsP](#mqsetattrspoptionsany)</td>
+        <td>修改队列的属性.</td>
+    </tr>
+    <tr>
+        <td rowspan="6">[MQBatch](#mqbatch)</td>
+        <td colspan="2">批量消息队列</td>
+    </tr>
+    <tr>
+        <td>[sendP](#mqbatchsendpmsgstring--array-prioritynumber-delaysecondsnumber)</td>
+        <td>发送一条消息或一批消息.</td>
+    </tr>
+    <tr>
+        <td>[recvP](#mqbatchrecvpwaitsecondsnumber-numofmessagesnumber)</td>
+        <td>接收一条或者一批消息.</td>
+    </tr>
+    <tr>
+        <td>[peekP](#mqbatchpeekpnumofmessagesnumber)</td>
+        <td>查探一条或者一批消息.</td>
+    </tr>
+    <tr>
+        <td>[deleteP](#mqbatchdeletepreceipthandlestring--array)</td>
+        <td>删除一条或一批消息.</td>
+    </tr>
+    <tr>
+        <td>[notifyRecv](#mqbatchnotifyrecvcbexerror-msganyboolean-waitsecondsnumber-numofmessagesnumber)</td>
+        <td>注册一个回调函数来接收消息,支持批量模式.</td>
+    </tr>
+    <tr>
+        <td rowspan="4">[Msg](#msgmsg-string-prioritynumber-delaysecondsnumber)</td>
+        <td colspan="2">简单消息定义,用于MQBatch类.</td>
+    </tr>
+    <tr>
+        <td>[getMsg](#msggetmsg)</td>
+        <td>返回消息内容.</td>
+    </tr>
+    <tr>
+        <td>[getPriority](#msggetpriority)</td>
+        <td>返回消息优先级.</td>
+    </tr>
+    <tr>
+        <td>[getDelaySeconds](#msggetdelayseconds)</td>
+        <td>返回消息延迟可见秒数.</td>
+    </tr>
+    <tr>
+        <td rowspan="4">[MNSTopic](#mnstopicaccountaccount-regionstring)</td>
+        <td colspan="2">The class MNSTopic extends class MNS for providing features in topic model.</td>
+    </tr>
+    <tr>
+        <td>[listTopicP](#mnslisttopicpprefixstring-pagesizenumber-pagemarkerstring)</td>
+        <td>List all topics.</td>
+    </tr>
+    <tr>
+        <td>[createTopicP](#mnscreatetopicpnamestring-optionsany)</td>
+        <td>Create a topic.</td>
+    </tr>
+    <tr>
+        <td>[deleteTopicP](#mnsdeletetopicpnamestring)</td>
+        <td>Delete a topic.</td>
+    </tr>
+    <tr>
+        <td rowspan="10">[Topic](#topicnamestring-accountaccount-regionstring)</td>
+        <td colspan="2">Operate a topic.</td>
+    </tr>
+    <tr>
+        <td>[getName](#topicgetname)</td>
+        <td>Get topic name.</td>
+    </tr>
+    <tr>
+        <td>[getAccount](#topicgetaccount)</td>
+        <td>Get topic account.</td>
+    </tr>
+    <tr>
+        <td>[getRegion](#topicgetregion)</td>
+        <td>Get topic region.</td>
+    </tr>
+    <tr>
+        <td>[getAttrsP](#topicgetattrsp--topicsetattrspoptionsany)</td>
+        <td>Get attributes of topic.</td>
+    </tr>
+    <tr>
+        <td>[setAttrsP](#topicgetattrsp--topicsetattrspoptionsany)</td>
+        <td>Set attributes of topic.</td>
+    </tr>
+    <tr>
+        <td>[listP](#topiclistpprefixstring-pagesizenumber-pagemarkerstring)</td>
+        <td>List all subscriptions.</td>
+    </tr>
+    <tr>
+        <td>[subscribeP](#topicsubscribepnamestring-endpointstring-notifystrategystring-notifycontentformatstring)</td>
+        <td>Subscribe a topic.</td>
+    </tr>
+    <tr>
+        <td>[unsubscribeP](#topicunsubscribepnamestring)</td>
+        <td>Unsubscribe a topic.</td>
+    </tr>
+    <tr>
+        <td>[publishP](#topicpublishpmsgstring-b64boolean)</td>
+        <td>Publish a message to a topic.</td>
+    </tr>
+    <tr>
+        <td rowspan="7">[Subscription](#subscriptionnamestring-topictopic)</td>
+        <td colspan="2">Operate a subscription.</td>
+    </tr>
+    <tr>
+        <td>[getName](#subscriptiongetname)</td>
+        <td>Get name of subscription.</td>
+    </tr>
+    <tr>
+        <td>[getTopic](#subscriptiongettopic)</td>
+        <td>Get topic of subscription.</td>
+    </tr>
+    <tr>
+        <td>[getAttrsP](#subscriptiongetattrsp--subscriptionsetattrspoptionsany)</td>
+        <td>Get attributes of subscription.</td>
+    </tr>
+    <tr>
+        <td>[setAttrsP](#subscriptiongetattrsp--subscriptionsetattrspoptionsany)</td>
+        <td>Set attributes of subscription.</td>
+    </tr>
+    <tr>
+        <td>[NotifyStrategy](#subscriptionnotifystrategy)</td>
+        <td>NotifyStrategy constant.</td>
+    </tr>
+    <tr>
+        <td>[NotifyContentFormat](#subscriptionnotifycontentformat)</td>
+        <td>NotifyContentFormat constant</td>
+    </tr>
+<table>
+
+
 ## Account(accountId:string, keyId:string, keySecret:string)
 *Account*类用于存储你的阿里云帐号信息.创建一个帐号对象很简单:
 
@@ -365,6 +590,170 @@ receiptHandle: String 或 an array of string. 由mq.recvP或mq.notifyRecv返回.
 numOfMessages: number. optional. 最多一批接收的消息数目,1~16,缺省是16.
 
 所有春它参数都和*mq.notifyRecv*一致.
+
+# MNSTopic(account:Account, region?:string)
+The class `MNSTopic` extends class `MNS` for providing features in topic model.
+All methods in `MNS` class are also available in `MNSTopic`.
+```javascript
+    var AliMNS = require("ali-mns");
+    var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
+    var mns = new AliMNS.MNSTopic(account, "shenzhen");
+```
+*By now(Apr. 2016), the topic model is only provided in shenzhen data center.*
+
+## mns.listTopicP(prefix?:string, pageSize?:number, pageMarker?:string)
+List all topics.
+
+prefix: String, optional. Return only topics with the prefix.
+
+pageSize: number, optional. How many topics will be returned in a page, 1~1000, default is 1000.
+
+pageMarker: String, optional. Request the next page, the value is returned in last call.
+
+## mns.createTopicP(name:string, options?:any)
+Create a topic.
+
+name: topic name.
+
+options: optional.
+
+options.MaximumMessageSize: int. The maximum size of message, 1024(1k)~65536(64k), default is 65536.
+
+options.LoggingEnabled: boolean. Enable logging or not, default is false.
+
+## mns.deleteTopicP(name:string)
+Delete a topic.
+
+name: topic name.
+
+# Topic(name:string, account:Account, region?:string)
+Operate a topic.
+
+name: topic name.
+
+account: An account object.
+
+region: optional. Can be "shenzhen" or "shenzhen-internal", default is "hangzhou".
+
+*By now(Apr. 2016), the topic model is only provided in shenzhen data center*
+```javascript
+var AliMNS = require("ali-mns");
+var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
+var topic = new AliMNS.Topic("t11", account, "shenzhen");
+```
+
+## topic.getName()
+Get topic name.
+
+## topic.getAccount()
+Get topic account.
+
+## topic.getRegion()
+Get topic region.
+
+## topic.getAttrsP() & topic.setAttrsP(options:any)
+Get or set attributes of topic.
+
+options: topic attributes.
+
+options.MaximumMessageSize: int. The maximum size of message, 1024(1k)~65536(64k), default is 65536.
+
+options.LoggingEnabled: boolean. Enable logging or not, default is false.
+
+```javascript
+topic.setAttrsP({ MaximumMessageSize: 1024 });
+topic.getAttrsP().then((data)=>{ console.info(data); });
+```
+
+## topic.listP(prefix?:string, pageSize?:number, pageMarker?:string)
+List all subscriptions.
+
+prefix: String, optional. Return only subscriptions with the prefix.
+
+pageSize: number, optional. How many subscriptions will be returned in a page, 1~1000, default is 1000.
+
+pageMarker: String, optional. Request the next page, the value is returned in last call.
+
+## topic.subscribeP(name:string, endPoint:string, notifyStrategy?:string, notifyContentFormat?:string)
+Subscribe a topic.
+
+name: Name of subscription.
+
+endPoint: Notify end point. eg. `http://www.yoursite.com/mns-ep`
+
+notifyStrategy: optional. BACKOFF_RETRY or EXPONENTIAL_DECAY_RETRY, default is BACKOFF_RETRY.
+
+notifyContentFormat: optional. XML or SIMPLIFIED, default is XML.
+
+```javascript
+topic.subscribeP("subx", "http://www.yoursite.com/mns-ep",
+        AliMNS.Subscription.NotifyStrategy.BACKOFF_RETRY,
+        AliMNS.Subscription.NotifyContentFormat.SIMPLIFIED)
+    .then(
+        (data)=>{ console.info(data);}, 
+        (err)=>{ console.error(err); }
+    );
+```
+
+## topic.unsubscribeP(name:string)
+Unsubscribe a topic.
+
+name: Name of subscription.
+
+## topic.publishP(msg:string, b64:boolean)
+Publish a message to a topic.
+
+msg: content of message
+
+b64: true, encoding msg to base64 format before publishing. 
+false, do not encoding msg before publishing.
+
+If message contains Chinese characters, must set `b64` to `true`.
+Only very simple message can set `b64` to `false`.
+
+# Subscription(name:string, topic:Topic)
+Operate a subscription.
+```javascript
+var AliMNS = require("ali-mns");
+var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
+var topic = new AliMNS.Topic("t11", account, "shenzhen");
+var subscription = new AliMNS.Subscription("s12", topic);
+```
+
+## subscription.getName()
+Get name of subscription.
+
+## subscription.getTopic()
+Get topic of subscription.
+
+
+## subscription.getAttrsP() & subscription.setAttrsP(options:any)
+Get or set attributes of subscription.
+
+options: attributes of subscription.
+
+options.NotifyStrategy: BACKOFF_RETRY or EXPONENTIAL_DECAY_RETRY.
+```javascript
+subscription.setAttrsP({ NotifyStrategy: AliMNS.Subscription.NotifyStrategy.EXPONENTIAL_DECAY_RETRY });
+```
+
+## Subscription.NotifyStrategy
+Contains 2 const string.
+
+AliMNS.Subscription.NotifyStrategy.BACKOFF_RETRY : "BACKOFF_RETRY"
+
+AliMNS.Subscription.NotifyStrategy.EXPONENTIAL_DECAY_RETRY : "EXPONENTIAL_DECAY_RETRY"
+
+[More about NotifyStrategy[zh-Hans]](https://help.aliyun.com/document_detail/mns/api_reference/concepts/NotifyStrategy.html?spm=5176.docmns/api_reference/topic_api_spec/subscription_operation.6.141.tmwb5L)
+
+## Subscription.NotifyContentFormat
+Contains 2 const string.
+
+AliMNS.Subscription.NotifyContentFormat.XML : "XML"
+
+AliMNS.Subscription.NotifyContentFormat.SIMPLIFIED : "SIMPLIFIED"
+
+[More about NotifyContentFormat[zh-Hans]](https://help.aliyun.com/document_detail/mns/api_reference/concepts/NotifyContentFormat.html?spm=5176.docmns/api_reference/concepts/NotifyStrategy.6.142.kWiFyy)
 
 # DEBUG Trace
 设置环境变量"ali-mns"为**DEBUG**可以开启调试输出.
