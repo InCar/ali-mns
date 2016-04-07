@@ -68,7 +68,7 @@ module AliMNS{
         // Unsubscribe a topic.
         unsubscribeP(name:string);
         // Publish a message.
-        publishP(msg:string);
+        publishP(msg:string, b64: boolean);
     }
     
     export interface ISubscription{
@@ -76,5 +76,9 @@ module AliMNS{
         getAttrsP();
         // 设置Subscription的属性值
         setAttrsP(options:any);
+    }
+    
+    export interface ITopicNotify{
+        notifyP(request:any);
     }
 }

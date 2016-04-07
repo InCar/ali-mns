@@ -3,17 +3,20 @@
 var assert = require("assert");
 var Path = require("path");
 var fs = require("fs");
+var http = require("http");
 var Promise = require("promise");
 var AliMNS = require(Path.join(__dirname, "../index.js"));
 
-describe.only('AliMNS-topic', function(){
+describe('AliMNS-topic', function(){
     // ali account configuration
     var aliCfg = {
         accountId: "your-account-id",
         keyId: "your-key-id",
         keySecret: "your-key-secret",
         region: "hangzhou",
-        mqName: "dev"
+        topicName: "dev",
+        endPoint: "https://www.baidu.com/ali-mns-ep",
+        port: 80
     };
 
     // test/account.js contains sensitive data, and will not be tracked by git
@@ -29,7 +32,7 @@ describe.only('AliMNS-topic', function(){
     describe('Topic', function(){
         this.timeout(1000 * 5);
         
-        var topicName = aliCfg.mqName + Math.floor(Math.random() * 10000);
+        var topicName = aliCfg.topicName + Math.floor(Math.random() * 10000);
         var subName = topicName + '-sub' + Math.floor(Math.random() * 10000);
         var topic = new AliMNS.Topic(topicName, account, aliCfg.region);
         var subscription = new AliMNS.Subscription(subName, topic);
@@ -63,7 +66,7 @@ describe.only('AliMNS-topic', function(){
         });
         
         it('#subscribe', function(done){
-            topic.subscribeP(subName, "http://www.baidu.com",
+            topic.subscribeP(subName, aliCfg.endPoint,
                 AliMNS.Subscription.NotifyStrategy.BACKOFF_RETRY,
                 AliMNS.Subscription.NotifyContentFormat.SIMPLIFIED)
             .then(function(data){
@@ -103,6 +106,53 @@ describe.only('AliMNS-topic', function(){
         });
         
         it('#deleteTopicP', function(done){
+            mns.deleteTopicP(topicName)
+            .then(function(){ done(); }, done);
+        });
+    });
+    
+    describe.only('Topic-Notify', function(){
+        this.timeout(1000 * 10);
+        
+        var topicName = aliCfg.topicName + Math.floor(Math.random() * 10000);
+        var subName = topicName + '-sub' + Math.floor(Math.random() * 10000);
+        var topic = new AliMNS.Topic(topicName, account, aliCfg.region);
+        var server = null;
+        
+        it('prepare-create-topic', function(done){
+            mns.createTopicP(topicName)
+            .then(function(){ done(); }, done);
+        });
+        
+        it('prepare-subscribe', function(done){
+            topic.subscribeP(subName, aliCfg.endPoint,
+                AliMNS.Subscription.NotifyStrategy.BACKOFF_RETRY,
+                AliMNS.Subscription.NotifyContentFormat.SIMPLIFIED)
+            .then(function(){ done(); }, done);
+        });
+        
+        it('prepare-http', function(done){
+            server = http.createServer((request, response)=>{
+                console.info("------> received");
+                response.writeHead(200, {'Content-Type': 'text/plain'});
+                response.end('ok');
+            });
+            server.listen(aliCfg.port);
+            done();
+        });
+        
+        it('publish', function(done){
+            topic.publishP("Hello")
+            .then(function(){ done(); }, done);
+        });
+        
+        it('wait-notify', function(done){
+            setTimeout(()=>{
+                done();
+            }, 1000*8);
+        });
+        
+        it('clean-topic', function(done){
             mns.deleteTopicP(topicName)
             .then(function(){ done(); }, done);
         });
