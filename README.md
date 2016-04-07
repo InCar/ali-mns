@@ -63,7 +63,7 @@ Please use 'gulp' to compile ts files into a single index.js file after download
         <td>Return the ali key id.</td>
     </tr>
     <tr>
-        <td rowspan="4">[MNS](#mnsaccountaccount-regionstring)<br/>[MQS](#mqsaccountaccount-regionstring)<br/>[MNSTopic](#mnstopicaccountaccount-regionstring)/td>
+        <td rowspan="4">[MNS](#mnsaccountaccount-regionstring)<br/>[MQS](#mqsaccountaccount-regionstring)<br/>[MNSTopic](#mnstopicaccountaccount-regionstring)</td>
         <td colspan="2">Operate the mns queue. The *MQS* is for compatible v1.x.</td>
     </tr>
     <tr>
