@@ -179,87 +179,87 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
     </tr>
     <tr>
         <td rowspan="4">[MNSTopic](#mnstopicaccountaccount-regionstring)</td>
-        <td colspan="2">The class MNSTopic extends class MNS for providing features in topic model.</td>
+        <td colspan="2">MNSTopic扩展自MNS,它提供了基于主题模型的消息功能.</td>
     </tr>
     <tr>
         <td>[listTopicP](#mnslisttopicpprefixstring-pagesizenumber-pagemarkerstring)</td>
-        <td>List all topics.</td>
+        <td>列出所有的主题.</td>
     </tr>
     <tr>
         <td>[createTopicP](#mnscreatetopicpnamestring-optionsany)</td>
-        <td>Create a topic.</td>
+        <td>创建一个主题.</td>
     </tr>
     <tr>
         <td>[deleteTopicP](#mnsdeletetopicpnamestring)</td>
-        <td>Delete a topic.</td>
+        <td>删除一个主题.</td>
     </tr>
     <tr>
         <td rowspan="10">[Topic](#topicnamestring-accountaccount-regionstring)</td>
-        <td colspan="2">Operate a topic.</td>
+        <td colspan="2">操控主题</td>
     </tr>
     <tr>
         <td>[getName](#topicgetname)</td>
-        <td>Get topic name.</td>
+        <td>获取主题名称.</td>
     </tr>
     <tr>
         <td>[getAccount](#topicgetaccount)</td>
-        <td>Get topic account.</td>
+        <td>获取主题帐号.</td>
     </tr>
     <tr>
         <td>[getRegion](#topicgetregion)</td>
-        <td>Get topic region.</td>
+        <td>获取主题位置.</td>
     </tr>
     <tr>
         <td>[getAttrsP](#topicgetattrsp--topicsetattrspoptionsany)</td>
-        <td>Get attributes of topic.</td>
+        <td>获取主题属性.</td>
     </tr>
     <tr>
         <td>[setAttrsP](#topicgetattrsp--topicsetattrspoptionsany)</td>
-        <td>Set attributes of topic.</td>
+        <td>设置主题属性.</td>
     </tr>
     <tr>
         <td>[listP](#topiclistpprefixstring-pagesizenumber-pagemarkerstring)</td>
-        <td>List all subscriptions.</td>
+        <td>列出主题的所有订阅.</td>
     </tr>
     <tr>
         <td>[subscribeP](#topicsubscribepnamestring-endpointstring-notifystrategystring-notifycontentformatstring)</td>
-        <td>Subscribe a topic.</td>
+        <td>订阅一个主题.</td>
     </tr>
     <tr>
         <td>[unsubscribeP](#topicunsubscribepnamestring)</td>
-        <td>Unsubscribe a topic.</td>
+        <td>取消对一个主题的订阅.</td>
     </tr>
     <tr>
         <td>[publishP](#topicpublishpmsgstring-b64boolean)</td>
-        <td>Publish a message to a topic.</td>
+        <td>向主题中发布一个消息.</td>
     </tr>
     <tr>
         <td rowspan="7">[Subscription](#subscriptionnamestring-topictopic)</td>
-        <td colspan="2">Operate a subscription.</td>
+        <td colspan="2">操控一个订阅.</td>
     </tr>
     <tr>
         <td>[getName](#subscriptiongetname)</td>
-        <td>Get name of subscription.</td>
+        <td>获取订阅的名称.</td>
     </tr>
     <tr>
         <td>[getTopic](#subscriptiongettopic)</td>
-        <td>Get topic of subscription.</td>
+        <td>获取订阅相关的主題.</td>
     </tr>
     <tr>
         <td>[getAttrsP](#subscriptiongetattrsp--subscriptionsetattrspoptionsany)</td>
-        <td>Get attributes of subscription.</td>
+        <td>获取订阅的属性.</td>
     </tr>
     <tr>
         <td>[setAttrsP](#subscriptiongetattrsp--subscriptionsetattrspoptionsany)</td>
-        <td>Set attributes of subscription.</td>
+        <td>设置订阅的属性.</td>
     </tr>
     <tr>
         <td>[NotifyStrategy](#subscriptionnotifystrategy)</td>
-        <td>NotifyStrategy constant.</td>
+        <td>通知策略.</td>
     </tr>
     <tr>
         <td>[NotifyContentFormat](#subscriptionnotifycontentformat)</td>
-        <td>NotifyContentFormat constant</td>
+        <td>通知内容格式.</td>
     </tr>
 <table>
 
@@ -379,7 +379,7 @@ region: String, optional. 可能的取值为"hangzhou", "beijing" or "qingdao",�
 ## mq.getAccount()
 获取队列帐号.
 
-## gmq.etRegion()
+## mq.getRegion()
 获取队列位置.
 
 ## mq.sendP(msg:string, priority?:number, delaySeconds?:number)
