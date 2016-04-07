@@ -179,88 +179,88 @@ Please use 'gulp' to compile ts files into a single index.js file after download
         <td>Return the delay seconds of message.</td>
     </tr>
     <tr>
-        <td rowspan="4">[MNSTopic]</td>
-        <td colspan="2"></td>
+        <td rowspan="4">[MNSTopic](#mnstopicaccountaccount-regionstring)</td>
+        <td colspan="2">The class MNSTopic extends class MNS for providing features in topic model.</td>
     </tr>
     <tr>
-        <td>[listTopicP]</td>
-        <td></td>
+        <td>[listTopicP](#mnslisttopicpprefixstring-pagesizenumber-pagemarkerstring)</td>
+        <td>List all topics.</td>
     </tr>
     <tr>
-        <td>[createTopicP]</td>
-        <td></td>
+        <td>[createTopicP](#mnscreatetopicpnamestring-optionsany)</td>
+        <td>Create a topic.</td>
     </tr>
     <tr>
-        <td>[deleteTopicP]</td>
-        <td></td>
+        <td>[deleteTopicP](#mnsdeletetopicpnamestring)</td>
+        <td>Delete a topic.</td>
     </tr>
     <tr>
-        <td rowspan="10">[Topic]</td>
-        <td colspan="2"></td>
+        <td rowspan="10">[Topic](#topicnamestring-accountaccount-regionstring)</td>
+        <td colspan="2">Operate a topic.</td>
     </tr>
     <tr>
-        <td>[getName]</td>
-        <td></td>
+        <td>[getName](#topicgetname)</td>
+        <td>Get topic name.</td>
     </tr>
     <tr>
-        <td>[getAccount]</td>
-        <td></td>
+        <td>[getAccount](#topicgetaccount)</td>
+        <td>Get topic account.</td>
     </tr>
     <tr>
-        <td>[getRegion]</td>
-        <td></td>
+        <td>[getRegion](#topicgetregion)</td>
+        <td>Get topic region.</td>
     </tr>
     <tr>
-        <td>[getAttrsP]</td>
-        <td></td>
+        <td>[getAttrsP](#topicgetattrsp--topicsetattrspoptionsany)</td>
+        <td>Get attributes of topic.</td>
     </tr>
     <tr>
-        <td>[setAttrsP]</td>
-        <td></td>
+        <td>[setAttrsP](#topicgetattrsp--topicsetattrspoptionsany)</td>
+        <td>Set attributes of topic.</td>
     </tr>
     <tr>
-        <td>[listP]</td>
-        <td></td>
+        <td>[listP](#topiclistpprefixstring-pagesizenumber-pagemarkerstring)</td>
+        <td>List all subscriptions.</td>
     </tr>
     <tr>
-        <td>[subscribeP]</td>
-        <td></td>
+        <td>[subscribeP](#topicsubscribepnamestring-endpointstring-notifystrategystring-notifycontentformatstring)</td>
+        <td>Subscribe a topic.</td>
     </tr>
     <tr>
-        <td>[unsubscribeP]</td>
-        <td></td>
+        <td>[unsubscribeP](#topicunsubscribepnamestring)</td>
+        <td>Unsubscribe a topic.</td>
     </tr>
     <tr>
-        <td>[publishP]</td>
-        <td></td>
+        <td>[publishP](#topicpublishpmsgstring-b64boolean)</td>
+        <td>Publish a message to a topic.</td>
     </tr>
     <tr>
-        <td rowspan="7">[Subscription]</td>
-        <td colspan="2"></td>
+        <td rowspan="7">[Subscription](#subscriptionnamestring-topictopic)</td>
+        <td colspan="2">Operate a subscription.</td>
     </tr>
     <tr>
-        <td>[getName]</td>
-        <td></td>
+        <td>[getName](#subscriptiongetname)</td>
+        <td>Get name of subscription.</td>
     </tr>
     <tr>
-        <td>[getTopic]</td>
-        <td></td>
+        <td>[getTopic](#subscriptiongettopic)</td>
+        <td>Get topic of subscription.</td>
     </tr>
     <tr>
-        <td>[getAttrsP]</td>
-        <td></td>
+        <td>[getAttrsP](#subscriptiongetattrsp--subscriptionsetattrspoptionsany)</td>
+        <td>Get attributes of subscription.</td>
     </tr>
     <tr>
-        <td>[setAttrsP]</td>
-        <td></td>
+        <td>[setAttrsP](#subscriptiongetattrsp--subscriptionsetattrspoptionsany)</td>
+        <td>Set attributes of subscription.</td>
     </tr>
     <tr>
-        <td>[NotifyStrategy]</td>
-        <td></td>
+        <td>[NotifyStrategy](#subscriptionnotifystrategy)</td>
+        <td>NotifyStrategy constant.</td>
     </tr>
     <tr>
-        <td>[NotifyContentFormat]</td>
-        <td></td>
+        <td>[NotifyContentFormat](#subscriptionnotifycontentformat)</td>
+        <td>NotifyContentFormat constant</td>
     </tr>
 <table>
 
