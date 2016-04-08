@@ -487,7 +487,7 @@ mq.getAttrsP().then(console.log, console.error);
 ## mq.setAttrsP(options:any)
 修改队列的属性.
 
-options: the queue attributes. See the [options](#options) of mns.createP. 队列属性,查看mns.createP的[options](#options)参数.
+options: 队列属性,查看mns.createP的[options](#options)参数.
 ```javascript
     mq.setAttrsP({
         DelaySeconds: 0,
@@ -592,50 +592,50 @@ numOfMessages: number. optional. 最多一批接收的消息数目,1~16,缺省�
 所有春它参数都和*mq.notifyRecv*一致.
 
 # MNSTopic(account:Account, region?:string)
-The class `MNSTopic` extends class `MNS` for providing features in topic model.
-All methods in `MNS` class are also available in `MNSTopic`.
+`MNSTopic`提供了关于主题模型的功能,它扩展自`MNS`.
+所有`MNS`的方法都适用于`MNSTopic`.
 ```javascript
     var AliMNS = require("ali-mns");
     var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
     var mns = new AliMNS.MNSTopic(account, "shenzhen");
 ```
-*By now(Apr. 2016), the topic model is only provided in shenzhen data center.*
+*截至目前(2016年4月),主题模型仅在深圳数据中心提供服务*
 
 ## mns.listTopicP(prefix?:string, pageSize?:number, pageMarker?:string)
-List all topics.
+列出所有的主题.
 
-prefix: String, optional. Return only topics with the prefix.
+prefix: 可选.只返回特定前缀的主题.
 
-pageSize: number, optional. How many topics will be returned in a page, 1~1000, default is 1000.
+pageSize: 可选.每页包含的主题数目1~1000,缺省为1000.
 
-pageMarker: String, optional. Request the next page, the value is returned in last call.
+pageMarker: 可选.填入上一次请求中返回的值,来请求下一页.
 
 ## mns.createTopicP(name:string, options?:any)
-Create a topic.
+创建一个主题.
 
-name: topic name.
+name: 主题名称.
 
-options: optional.
+options: 选项.
 
-options.MaximumMessageSize: int. The maximum size of message, 1024(1k)~65536(64k), default is 65536.
+options.MaximumMessageSize: int. 消息的最大尺寸, 1024(1k)~65536(64k), 缺省为65536.
 
-options.LoggingEnabled: boolean. Enable logging or not, default is false.
+options.LoggingEnabled: boolean. 是否开启日志记录,缺省是false不开启.
 
 ## mns.deleteTopicP(name:string)
-Delete a topic.
+删除一个主题
 
-name: topic name.
+name: 主题名称.
 
 # Topic(name:string, account:Account, region?:string)
-Operate a topic.
+操控一个主题。
 
-name: topic name.
+name: 主题名称.
 
-account: An account object.
+account: 主题帐号.
 
-region: optional. Can be "shenzhen" or "shenzhen-internal", default is "hangzhou".
+region: 可选.数据中心,可以是"shenzhen"或"shenzhen-internal", 缺省是"hangzhou".
 
-*By now(Apr. 2016), the topic model is only provided in shenzhen data center*
+*截至目前(2016年4月), 主题模型仅在深圳数据中心提供服务*
 ```javascript
 var AliMNS = require("ali-mns");
 var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
@@ -643,22 +643,22 @@ var topic = new AliMNS.Topic("t11", account, "shenzhen");
 ```
 
 ## topic.getName()
-Get topic name.
+获取主题名称.
 
 ## topic.getAccount()
-Get topic account.
+获取主题帐号.
 
 ## topic.getRegion()
-Get topic region.
+获取主题数据中心位置.
 
 ## topic.getAttrsP() & topic.setAttrsP(options:any)
-Get or set attributes of topic.
+获取或设置主题的属性.
 
-options: topic attributes.
+options: 主题属性.
 
-options.MaximumMessageSize: int. The maximum size of message, 1024(1k)~65536(64k), default is 65536.
+options.MaximumMessageSize: int. 消息的最大尺寸, 1024(1k)~65536(64k), 缺省为65536.
 
-options.LoggingEnabled: boolean. Enable logging or not, default is false.
+options.LoggingEnabled: boolean. 是否开启日志记录,缺省是false不开启.
 
 ```javascript
 topic.setAttrsP({ MaximumMessageSize: 1024 });
@@ -666,24 +666,24 @@ topic.getAttrsP().then((data)=>{ console.info(data); });
 ```
 
 ## topic.listP(prefix?:string, pageSize?:number, pageMarker?:string)
-List all subscriptions.
+列出所有的订阅.
 
-prefix: String, optional. Return only subscriptions with the prefix.
+prefix: 可选.只返回特定前缀的订阅.
 
-pageSize: number, optional. How many subscriptions will be returned in a page, 1~1000, default is 1000.
+pageSize: 可选.每页包含的订阅数目1~1000,缺省为1000.
 
-pageMarker: String, optional. Request the next page, the value is returned in last call.
+pageMarker: 可选.填入上一次请求中返回的值,来请求下一页.
 
 ## topic.subscribeP(name:string, endPoint:string, notifyStrategy?:string, notifyContentFormat?:string)
-Subscribe a topic.
+订阅一个主题.
 
-name: Name of subscription.
+name: 订阅名称.
 
-endPoint: Notify end point. eg. `http://www.yoursite.com/mns-ep`
+endPoint: 通知终端点. 例如: `http://www.yoursite.com/mns-ep`
 
-notifyStrategy: optional. BACKOFF_RETRY or EXPONENTIAL_DECAY_RETRY, default is BACKOFF_RETRY.
+notifyStrategy: 可选.通知策略BACKOFF_RETRY或EXPONENTIAL_DECAY_RETRY,缺省是BACKOFF_RETRY.
 
-notifyContentFormat: optional. XML or SIMPLIFIED, default is XML.
+notifyContentFormat: 可选.通知消息格式XML或SIMPLIFIED,缺省是XML.
 
 ```javascript
 topic.subscribeP("subx", "http://www.yoursite.com/mns-ep",
@@ -696,23 +696,23 @@ topic.subscribeP("subx", "http://www.yoursite.com/mns-ep",
 ```
 
 ## topic.unsubscribeP(name:string)
-Unsubscribe a topic.
+取消订阅.
 
-name: Name of subscription.
+name: 订阅名称.
 
 ## topic.publishP(msg:string, b64:boolean)
-Publish a message to a topic.
+向主题中发布一个消息.
 
-msg: content of message
+msg: 消息内容.
 
-b64: true, encoding msg to base64 format before publishing. 
-false, do not encoding msg before publishing.
+b64: true, 发布消息使用base64编码方式. 
+false, 发布消息不使用base64编码方式.
 
-If message contains Chinese characters, must set `b64` to `true`.
-Only very simple message can set `b64` to `false`.
+如果消息中包含中文字符,必须把`b64`设置为`true`.
+只有非常简单的消息才可以把`b64`设置为`false`.
 
 # Subscription(name:string, topic:Topic)
-Operate a subscription.
+操控一个订阅.
 ```javascript
 var AliMNS = require("ali-mns");
 var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
@@ -721,41 +721,41 @@ var subscription = new AliMNS.Subscription("s12", topic);
 ```
 
 ## subscription.getName()
-Get name of subscription.
+获取订阅名称.
 
 ## subscription.getTopic()
-Get topic of subscription.
+获取订阅相关的主题.
 
 
 ## subscription.getAttrsP() & subscription.setAttrsP(options:any)
-Get or set attributes of subscription.
+获取或设置订阅属性.
 
-options: attributes of subscription.
+options: 订阅属性.
 
-options.NotifyStrategy: BACKOFF_RETRY or EXPONENTIAL_DECAY_RETRY.
+options.NotifyStrategy: 订阅策略 BACKOFF_RETRY或EXPONENTIAL_DECAY_RETRY.
 ```javascript
 subscription.setAttrsP({ NotifyStrategy: AliMNS.Subscription.NotifyStrategy.EXPONENTIAL_DECAY_RETRY });
 ```
 
 ## Subscription.NotifyStrategy
-Contains 2 const string.
+订阅策略,包含2个字符串定义.
 
 AliMNS.Subscription.NotifyStrategy.BACKOFF_RETRY : "BACKOFF_RETRY"
 
 AliMNS.Subscription.NotifyStrategy.EXPONENTIAL_DECAY_RETRY : "EXPONENTIAL_DECAY_RETRY"
 
-[More about NotifyStrategy[zh-Hans]](https://help.aliyun.com/document_detail/mns/api_reference/concepts/NotifyStrategy.html?spm=5176.docmns/api_reference/topic_api_spec/subscription_operation.6.141.tmwb5L)
+[关于订阅策略](https://help.aliyun.com/document_detail/mns/api_reference/concepts/NotifyStrategy.html?spm=5176.docmns/api_reference/topic_api_spec/subscription_operation.6.141.tmwb5L)
 
 ## Subscription.NotifyContentFormat
-Contains 2 const string.
+通知消息格式,包含2个字符串定义.
 
 AliMNS.Subscription.NotifyContentFormat.XML : "XML"
 
 AliMNS.Subscription.NotifyContentFormat.SIMPLIFIED : "SIMPLIFIED"
 
-[More about NotifyContentFormat[zh-Hans]](https://help.aliyun.com/document_detail/mns/api_reference/concepts/NotifyContentFormat.html?spm=5176.docmns/api_reference/concepts/NotifyStrategy.6.142.kWiFyy)
+[关于通知消息格式](https://help.aliyun.com/document_detail/mns/api_reference/concepts/NotifyContentFormat.html?spm=5176.docmns/api_reference/concepts/NotifyStrategy.6.142.kWiFyy)
 
-# DEBUG Trace
+# 调式输出
 设置环境变量"ali-mns"为**DEBUG**可以开启调试输出.
 ```SHELL
 # linux bash
@@ -766,34 +766,31 @@ set DEBUG=ali-mns
 ```
 
 # Migrate
-+ 1.The ali-mns is fully compatible with ali-mqs, simply replace the ali-mqs package to ali-mns.
+从1.x版本迁移
++ 1.ali-mns完全兼容ali-mqs, 简单替换ali-mqs包成ali-mns.
 ```javascript
 // var AliMQS = require('ali-mqs');
 var AliMQS = require('ali-mns');
 ```
 
-+ 2.Optional. Change the **ownerId** to **accountId**
-Ali-Yun upgrade their account system, and recommend to use the newer account id instead of owner id.
-But the old owner id is still available for now.
++ 2.可选. 更改**ownerId**为**accountId**
+阿里云升级了帐号系统,推荐使用新的account id 取代 owner id.
+但旧的owner id目前仍然有效.
 ```javascript
 var AliMQS = require("ali-mns");
 // var account = new AliMNS.Account("hl35yqoedp", "<your-key-id>", "<your-key-secret>");
 var account = new AliMNS.Account("1786090012649663", "<your-key-id>", "<your-key-secret>");
 ```
-**ownerId** is mixed with number and letter
+**ownerId** 混合了字母和数字.
 
-**accountId** is a 16-digits number,
-follow [this link](https://account.console.aliyun.com/#/secure) to find your accountId.
+**accountId** 16位的数字.
+点击[这个链接](https://account.console.aliyun.com/#/secure)找到你的account id.
 
-In GitHub, [An branch v1.x](https://github.com/InCar/ali-mns/tree/v1.x) keeps tracking for the old mqs services.
-And use `npm install ali-mqs' to install the [ali-mqs](https://www.npmjs.com/package/ali-mqs) package for v1.x.
+在GitHub, [分支v1.x](https://github.com/InCar/ali-mns/tree/v1.x) 跟踪旧的mqs服务.
+使用`npm install ali-mqs' 安装 [ali-mqs](https://www.npmjs.com/package/ali-mqs) 包的v1.x版本.
 
 # Performance - Serial vs. Batch 串行和批量的性能对比
-Create 20 queues, then send 2000 messages to them randomly.
-
 创建20个队列,然后随机的向它们发送共计2000条消息.
-
-It is about **10 times slower** in serial mode than in batch mode.  
 
 串行模式大约比批量模式慢10倍.
 
@@ -817,12 +814,12 @@ It is about **10 times slower** in serial mode than in batch mode.
       √ #stopRecv (6044ms)
 ```
 
-The testing code is in [$/test/performance.js](https://github.com/InCar/ali-mns/blob/master/test/performance.js)
-and a test log sample is in [$/test/performance.log](https://github.com/InCar/ali-mns/blob/master/test/performance.log)
+测试代码位于[$/test/performance.js](https://github.com/InCar/ali-mns/blob/master/test/performance.js)
+一份测试输出日志示例位于 [$/test/performance.log](https://github.com/InCar/ali-mns/blob/master/test/performance.log)
 
-Needs [mocha](https://www.npmjs.com/package/mocha) module to run the test.
+执行`npm run test`运行测试.
 
-Set environment variable **DEBUG** to **ali-mns.test** to turn on output trace(will slow down the test).
+设置环境变量 **DEBUG** 为 **ali-mns.test** 开启测试输出(会略微拖慢测试).
 
 # License
 MIT

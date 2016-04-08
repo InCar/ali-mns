@@ -823,7 +823,7 @@ It is about **10 times slower** in serial mode than in batch mode.
 The testing code is in [$/test/performance.js](https://github.com/InCar/ali-mns/blob/master/test/performance.js)
 and a test log sample is in [$/test/performance.log](https://github.com/InCar/ali-mns/blob/master/test/performance.log)
 
-Needs [mocha](https://www.npmjs.com/package/mocha) module to run the test.
+Use `npm run test` to execute the test.
 
 Set environment variable **DEBUG** to **ali-mns.test** to turn on output trace(will slow down the test).
 
