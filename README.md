@@ -24,6 +24,7 @@ Use 'npm install ali-mns' to install the package.
     // send message
     mq.sendP("Hello ali-mns").then(console.log, console.error);
 ```
+More sample codes can be found in [GitHub](https://github.com/InCar/ali-mns/tree/master/test).
 
 # Promised
 The ali-mns use the [promise](https://www.npmjs.org/package/promise) pattern.

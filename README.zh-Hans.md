@@ -24,6 +24,7 @@
     // send message
     mq.sendP("Hello ali-mns").then(console.log, console.error);
 ```
+更多示例代码可以参考[GitHub](https://github.com/InCar/ali-mns/tree/master/test).
 
 # Promised
 ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
