@@ -24,6 +24,7 @@
     // send message
     mq.sendP("Hello ali-mns").then(console.log, console.error);
 ```
+更多示例代码可以参考[GitHub](https://github.com/InCar/ali-mns/tree/master/test).
 
 # Promised
 ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
@@ -36,9 +37,234 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
 
 如果你对源代码感兴趣,访问GitHub [https://github.com/InCar/ali-mns](https://github.com/InCar/ali-mns)
 
-克隆源代后,使用`grunt`来编译.ts文件.
+克隆源代后,使用`gulp`来编译.ts文件.
 
 # API参考
+<table>
+    <tr>
+        <th>类型</th>
+        <th>方法</th>
+        <th>简述</th>
+    </tr>
+    <tr>
+        <td rowspan="4">[Account](#accountaccountidstring-keyidstring-keysecretstring)</td>
+        <td colspan="2">*Account*类用于存储你的阿里云帐号信息.</td>
+    </tr>
+    <tr>
+        <td>[getAccountId](#accountgetaccountid)</td>
+        <td>返回阿里云帐号id.</td>
+    </tr>
+    <tr>
+        <td>[getOwnerId](#accountgetownerid)</td>
+        <td>和account.getAccountId()功能相同. 为了向下兼容v1.x版本.</td>
+    </tr>
+    <tr>
+        <td>[getKeyId](#accountgetkeyid)</td>
+        <td>返回阿里钥id.</td>
+    </tr>
+    <tr>
+        <td rowspan="4">[MNS](#mnsaccountaccount-regionstring)<br/>[MQS](#mqsaccountaccount-regionstring)<br/>[MNSTopic](#mnstopicaccountaccount-regionstring)</td>
+        <td colspan="2">*MNS*类用于操作mns队列. *MQS*和*MNS*相同.为了向下兼容v1.x版本.</td>
+    </tr>
+    <tr>
+        <td>[listP](#mnslistpprefixstring-pagesizenumber-pagemarkerstring)</td>
+        <td>列出一个数据中心里的所有队列.</td>
+    </tr>
+    <tr>
+        <td>[createP](#mnscreatepnamestring-optionsany)</td>
+        <td>创建一个队列.</td>
+    </tr>
+    <tr>
+        <td>[deleteP](#mnsdeletepnamestring)</td>
+        <td>删除一个队列.</td>
+    </tr>
+    <tr>
+        <td rowspan="15">[MQ](#mqnamestring-accountaccount-regionstring)<br/>[MQBatch](#mqbatch)</td>
+        <td colspan="2">*MQ*操作队列中的消息.</td>
+    </tr>
+    <tr>
+        <td>[getName](#mqgetname)</td>
+        <td>获取队列名称.</td>
+    </tr>
+    <tr>
+        <td>[getAccount](#mqgetaccount)</td>
+        <td>获取队列帐号.</td>
+    </tr>
+    <tr>
+        <td>[getRegion](#mqgetregion)</td>
+        <td>获取队列位置.</td>
+    </tr>
+    <tr>
+        <td>[sendP](#mqsendpmsgstring-prioritynumber-delaysecondsnumber)</td>
+        <td>向队列中发送一个消息.</td>
+    </tr>
+    <tr>
+        <td>[getRecvTolerance](#mqgetrecvtolerance--mqsetrecvtolerancevaluenumber)</td>
+        <td>获取mq.recvP方法的容忍秒数.</td>
+    </tr>
+    <tr>
+        <td>[setRecvTolerance](#mqgetrecvtolerance--mqsetrecvtolerancevaluenumber)</td>
+        <td>设置mq.recvP方法的容忍秒数.</td>
+    </tr>
+    <tr>
+        <td>[recvP](#mqrecvpwaitsecondsnumber)</td>
+        <td>从队列中接收消息.</td>
+    </tr>
+    <tr>
+        <td>[peekP](#mqpeekp)</td>
+        <td>查探消息.</td>
+    </tr>
+    <tr>
+        <td>[deleteP](#mqdeletepreceipthandlestring)</td>
+        <td>删除消息.</td>
+    </tr>
+    <tr>
+        <td>[reserveP](#mqreservepreceipthandlestring-reservesecondsnumber)</td>
+        <td>保留一个消息.</td>
+    </tr>
+    <tr>
+        <td>[notifyRecv](#mqnotifyrecvcbexerror-msganyboolean-waitsecondsnumber)</td>
+        <td>注册一个回调函数来接收消息.</td>
+    </tr>
+    <tr>
+        <td>[notifyStopP](#mqnotifystopp)</td>
+        <td>停止mq.notifyRecv.</td>
+    </tr>
+    <tr>
+        <td>[getAttrsP](#mqgetattrsp)</td>
+        <td>获取队列的属性.</td>
+    </tr>
+    <tr>
+        <td>[setAttrsP](#mqsetattrspoptionsany)</td>
+        <td>修改队列的属性.</td>
+    </tr>
+    <tr>
+        <td rowspan="6">[MQBatch](#mqbatch)</td>
+        <td colspan="2">批量消息队列</td>
+    </tr>
+    <tr>
+        <td>[sendP](#mqbatchsendpmsgstring--array-prioritynumber-delaysecondsnumber)</td>
+        <td>发送一条消息或一批消息.</td>
+    </tr>
+    <tr>
+        <td>[recvP](#mqbatchrecvpwaitsecondsnumber-numofmessagesnumber)</td>
+        <td>接收一条或者一批消息.</td>
+    </tr>
+    <tr>
+        <td>[peekP](#mqbatchpeekpnumofmessagesnumber)</td>
+        <td>查探一条或者一批消息.</td>
+    </tr>
+    <tr>
+        <td>[deleteP](#mqbatchdeletepreceipthandlestring--array)</td>
+        <td>删除一条或一批消息.</td>
+    </tr>
+    <tr>
+        <td>[notifyRecv](#mqbatchnotifyrecvcbexerror-msganyboolean-waitsecondsnumber-numofmessagesnumber)</td>
+        <td>注册一个回调函数来接收消息,支持批量模式.</td>
+    </tr>
+    <tr>
+        <td rowspan="4">[Msg](#msgmsg-string-prioritynumber-delaysecondsnumber)</td>
+        <td colspan="2">简单消息定义,用于MQBatch类.</td>
+    </tr>
+    <tr>
+        <td>[getMsg](#msggetmsg)</td>
+        <td>返回消息内容.</td>
+    </tr>
+    <tr>
+        <td>[getPriority](#msggetpriority)</td>
+        <td>返回消息优先级.</td>
+    </tr>
+    <tr>
+        <td>[getDelaySeconds](#msggetdelayseconds)</td>
+        <td>返回消息延迟可见秒数.</td>
+    </tr>
+    <tr>
+        <td rowspan="4">[MNSTopic](#mnstopicaccountaccount-regionstring)</td>
+        <td colspan="2">MNSTopic扩展自MNS,它提供了基于主题模型的消息功能.</td>
+    </tr>
+    <tr>
+        <td>[listTopicP](#mnslisttopicpprefixstring-pagesizenumber-pagemarkerstring)</td>
+        <td>列出所有的主题.</td>
+    </tr>
+    <tr>
+        <td>[createTopicP](#mnscreatetopicpnamestring-optionsany)</td>
+        <td>创建一个主题.</td>
+    </tr>
+    <tr>
+        <td>[deleteTopicP](#mnsdeletetopicpnamestring)</td>
+        <td>删除一个主题.</td>
+    </tr>
+    <tr>
+        <td rowspan="10">[Topic](#topicnamestring-accountaccount-regionstring)</td>
+        <td colspan="2">操控主题</td>
+    </tr>
+    <tr>
+        <td>[getName](#topicgetname)</td>
+        <td>获取主题名称.</td>
+    </tr>
+    <tr>
+        <td>[getAccount](#topicgetaccount)</td>
+        <td>获取主题帐号.</td>
+    </tr>
+    <tr>
+        <td>[getRegion](#topicgetregion)</td>
+        <td>获取主题位置.</td>
+    </tr>
+    <tr>
+        <td>[getAttrsP](#topicgetattrsp--topicsetattrspoptionsany)</td>
+        <td>获取主题属性.</td>
+    </tr>
+    <tr>
+        <td>[setAttrsP](#topicgetattrsp--topicsetattrspoptionsany)</td>
+        <td>设置主题属性.</td>
+    </tr>
+    <tr>
+        <td>[listP](#topiclistpprefixstring-pagesizenumber-pagemarkerstring)</td>
+        <td>列出主题的所有订阅.</td>
+    </tr>
+    <tr>
+        <td>[subscribeP](#topicsubscribepnamestring-endpointstring-notifystrategystring-notifycontentformatstring)</td>
+        <td>订阅一个主题.</td>
+    </tr>
+    <tr>
+        <td>[unsubscribeP](#topicunsubscribepnamestring)</td>
+        <td>取消对一个主题的订阅.</td>
+    </tr>
+    <tr>
+        <td>[publishP](#topicpublishpmsgstring-b64boolean)</td>
+        <td>向主题中发布一个消息.</td>
+    </tr>
+    <tr>
+        <td rowspan="7">[Subscription](#subscriptionnamestring-topictopic)</td>
+        <td colspan="2">操控一个订阅.</td>
+    </tr>
+    <tr>
+        <td>[getName](#subscriptiongetname)</td>
+        <td>获取订阅的名称.</td>
+    </tr>
+    <tr>
+        <td>[getTopic](#subscriptiongettopic)</td>
+        <td>获取订阅相关的主題.</td>
+    </tr>
+    <tr>
+        <td>[getAttrsP](#subscriptiongetattrsp--subscriptionsetattrspoptionsany)</td>
+        <td>获取订阅的属性.</td>
+    </tr>
+    <tr>
+        <td>[setAttrsP](#subscriptiongetattrsp--subscriptionsetattrspoptionsany)</td>
+        <td>设置订阅的属性.</td>
+    </tr>
+    <tr>
+        <td>[NotifyStrategy](#subscriptionnotifystrategy)</td>
+        <td>通知策略.</td>
+    </tr>
+    <tr>
+        <td>[NotifyContentFormat](#subscriptionnotifycontentformat)</td>
+        <td>通知内容格式.</td>
+    </tr>
+<table>
+
+
 ## Account(accountId:string, keyId:string, keySecret:string)
 *Account*类用于存储你的阿里云帐号信息.创建一个帐号对象很简单:
 
@@ -154,7 +380,7 @@ region: String, optional. 可能的取值为"hangzhou", "beijing" or "qingdao",�
 ## mq.getAccount()
 获取队列帐号.
 
-## gmq.etRegion()
+## mq.getRegion()
 获取队列位置.
 
 ## mq.sendP(msg:string, priority?:number, delaySeconds?:number)
@@ -262,7 +488,7 @@ mq.getAttrsP().then(console.log, console.error);
 ## mq.setAttrsP(options:any)
 修改队列的属性.
 
-options: the queue attributes. See the [options](#options) of mns.createP. 队列属性,查看mns.createP的[options](#options)参数.
+options: 队列属性,查看mns.createP的[options](#options)参数.
 ```javascript
     mq.setAttrsP({
         DelaySeconds: 0,
@@ -366,7 +592,171 @@ numOfMessages: number. optional. 最多一批接收的消息数目,1~16,缺省�
 
 所有春它参数都和*mq.notifyRecv*一致.
 
-# DEBUG Trace
+# MNSTopic(account:Account, region?:string)
+`MNSTopic`提供了关于主题模型的功能,它扩展自`MNS`.
+所有`MNS`的方法都适用于`MNSTopic`.
+```javascript
+    var AliMNS = require("ali-mns");
+    var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
+    var mns = new AliMNS.MNSTopic(account, "shenzhen");
+```
+*截至目前(2016年4月),主题模型仅在深圳数据中心提供服务*
+
+## mns.listTopicP(prefix?:string, pageSize?:number, pageMarker?:string)
+列出所有的主题.
+
+prefix: 可选.只返回特定前缀的主题.
+
+pageSize: 可选.每页包含的主题数目1~1000,缺省为1000.
+
+pageMarker: 可选.填入上一次请求中返回的值,来请求下一页.
+
+## mns.createTopicP(name:string, options?:any)
+创建一个主题.
+
+name: 主题名称.
+
+options: 选项.
+
+options.MaximumMessageSize: int. 消息的最大尺寸, 1024(1k)~65536(64k), 缺省为65536.
+
+options.LoggingEnabled: boolean. 是否开启日志记录,缺省是false不开启.
+
+## mns.deleteTopicP(name:string)
+删除一个主题
+
+name: 主题名称.
+
+# Topic(name:string, account:Account, region?:string)
+操控一个主题。
+
+name: 主题名称.
+
+account: 主题帐号.
+
+region: 可选.数据中心,可以是"shenzhen"或"shenzhen-internal", 缺省是"hangzhou".
+
+*截至目前(2016年4月), 主题模型仅在深圳数据中心提供服务*
+```javascript
+var AliMNS = require("ali-mns");
+var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
+var topic = new AliMNS.Topic("t11", account, "shenzhen");
+```
+
+## topic.getName()
+获取主题名称.
+
+## topic.getAccount()
+获取主题帐号.
+
+## topic.getRegion()
+获取主题数据中心位置.
+
+## topic.getAttrsP() & topic.setAttrsP(options:any)
+获取或设置主题的属性.
+
+options: 主题属性.
+
+options.MaximumMessageSize: int. 消息的最大尺寸, 1024(1k)~65536(64k), 缺省为65536.
+
+options.LoggingEnabled: boolean. 是否开启日志记录,缺省是false不开启.
+
+```javascript
+topic.setAttrsP({ MaximumMessageSize: 1024 });
+topic.getAttrsP().then((data)=>{ console.info(data); });
+```
+
+## topic.listP(prefix?:string, pageSize?:number, pageMarker?:string)
+列出所有的订阅.
+
+prefix: 可选.只返回特定前缀的订阅.
+
+pageSize: 可选.每页包含的订阅数目1~1000,缺省为1000.
+
+pageMarker: 可选.填入上一次请求中返回的值,来请求下一页.
+
+## topic.subscribeP(name:string, endPoint:string, notifyStrategy?:string, notifyContentFormat?:string)
+订阅一个主题.
+
+name: 订阅名称.
+
+endPoint: 通知终端点. 例如: `http://www.yoursite.com/mns-ep`
+
+notifyStrategy: 可选.通知策略BACKOFF_RETRY或EXPONENTIAL_DECAY_RETRY,缺省是BACKOFF_RETRY.
+
+notifyContentFormat: 可选.通知消息格式XML或SIMPLIFIED,缺省是XML.
+
+```javascript
+topic.subscribeP("subx", "http://www.yoursite.com/mns-ep",
+        AliMNS.Subscription.NotifyStrategy.BACKOFF_RETRY,
+        AliMNS.Subscription.NotifyContentFormat.SIMPLIFIED)
+    .then(
+        (data)=>{ console.info(data);}, 
+        (err)=>{ console.error(err); }
+    );
+```
+
+## topic.unsubscribeP(name:string)
+取消订阅.
+
+name: 订阅名称.
+
+## topic.publishP(msg:string, b64:boolean)
+向主题中发布一个消息.
+
+msg: 消息内容.
+
+b64: true, 发布消息使用base64编码方式. 
+false, 发布消息不使用base64编码方式.
+
+如果消息中包含中文字符,必须把`b64`设置为`true`.
+只有非常简单的消息才可以把`b64`设置为`false`.
+
+# Subscription(name:string, topic:Topic)
+操控一个订阅.
+```javascript
+var AliMNS = require("ali-mns");
+var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
+var topic = new AliMNS.Topic("t11", account, "shenzhen");
+var subscription = new AliMNS.Subscription("s12", topic);
+```
+
+## subscription.getName()
+获取订阅名称.
+
+## subscription.getTopic()
+获取订阅相关的主题.
+
+
+## subscription.getAttrsP() & subscription.setAttrsP(options:any)
+获取或设置订阅属性.
+
+options: 订阅属性.
+
+options.NotifyStrategy: 订阅策略 BACKOFF_RETRY或EXPONENTIAL_DECAY_RETRY.
+```javascript
+subscription.setAttrsP({ NotifyStrategy: AliMNS.Subscription.NotifyStrategy.EXPONENTIAL_DECAY_RETRY });
+```
+
+## Subscription.NotifyStrategy
+订阅策略,包含2个字符串定义.
+
+AliMNS.Subscription.NotifyStrategy.BACKOFF_RETRY : "BACKOFF_RETRY"
+
+AliMNS.Subscription.NotifyStrategy.EXPONENTIAL_DECAY_RETRY : "EXPONENTIAL_DECAY_RETRY"
+
+[关于订阅策略](https://help.aliyun.com/document_detail/mns/api_reference/concepts/NotifyStrategy.html?spm=5176.docmns/api_reference/topic_api_spec/subscription_operation.6.141.tmwb5L)
+
+## Subscription.NotifyContentFormat
+通知消息格式,包含2个字符串定义.
+
+AliMNS.Subscription.NotifyContentFormat.XML : "XML"
+
+AliMNS.Subscription.NotifyContentFormat.SIMPLIFIED : "SIMPLIFIED"
+
+[关于通知消息格式](https://help.aliyun.com/document_detail/mns/api_reference/concepts/NotifyContentFormat.html?spm=5176.docmns/api_reference/concepts/NotifyStrategy.6.142.kWiFyy)
+
+# 调式输出
 设置环境变量"ali-mns"为**DEBUG**可以开启调试输出.
 ```SHELL
 # linux bash
@@ -377,34 +767,31 @@ set DEBUG=ali-mns
 ```
 
 # Migrate
-+ 1.The ali-mns is fully compatible with ali-mqs, simply replace the ali-mqs package to ali-mns.
+从1.x版本迁移
++ 1.ali-mns完全兼容ali-mqs, 简单替换ali-mqs包成ali-mns.
 ```javascript
 // var AliMQS = require('ali-mqs');
 var AliMQS = require('ali-mns');
 ```
 
-+ 2.Optional. Change the **ownerId** to **accountId**
-Ali-Yun upgrade their account system, and recommend to use the newer account id instead of owner id.
-But the old owner id is still available for now.
++ 2.可选. 更改**ownerId**为**accountId**
+阿里云升级了帐号系统,推荐使用新的account id 取代 owner id.
+但旧的owner id目前仍然有效.
 ```javascript
 var AliMQS = require("ali-mns");
 // var account = new AliMNS.Account("hl35yqoedp", "<your-key-id>", "<your-key-secret>");
 var account = new AliMNS.Account("1786090012649663", "<your-key-id>", "<your-key-secret>");
 ```
-**ownerId** is mixed with number and letter
+**ownerId** 混合了字母和数字.
 
-**accountId** is a 16-digits number,
-follow [this link](https://account.console.aliyun.com/#/secure) to find your accountId.
+**accountId** 16位的数字.
+点击[这个链接](https://account.console.aliyun.com/#/secure)找到你的account id.
 
-In GitHub, [An branch v1.x](https://github.com/InCar/ali-mns/tree/v1.x) keeps tracking for the old mqs services.
-And use `npm install ali-mqs' to install the [ali-mqs](https://www.npmjs.com/package/ali-mqs) package for v1.x.
+在GitHub, [分支v1.x](https://github.com/InCar/ali-mns/tree/v1.x) 跟踪旧的mqs服务.
+使用`npm install ali-mqs' 安装 [ali-mqs](https://www.npmjs.com/package/ali-mqs) 包的v1.x版本.
 
 # Performance - Serial vs. Batch 串行和批量的性能对比
-Create 20 queues, then send 2000 messages to them randomly.
-
 创建20个队列,然后随机的向它们发送共计2000条消息.
-
-It is about **10 times slower** in serial mode than in batch mode.  
 
 串行模式大约比批量模式慢10倍.
 
@@ -428,12 +815,12 @@ It is about **10 times slower** in serial mode than in batch mode.
       √ #stopRecv (6044ms)
 ```
 
-The testing code is in [$/test/performance.js](https://github.com/InCar/ali-mns/blob/master/test/performance.js)
-and a test log sample is in [$/test/performance.log](https://github.com/InCar/ali-mns/blob/master/test/performance.log)
+测试代码位于[$/test/performance.js](https://github.com/InCar/ali-mns/blob/master/test/performance.js)
+一份测试输出日志示例位于 [$/test/performance.log](https://github.com/InCar/ali-mns/blob/master/test/performance.log)
 
-Needs [mocha](https://www.npmjs.com/package/mocha) module to run the test.
+执行`npm run test`运行测试.
 
-Set environment variable **DEBUG** to **ali-mns.test** to turn on output trace(will slow down the test).
+设置环境变量 **DEBUG** 为 **ali-mns.test** 开启测试输出(会略微拖慢测试).
 
 # License
 MIT

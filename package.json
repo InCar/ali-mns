@@ -1,6 +1,6 @@
 {
   "name": "ali-mns",
-  "version": "2.2.3",
+  "version": "2.3.0",
   "description": "The nodejs SDK for aliyun mns service",
   "main": "index.js",
   "dependencies": {
@@ -11,16 +11,18 @@
     "xmlbuilder": "^3.1.0"
   },
   "devDependencies": {
-    "grunt": "^0.4.5",
-    "grunt-contrib-clean": "^0.6.0",
-    "grunt-newer": "^1.1.1",
-    "grunt-typescript": "^0.7.0",
-    "load-grunt-tasks": "^3.3.0",
+    "del": "^2.2.0",
+    "gulp": "^3.9.1",
+    "gulp-debug": "^2.1.2",
+    "gulp-newer": "^1.1.0",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-typescript": "^2.12.2",
+    "mocha": "^2.4.5",
     "should": "^7.1.1"
   },
   "scripts": {
-    "prepublish": "grunt",
-    "test": "mocha"
+    "prepublish": "gulp",
+    "test": "node node_modules/mocha/bin/mocha"
   },
   "repository": {
     "type": "git",

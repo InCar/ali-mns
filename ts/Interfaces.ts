@@ -10,6 +10,15 @@ module AliMNS{
         deleteP(name:string);
     }
     
+    export interface IMNSTopic extends IMNS{
+        // List all topics.
+        listTopicP(prefix?:string, pageSize?:number, pageMarker?:string);
+        // Create a topic
+        createTopicP(name:string, options?:any);
+        // Delete a topic
+        deleteTopicP(name:string);
+    }
+    
     export interface IMQ{
         // 获取MQ的属性值
         getAttrsP();
@@ -45,5 +54,31 @@ module AliMNS{
     
     export interface INotifyRecvBatch extends INotifyRecv{
         notifyRecv(cb:(ex:Error, msg:any)=>Boolean, waitSeconds?:number, numOfMessages?:number);
+    }
+    
+    export interface ITopic{
+        // 获取Topic的属性值
+        getAttrsP();
+        // 设置Topic的属性值
+        setAttrsP(options:any);
+        // List all subscriptions.
+        listP(prefix?:string, pageSize?:number, pageMarker?:string);
+        // Subscribe a topic.
+        subscribeP(name:string, endPoint:string, notifyStrategy?:string, notifyContentFormat?:string);
+        // Unsubscribe a topic.
+        unsubscribeP(name:string);
+        // Publish a message.
+        publishP(msg:string, b64: boolean);
+    }
+    
+    export interface ISubscription{
+        // 获取Subscription的属性值
+        getAttrsP();
+        // 设置Subscription的属性值
+        setAttrsP(options:any);
+    }
+    
+    export interface ITopicNotify{
+        notifyP(request:any);
     }
 }

@@ -71,7 +71,7 @@ module AliMNS{
                 headers["Content-MD5"] = contentMD5;
             }
 
-            // `Dat`e & `Host` will be added by request automatically
+            // `Date` & `Host` will be added by request automatically
             if(!headers["x-mns-version"]) headers["x-mns-version"] = this._version;
 
             // lowercase & sort & extract the x-mns-<any>

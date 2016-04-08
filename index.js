@@ -1,3 +1,8 @@
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 /// <reference path="../dts/external.d.ts" />
 // dependencies
 var Buffer = require("buffer");
@@ -38,7 +43,7 @@ var AliMNS;
             return buf.toString("base64");
         };
         return Account;
-    })();
+    }());
     AliMNS.Account = Account;
 })(AliMNS || (AliMNS = {}));
 var AliMNS;
@@ -60,7 +65,7 @@ var AliMNS;
         Msg.prototype.getPriority = function () { return this._priority; };
         Msg.prototype.getDelaySeconds = function () { return this._delaySeconds; };
         return Msg;
-    })();
+    }());
     AliMNS.Msg = Msg;
 })(AliMNS || (AliMNS = {}));
 /// <reference path="Msg.ts" />
@@ -141,7 +146,7 @@ var AliMNS;
                 contentMD5 = this._account.b64md5(body);
                 headers["Content-MD5"] = contentMD5;
             }
-            // `Dat`e & `Host` will be added by request automatically
+            // `Date` & `Host` will be added by request automatically
             if (!headers["x-mns-version"])
                 headers["x-mns-version"] = this._version;
             // lowercase & sort & extract the x-mns-<any>
@@ -179,7 +184,7 @@ var AliMNS;
             return this._account.hmac_sha1(text, "base64");
         };
         return OpenStack;
-    })();
+    }());
     AliMNS.OpenStack = OpenStack;
 })(AliMNS || (AliMNS = {}));
 /// <reference path="Interfaces.ts" />
@@ -234,7 +239,7 @@ var AliMNS;
             return Util.format(this._pattern, this._account.getAccountId(), this._region);
         };
         return MNS;
-    })();
+    }());
     AliMNS.MNS = MNS;
     // For compatible v1.x
     AliMNS.MQS = MNS;
@@ -358,7 +363,7 @@ var AliMNS;
             }
         };
         return NotifyRecv;
-    })();
+    }());
     AliMNS.NotifyRecv = NotifyRecv;
 })(AliMNS || (AliMNS = {}));
 /// <reference path="Interfaces.ts" />
@@ -507,18 +512,12 @@ var AliMNS;
             return this.makeAttrURL() + "/messages";
         };
         return MQ;
-    })();
+    }());
     AliMNS.MQ = MQ;
 })(AliMNS || (AliMNS = {}));
 /// <reference path="MQ.ts" />
 /// <reference path="Msg.ts" />
 /// <reference path="Interfaces.ts" />
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
 var AliMNS;
 (function (AliMNS) {
     var MQBatch = (function (_super) {
@@ -640,7 +639,7 @@ var AliMNS;
             }
         };
         return MQBatch;
-    })(AliMNS.MQ);
+    }(AliMNS.MQ));
     AliMNS.MQBatch = MQBatch;
 })(AliMNS || (AliMNS = {}));
 /// <reference path="ali-mns.ts" />
@@ -651,4 +650,191 @@ var AliMNS;
 /// <reference path="MQBatch.ts" />
 // Exports the AliMNS
 module.exports = AliMNS;
+/// <reference path="Interfaces.ts" />
+var AliMNS;
+(function (AliMNS) {
+    var MNSTopic = (function (_super) {
+        __extends(MNSTopic, _super);
+        function MNSTopic(account, region) {
+            _super.call(this, account, region);
+            this._patternTopic = "http://%s.mns.cn-%s.aliyuncs.com/topics/";
+            // make url
+            this._urlTopic = this.makeTopicURL();
+        }
+        // List all topics.
+        MNSTopic.prototype.listTopicP = function (prefix, pageSize, pageMarker) {
+            var headers = {};
+            if (prefix)
+                headers["x-mns-prefix"] = prefix;
+            if (pageMarker)
+                headers["x-mns-marker"] = pageMarker;
+            if (pageSize)
+                headers["x-mns-ret-number"] = pageSize;
+            var url = this._urlTopic.slice(0, -1);
+            debug("GET " + url);
+            return this._openStack.sendP("GET", url, null, headers);
+        };
+        // Create a topic
+        MNSTopic.prototype.createTopicP = function (name, options) {
+            var body = { Topic: "" };
+            if (options)
+                body.Topic = options;
+            var url = Url.resolve(this._urlTopic, name);
+            debug("PUT " + url, body);
+            return this._openStack.sendP("PUT", url, body);
+        };
+        // Delete a topic
+        MNSTopic.prototype.deleteTopicP = function (name) {
+            var url = Url.resolve(this._urlTopic, name);
+            debug("DELETE " + url);
+            return this._openStack.sendP("DELETE", url);
+        };
+        MNSTopic.prototype.makeTopicURL = function () {
+            return Util.format(this._patternTopic, this._account.getAccountId(), this._region);
+        };
+        return MNSTopic;
+    }(AliMNS.MNS));
+    AliMNS.MNSTopic = MNSTopic;
+})(AliMNS || (AliMNS = {}));
+/// <reference path="Interfaces.ts" />
+/// <reference path="Account.ts" />
+/// <reference path="OpenStack.ts" />
+var AliMNS;
+(function (AliMNS) {
+    // The Topic
+    var Topic = (function () {
+        // The constructor. name & account is required.
+        // region can be "hangzhou", "beijing" or "qingdao", the default is "hangzhou"
+        function Topic(name, account, region) {
+            this._region = "hangzhou";
+            this._pattern = "http://%s.mns.cn-%s.aliyuncs.com/topics/%s";
+            this._name = name;
+            this._account = account;
+            if (region)
+                this._region = region;
+            // make url
+            this._urlAttr = this.makeAttrURL();
+            this._urlSubscription = this.makeSubscriptionURL();
+            this._urlPublish = this.makePublishURL();
+            // create the OpenStack object
+            this._openStack = new AliMNS.OpenStack(account);
+        }
+        Topic.prototype.getName = function () { return this._name; };
+        Topic.prototype.getAccount = function () { return this._account; };
+        Topic.prototype.getRegion = function () { return this._region; };
+        // 获取Topic的属性值
+        Topic.prototype.getAttrsP = function () {
+            debug("GET " + this._urlAttr);
+            return this._openStack.sendP("GET", this._urlAttr);
+        };
+        // 设置Topic的属性值
+        Topic.prototype.setAttrsP = function (options) {
+            var body = { Topic: options };
+            debug("PUT " + this._urlAttr, body);
+            return this._openStack.sendP("PUT", this._urlAttr + "?metaoverride=true", body);
+        };
+        // List all subscriptions.
+        Topic.prototype.listP = function (prefix, pageSize, pageMarker) {
+            var headers = {};
+            if (prefix)
+                headers["x-mns-prefix"] = prefix;
+            if (pageMarker)
+                headers["x-mns-marker"] = pageMarker;
+            if (pageSize)
+                headers["x-mns-ret-number"] = pageSize;
+            var url = this._urlSubscription.slice(0, -1);
+            debug("GET " + url);
+            return this._openStack.sendP("GET", url, null, headers);
+        };
+        Topic.prototype.subscribeP = function (name, endPoint, notifyStrategy, notifyContentFormat) {
+            var body = {
+                Subscription: {
+                    Endpoint: endPoint
+                }
+            };
+            if (notifyStrategy)
+                body.Subscription['NotifyStrategy'] = notifyStrategy;
+            if (notifyContentFormat)
+                body.Subscription['NotifyContentFormat'] = notifyContentFormat;
+            var url = Url.resolve(this._urlSubscription, name);
+            debug("PUT " + url, body);
+            return this._openStack.sendP("PUT", url, body);
+        };
+        Topic.prototype.unsubscribeP = function (name) {
+            var url = Url.resolve(this._urlSubscription, name);
+            debug("DELETE " + url);
+            return this._openStack.sendP("DELETE", url);
+        };
+        Topic.prototype.publishP = function (msg, b64) {
+            var body = {
+                Message: {
+                    MessageBody: b64 ? this.utf8ToBase64(msg) : msg
+                }
+            };
+            debug("POST " + this._urlPublish, body);
+            return this._openStack.sendP("POST", this._urlPublish, body);
+        };
+        Topic.prototype.utf8ToBase64 = function (src) {
+            var buf = new Buffer.Buffer(src, 'utf8');
+            return buf.toString('base64');
+        };
+        Topic.prototype.makeAttrURL = function () {
+            return Util.format(this._pattern, this._account.getAccountId(), this._region, this._name);
+        };
+        Topic.prototype.makeSubscriptionURL = function () {
+            return this.makeAttrURL() + "/subscriptions/";
+        };
+        Topic.prototype.makePublishURL = function () {
+            return this.makeAttrURL() + "/messages";
+        };
+        return Topic;
+    }());
+    AliMNS.Topic = Topic;
+})(AliMNS || (AliMNS = {}));
+/// <reference path="Interfaces.ts" />
+/// <reference path="Topic.ts" />
+/// <reference path="OpenStack.ts" />
+var AliMNS;
+(function (AliMNS) {
+    // The Subscription
+    var Subscription = (function () {
+        // The constructor. name & topic is required.
+        function Subscription(name, topic) {
+            this._pattern = "http://%s.mns.cn-%s.aliyuncs.com/topics/%s/subscriptions/%s";
+            this._name = name;
+            this._topic = topic;
+            // make url
+            this._urlAttr = this.makeAttrURL();
+            // create the OpenStack object
+            this._openStack = new AliMNS.OpenStack(topic.getAccount());
+        }
+        Subscription.prototype.getName = function () { return this._name; };
+        Subscription.prototype.getTopic = function () { return this._topic; };
+        // 获取Subscription的属性值
+        Subscription.prototype.getAttrsP = function () {
+            debug("GET " + this._urlAttr);
+            return this._openStack.sendP("GET", this._urlAttr);
+        };
+        // 设置Subscription的属性值
+        Subscription.prototype.setAttrsP = function (options) {
+            var body = { Subscription: options };
+            debug("PUT " + this._urlAttr, body);
+            return this._openStack.sendP("PUT", this._urlAttr + "?metaoverride=true", body);
+        };
+        Subscription.prototype.makeAttrURL = function () {
+            return Util.format(this._pattern, this._topic.getAccount().getAccountId(), this._topic.getRegion(), this._topic.getName(), this._name);
+        };
+        Subscription.NotifyStrategy = {
+            BACKOFF_RETRY: "BACKOFF_RETRY",
+            EXPONENTIAL_DECAY_RETRY: "EXPONENTIAL_DECAY_RETRY"
+        };
+        Subscription.NotifyContentFormat = {
+            XML: "XML",
+            SIMPLIFIED: "SIMPLIFIED"
+        };
+        return Subscription;
+    }());
+    AliMNS.Subscription = Subscription;
+})(AliMNS || (AliMNS = {}));
+
 //# sourceMappingURL=index.js.map

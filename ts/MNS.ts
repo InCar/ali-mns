@@ -49,11 +49,11 @@ module AliMNS{
             return Util.format(this._pattern, this._account.getAccountId(), this._region);
         }
 
-        private _account:Account; // Ali account
-        private _region = "hangzhou"; // region: hangzhou, beijing, qingdao
+        protected _account:Account; // Ali account
+        protected _region = "hangzhou"; // region: hangzhou, beijing, qingdao
         private _pattern = "http://%s.mns.cn-%s.aliyuncs.com/queues/";
         private _url:string; // mns url
-        private _openStack: OpenStack;
+        protected _openStack: OpenStack;
     }
 
     // For compatible v1.x

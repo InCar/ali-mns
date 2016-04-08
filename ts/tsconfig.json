@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "noImplicitAny": false,
+        "removeComments": false,
+        "preserveConstEnums": true,
+        "outFile": "index.js",
+        "sourceMap": true,
+        "rootDir": "ts/"
+    },
+    "exclude": [
+        "node_modules",
+        "dts"
+    ]
+}
