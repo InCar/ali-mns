@@ -47,7 +47,7 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
         <th>简述</th>
     </tr>
     <tr>
-        <td rowspan="4">[Account](#accountaccountidstring-keyidstring-keysecretstring)</td>
+        <td rowspan="6">[Account](#accountaccountidstring-keyidstring-keysecretstring)</td>
         <td colspan="2">*Account*类用于存储你的阿里云帐号信息.</td>
     </tr>
     <tr>
@@ -61,6 +61,14 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
     <tr>
         <td>[getKeyId](#accountgetkeyid)</td>
         <td>返回阿里钥id.</td>
+    </tr>
+    <tr>
+        <td>[getGA](#accountgetga--accountsetgabgaboolean)</td>
+        <td>获取Google数据收集状态.</td>
+    </tr>
+    <tr>
+        <td>[setGA](#accountgetga--accountsetgabgaboolean)</td>
+        <td>设置Google数据收集状态.</td>
     </tr>
     <tr>
         <td rowspan="4">[MNS](#mnsaccountaccount-regionstring)<br/>[MQS](#mqsaccountaccount-regionstring)<br/>[MNSTopic](#mnstopicaccountaccount-regionstring)</td>
@@ -289,6 +297,11 @@ keySecret: String, 阿里云密钥.
 
 ## account.getKeyId()
 返回阿里钥id.
+
+## account.getGA() & account.setGA(bGA:boolean)
+获取或设置Google Analytics数据收集状态.
+设置`bGA`为`true`允许Google数据收集,设置`false`禁用Google数据收集.
+参见[私隐策略](#privacy-policy).
 
 ## MNS(account:Account, region?:string)
 *MNS*类用于操作mns队列.
@@ -821,6 +834,28 @@ var account = new AliMNS.Account("1786090012649663", "<your-key-id>", "<your-key
 执行`npm run test`运行测试.
 
 设置环境变量 **DEBUG** 为 **ali-mns.test** 开启测试输出(会略微拖慢测试).
+
+# Privacy Policy
+私隐策略
+我们收集你一些如何使用`ali-mns`的数据来提供更好的服务.
+
+默认情况,当你向阿里云消息服务发送一条请求时,一小节跟踪信息被发送到Google的分析服务.
+跟踪信息只包含请求的URL.
+你的数据,密钥等等都不会被发送.
+你的帐号ID在转换为MD5后被发送,因此它不可能被用于反向跟踪回你.
+你可以检查这里的[代码](https://github.com/InCar/ali-mns/blob/master/ts/OpenStack.ts#L66)来了解数据如何被收集.
+
+你总可以按你自己的愿望完全禁用掉Google分析数据收集功能.
+```javascript
+    var AliMNS = require("ali-mns");
+    var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
+    
+    // 禁用Google分析数据收集
+    account.setGA(false);
+    
+    var mq = new AliMNS.MQ("<your-mq-name>", account, "hangzhou");
+    mq.sendP("Hello ali-mns").then(console.log, console.error);
+```
 
 # License
 MIT

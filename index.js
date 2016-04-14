@@ -10,6 +10,7 @@ var CryptoA = require("crypto");
 var Events = require("events");
 var Util = require("util");
 var Url = require("url");
+var UA = require("universal-analytics");
 var debug = require("debug")("ali-mns");
 var Promise = require("promise");
 var Request = require("request");
@@ -24,6 +25,7 @@ var AliMNS;
     // The Ali account, it holds the key id and secret.
     var Account = (function () {
         function Account(accountId, keyId, keySecret) {
+            this._bGoogleAnalytics = true; // Enable Google Analytics
             this._accountId = accountId;
             this._keyId = keyId;
             this._keySecret = keySecret;
@@ -31,6 +33,8 @@ var AliMNS;
         Account.prototype.getAccountId = function () { return this._accountId; };
         Account.prototype.getOwnerId = function () { return this._accountId; }; // for compatible v1.x
         Account.prototype.getKeyId = function () { return this._keyId; };
+        Account.prototype.getGA = function () { return this._bGoogleAnalytics; };
+        Account.prototype.setGA = function (bGA) { this._bGoogleAnalytics = bGA; };
         // encoding: "hex", "binary" or "base64"
         Account.prototype.hmac_sha1 = function (text, encoding) {
             var hmacSHA1 = CryptoA.createHmac("sha1", this._keySecret);
@@ -81,7 +85,10 @@ var AliMNS;
             this._patternSign = "%s\n%s\n%s\n%s\n%s%s";
             this._contentType = "text/xml;charset=utf-8";
             this._version = "2015-06-06";
+            this._bGoogleAnalytics = true;
+            this._rgxAccId = /\/\/\w+\./;
             this._account = account;
+            this._bGoogleAnalytics = account.getGA();
             // xml builder
             this._xmlBuilder = XmlBuilder;
         }
@@ -105,7 +112,7 @@ var AliMNS;
                         req[opt] = options[opt];
                 }
             }
-            return Request.requestP(req).then(function (response) {
+            var ret = Request.requestP(req).then(function (response) {
                 // convert the body from xml to json
                 return Xml2js.parseStringP(response.body, { explicitArray: false })
                     .then(function (bodyJSON) {
@@ -130,6 +137,18 @@ var AliMNS;
                         return Promise.reject(response.statusCode);
                 }
             });
+            // google analytics
+            if (this._bGoogleAnalytics) {
+                if (!this._visitor)
+                    this._visitor = UA("UA-75293894-5", this.u2id(this._account.getAccountId()));
+                // catagory, action, label, value, params
+                var label = url.replace(this._rgxAccId, "//0.");
+                this._visitor.event("AliMNS", "OpenStack.sendP", method + " " + label).send();
+            }
+            return ret;
+        };
+        OpenStack.prototype.disableGA = function (bDisable) {
+            this._bGoogleAnalytics = (!bDisable);
         };
         OpenStack.prototype.makeHeaders = function (mothod, url, headers, body) {
             // if not exist, create one
@@ -182,6 +201,19 @@ var AliMNS;
         OpenStack.prototype.signature = function (httpVerb, mnsURI, mnsHeaders, contentType, contentMD5, tm) {
             var text = Util.format(this._patternSign, httpVerb, contentMD5, contentType, tm, mnsHeaders, mnsURI);
             return this._account.hmac_sha1(text, "base64");
+        };
+        OpenStack.prototype.u2id = function (uid) {
+            var cryptoMD5 = CryptoA.createHash("md5");
+            var md5HEX = cryptoMD5.update(uid).digest("hex");
+            var uxid = new Array(36);
+            for (var i = 0, j = 0; i < md5HEX.length; i++, j++) {
+                if (i === 8 || i === 12 || i === 16 || i === 20) {
+                    uxid[j] = "-";
+                    j++;
+                }
+                uxid[j] = md5HEX.charAt(i);
+            }
+            return uxid.join("");
         };
         return OpenStack;
     }());

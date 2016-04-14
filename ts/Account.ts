@@ -12,6 +12,8 @@ module AliMNS{
         public getAccountId(){ return this._accountId; }
         public getOwnerId(){ return this._accountId; } // for compatible v1.x
         public getKeyId(){ return this._keyId; }
+        public getGA(){ return this._bGoogleAnalytics; }
+        public setGA(bGA:boolean){ this._bGoogleAnalytics = bGA; }
 
         // encoding: "hex", "binary" or "base64"
         public hmac_sha1(text:string, encoding?:string){
@@ -29,5 +31,6 @@ module AliMNS{
         private _accountId: string; // Owner id
         private _keyId: string; // Access key id
         private _keySecret: string; // Access key secret
+        private _bGoogleAnalytics = true; // Enable Google Analytics
     }
 }

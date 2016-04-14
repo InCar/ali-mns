@@ -48,7 +48,7 @@ Please use 'gulp' to compile ts files into a single index.js file after download
         <th>DESCRIPTION</th>
     </tr>
     <tr>
-        <td rowspan="4">[Account](#accountaccountidstring-keyidstring-keysecretstring)</td>
+        <td rowspan="6">[Account](#accountaccountidstring-keyidstring-keysecretstring)</td>
         <td colspan="2">The *Account* class store your ali account information.</td>
     </tr>
     <tr>
@@ -62,6 +62,14 @@ Please use 'gulp' to compile ts files into a single index.js file after download
     <tr>
         <td>[getKeyId](#accountgetkeyid)</td>
         <td>Return the ali key id.</td>
+    </tr>
+    <tr>
+        <td>[getGA](#accountgetga--accountsetgabgaboolean)</td>
+        <td>Gets the status of google analytics collection.</td>
+    </tr>
+    <tr>
+        <td>[setGA](#accountgetga--accountsetgabgaboolean)</td>
+        <td>Sets the status of google analytics collection.</td>
     </tr>
     <tr>
         <td rowspan="4">[MNS](#mnsaccountaccount-regionstring)<br/>[MQS](#mqsaccountaccount-regionstring)<br/>[MNSTopic](#mnstopicaccountaccount-regionstring)</td>
@@ -290,6 +298,11 @@ Same as account.getAccountId(). For compatible v1.x.
 
 ## account.getKeyId()
 Return the ali key id.
+
+## account.getGA() & account.setGA(bGA:boolean)
+Gets or Sets the status of google analytics collection.
+Set `bGA` to `true` for enabling google analytics, while set to `false` for disabling google analytics.
+See [Privacy Policy](#privacy-policy).
 
 ## MNS(account:Account, region?:string)
 The *MNS* operate the mns queue.
@@ -827,6 +840,27 @@ and a test log sample is in [$/test/performance.log](https://github.com/InCar/al
 Use `npm run test` to execute the test.
 
 Set environment variable **DEBUG** to **ali-mns.test** to turn on output trace(will slow down the test).
+
+# Privacy Policy
+We collect information about how you use the `ali-mns` packages for better service.
+
+By default a tracing information is sent to google analytics when sending a request to ali-mns service,
+The tracing information contains only the url.
+Your data, key will not be sent.
+Your account id is sent by hash to md5 value, so it can not be used tracking back to you.
+You can check [code](https://github.com/InCar/ali-mns/blob/master/ts/OpenStack.ts#L66) about data collection.
+
+You can always disable data collection as you wish.
+```javascript
+    var AliMNS = require("ali-mns");
+    var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
+    
+    // Disable google analytics data collection
+    account.setGA(false);
+    
+    var mq = new AliMNS.MQ("<your-mq-name>", account, "hangzhou");
+    mq.sendP("Hello ali-mns").then(console.log, console.error);
+```
 
 # License
 MIT

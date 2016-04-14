@@ -6,6 +6,7 @@ var CryptoA:any  = require("crypto");
 var Events:any  = require("events");
 var Util:any    = require("util");
 var Url:any     = require("url");
+var UA:any      = require("universal-analytics");
 var debug:any   = require("debug")("ali-mns");
 
 var Promise:any = require("promise");
