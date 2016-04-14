@@ -19,6 +19,8 @@ Request.debug = false;
 var Xml2js = require("xml2js");
 Xml2js.parseStringP = Promise.denodeify(Xml2js.parseString);
 var XmlBuilder = require("xmlbuilder");
+// git version
+var gitVersion = { branch: "master", rev: "101", hash: "ece83cb", hash160: "ece83cb283001e77aab872647ffca52896048b4c" };
 /// <reference path="ali-mns.ts" />
 var AliMNS;
 (function (AliMNS) {
@@ -91,6 +93,7 @@ var AliMNS;
             this._bGoogleAnalytics = account.getGA();
             // xml builder
             this._xmlBuilder = XmlBuilder;
+            this._gitMark = gitVersion.branch + "." + gitVersion.rev + "@" + gitVersion.hash;
         }
         // Send the request
         // method: GET, POST, PUT, DELETE
@@ -139,11 +142,12 @@ var AliMNS;
             });
             // google analytics
             if (this._bGoogleAnalytics) {
-                if (!this._visitor)
+                if (!this._visitor) {
                     this._visitor = UA("UA-75293894-5", this.u2id(this._account.getAccountId()));
+                }
+                var args = { dl: url.replace(this._rgxAccId, "//0.") };
                 // catagory, action, label, value, params
-                var label = url.replace(this._rgxAccId, "//0.");
-                this._visitor.event("AliMNS", "OpenStack.sendP", method + " " + label).send();
+                this._visitor.event("AliMNS", "OpenStack.sendP", this._gitMark, 0, args).send();
             }
             return ret;
         };
@@ -153,7 +157,9 @@ var AliMNS;
         OpenStack.prototype.makeHeaders = function (mothod, url, headers, body) {
             // if not exist, create one
             if (!headers)
-                headers = {};
+                headers = {
+                    "User-Agent": "Node/" + process.version + " (" + process.platform + ")"
+                };
             var contentMD5 = "";
             var contentType = "";
             if (body) {

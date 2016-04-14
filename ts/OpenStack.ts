@@ -11,6 +11,8 @@ module AliMNS{
 
             // xml builder
             this._xmlBuilder = XmlBuilder;
+            
+            this._gitMark = gitVersion.branch + "." + gitVersion.rev + "@" + gitVersion.hash;
         }
 
         // Send the request
@@ -59,11 +61,12 @@ module AliMNS{
             
             // google analytics
             if(this._bGoogleAnalytics){
-                if(!this._visitor)
+                if(!this._visitor){
                     this._visitor = UA("UA-75293894-5", this.u2id(this._account.getAccountId()));
+                }
+                var args = { dl: url.replace(this._rgxAccId, "//0.") };
                 // catagory, action, label, value, params
-                var label = url.replace(this._rgxAccId, "//0.");
-                this._visitor.event("AliMNS", "OpenStack.sendP", method + " " + label).send();
+                this._visitor.event("AliMNS", "OpenStack.sendP", this._gitMark, 0, args).send();
             }
             
             return ret;
@@ -75,7 +78,9 @@ module AliMNS{
 
         private makeHeaders(mothod:string, url:string, headers:any, body?:string){
             // if not exist, create one
-            if(!headers) headers = {};
+            if(!headers) headers = {
+                "User-Agent": "Node/" + process.version + " (" + process.platform + ")"
+            };
 
             var contentMD5 = "";
             var contentType = "";
@@ -161,5 +166,6 @@ module AliMNS{
         private _bGoogleAnalytics = true;
         private _visitor: any;
         private _rgxAccId = /\/\/\w+\./;
+        private _gitMark: string;
     }
 }
