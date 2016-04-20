@@ -8,10 +8,28 @@ module AliMNS{
         
         public send(action:string, value:number, url:string){
             if(this._bGoogleAnalytics){
-                var args = { dl: url.replace(this._rgxAccId, "//0.") };
-                // catagory, action, label, value, params
-                this._visitor.event("AliMNS", action, this._gitMark, value, args).send();
+                if(this._bAccumulated){
+                    // 累积多个一起发送
+                    this._bAccumulated = false;
+                    var actionPrefixed = this._bAccumulatePrefix + ":" + action;
+                    if(!this._accumulation[actionPrefixed]) this._accumulation[actionPrefixed] = { value: 0, count: 0 };
+                    this._accumulation[actionPrefixed].value += value;
+                    this._accumulation[actionPrefixed].count++;
+                    
+                    if(this._accumulation[actionPrefixed].count >= this._accumutionMax)
+                        this.send(actionPrefixed, this._accumulation[actionPrefixed].value, url);
+                }
+                else{
+                    var args = { dl: url.replace(this._rgxAccId, "//0.") };
+                    // catagory, action, label, value, params
+                    this._visitor.event("AliMNS", action, this._gitMark, value, args).send();
+                }
             }
+        }
+        
+        public accumulateNextSend(prefix:string){
+            this._bAccumulated = true;
+            this._bAccumulatePrefix = prefix;
         }
         
         public disableGA(bDisable?:boolean){
@@ -38,5 +56,9 @@ module AliMNS{
         private _gitMark: string;
         private _bGoogleAnalytics = true;
         private _rgxAccId = /\/\/\w+\./;
+        private _bAccumulated = false;
+        private _bAccumulatePrefix = "";
+        private _accumutionMax = 100;
+        private _accumulation:any = {};
     }
 }

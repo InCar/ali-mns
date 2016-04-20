@@ -68,6 +68,7 @@ module AliMNS{
                 var options = { timeout: 1000 * _this._recvTolerance };
                 if(waitSeconds) options.timeout += (1000 * waitSeconds);
 
+                _this._openStack.accumulateNextGASend("MQ.recvP");
                 _this._openStack.sendP("GET", url, null, null, options).done(function(data){
                     debug(data);
                     if(data && data.Message && data.Message.MessageBody){

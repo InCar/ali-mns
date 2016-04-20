@@ -64,6 +64,10 @@ module AliMNS{
             return ret;
         }
         
+        public accumulateNextGASend(prefix:string){
+            this._ga.accumulateNextSend(prefix);
+        }
+        
         public disableGA(bDisable?:boolean){
             this._ga.disableGA(bDisable);
         }
@@ -139,6 +143,6 @@ module AliMNS{
         private _xmlBuilder: any;
         private _contentType = "text/xml;charset=utf-8";
         private _version = "2015-06-06";
-        private _ga: any;
+        private _ga: GA;
     }
 }

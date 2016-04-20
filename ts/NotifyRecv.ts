@@ -8,6 +8,13 @@ module AliMNS{
 
             // emitter
             this._emitter = new Events.EventEmitter();
+            
+            // Google Analytics
+            if(mq instanceof MQ){
+                var account = mq.getAccount();
+                this._ga = new GA(account.getAccountId());
+                this._ga.disableGA(!account.getGA());
+            }
         }
         
         // 消息通知.每当有消息收到时,都调用cb回调函数
@@ -16,13 +23,17 @@ module AliMNS{
             this._signalSTOP = false;
             this._timeoutCount = 0;
             this.notifyRecvInternal(cb, waitSeconds, numOfMessages);
+            // Google Analytics
+            if(this._ga) this._ga.send("NotifyRecv.notifyRecv", 0, "");
         }
 
         // 停止消息通知
         public notifyStopP(){
             if(this._signalSTOP)
                 return Promise.resolve(this._evStopped);
-
+            // Google Analytics
+            if(this._ga) this._ga.send("NotifyRecv.notifyStopP", 0, "");
+            
             this._signalSTOP = true;
             return new Promise((resolve)=>{
                 this._emitter.once(this._evStopped, ()=>{
@@ -129,5 +140,7 @@ module AliMNS{
         // 这时抛出NetworkBroken异常
         private _timeoutCount = 0;
         private _timeoutMax = 128;
+        
+        private _ga:GA = null;
     }
 }
