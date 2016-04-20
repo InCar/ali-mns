@@ -20,7 +20,7 @@ var Xml2js = require("xml2js");
 Xml2js.parseStringP = Promise.denodeify(Xml2js.parseString);
 var XmlBuilder = require("xmlbuilder");
 // git version
-var gitVersion = { branch: "dev-ev-reduce", rev: "102", hash: "093b3f2", hash160: "093b3f29ead21b4b9a67c557bba52ef07aa56180" };
+var gitVersion = { branch: "master", rev: "104", hash: "d8667ad", hash160: "d8667ad358787aa572e23dc9bb78c8017ba66e7f" };
 /// <reference path="ali-mns.ts" />
 var AliMNS;
 (function (AliMNS) {
@@ -708,8 +708,11 @@ var AliMNS;
                         this._accumulation[actionPrefixed] = { value: 0, count: 0 };
                     this._accumulation[actionPrefixed].value += value;
                     this._accumulation[actionPrefixed].count++;
-                    if (this._accumulation[actionPrefixed].count >= this._accumutionMax)
+                    if (this._accumulation[actionPrefixed].count >= this._accumutionMax) {
                         this.send(actionPrefixed, this._accumulation[actionPrefixed].value, url);
+                        this._accumulation[actionPrefixed].value = 0;
+                        this._accumulation[actionPrefixed].count = 0;
+                    }
                 }
                 else {
                     var args = { dl: url.replace(this._rgxAccId, "//0.") };

@@ -16,8 +16,11 @@ module AliMNS{
                     this._accumulation[actionPrefixed].value += value;
                     this._accumulation[actionPrefixed].count++;
                     
-                    if(this._accumulation[actionPrefixed].count >= this._accumutionMax)
+                    if(this._accumulation[actionPrefixed].count >= this._accumutionMax){
                         this.send(actionPrefixed, this._accumulation[actionPrefixed].value, url);
+                        this._accumulation[actionPrefixed].value = 0;
+                        this._accumulation[actionPrefixed].count = 0;
+                    }
                 }
                 else{
                     var args = { dl: url.replace(this._rgxAccId, "//0.") };

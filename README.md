@@ -848,7 +848,7 @@ By default a tracing information is sent to google analytics when sending a requ
 The tracing information contains only the url.
 Your data, key will not be sent.
 Your account id is sent by hash to md5 value, so it can not be used tracking back to you.
-You can check [code](https://github.com/InCar/ali-mns/blob/master/ts/GA.ts#L25) about data collection.
+You can check [code](https://github.com/InCar/ali-mns/blob/master/ts/GA.ts#L28) about data collection.
 
 You can always disable data collection as you wish.
 ```javascript
