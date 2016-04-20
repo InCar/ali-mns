@@ -7,12 +7,11 @@ module AliMNS{
     export class OpenStack{
         constructor(account:Account){
             this._account = account;
-            this._bGoogleAnalytics = account.getGA();
-
             // xml builder
             this._xmlBuilder = XmlBuilder;
-            
-            this._gitMark = gitVersion.branch + "." + gitVersion.rev + "@" + gitVersion.hash;
+            // Google Analytics
+            this._ga = new GA(account.getAccountId());
+            this._ga.disableGA(!account.getGA());
         }
 
         // Send the request
@@ -60,20 +59,13 @@ module AliMNS{
             });
             
             // google analytics
-            if(this._bGoogleAnalytics){
-                if(!this._visitor){
-                    this._visitor = UA("UA-75293894-5", this.u2id(this._account.getAccountId()));
-                }
-                var args = { dl: url.replace(this._rgxAccId, "//0.") };
-                // catagory, action, label, value, params
-                this._visitor.event("AliMNS", "OpenStack.sendP", this._gitMark, 0, args).send();
-            }
+            this._ga.send("OpenStack.sendP", 0, url);
             
             return ret;
         }
         
         public disableGA(bDisable?:boolean){
-            this._bGoogleAnalytics = (!bDisable);
+            this._ga.disableGA(bDisable);
         }
 
         private makeHeaders(mothod:string, url:string, headers:any, body?:string){
@@ -140,22 +132,6 @@ module AliMNS{
 
             return this._account.hmac_sha1(text, "base64");
         }
-        
-        private u2id(uid:string){
-            var cryptoMD5 = CryptoA.createHash("md5");
-            var md5HEX = cryptoMD5.update(uid).digest("hex");
-            
-            var uxid = new Array(36);
-            for(var i=0,j=0;i<md5HEX.length;i++,j++){
-                if(i === 8 || i === 12 || i === 16 || i === 20){
-                    uxid[j] = "-";
-                    j++;
-                } 
-                uxid[j] = md5HEX.charAt(i);
-            }
-            
-            return uxid.join("");
-        }
 
         private _account:Account;
         private _patternMNS = "MNS %s:%s";
@@ -163,9 +139,6 @@ module AliMNS{
         private _xmlBuilder: any;
         private _contentType = "text/xml;charset=utf-8";
         private _version = "2015-06-06";
-        private _bGoogleAnalytics = true;
-        private _visitor: any;
-        private _rgxAccId = /\/\/\w+\./;
-        private _gitMark: string;
+        private _ga: any;
     }
 }
