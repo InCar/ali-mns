@@ -20,7 +20,7 @@ var Xml2js = require("xml2js");
 Xml2js.parseStringP = Promise.denodeify(Xml2js.parseString);
 var XmlBuilder = require("xmlbuilder");
 // git version
-var gitVersion = { branch: "master", rev: "101", hash: "ece83cb", hash160: "ece83cb283001e77aab872647ffca52896048b4c" };
+var gitVersion = { branch: "dev-ev-reduce", rev: "102", hash: "093b3f2", hash160: "093b3f29ead21b4b9a67c557bba52ef07aa56180" };
 /// <reference path="ali-mns.ts" />
 var AliMNS;
 (function (AliMNS) {
@@ -87,13 +87,12 @@ var AliMNS;
             this._patternSign = "%s\n%s\n%s\n%s\n%s%s";
             this._contentType = "text/xml;charset=utf-8";
             this._version = "2015-06-06";
-            this._bGoogleAnalytics = true;
-            this._rgxAccId = /\/\/\w+\./;
             this._account = account;
-            this._bGoogleAnalytics = account.getGA();
             // xml builder
             this._xmlBuilder = XmlBuilder;
-            this._gitMark = gitVersion.branch + "." + gitVersion.rev + "@" + gitVersion.hash;
+            // Google Analytics
+            this._ga = new AliMNS.GA(account.getAccountId());
+            this._ga.disableGA(!account.getGA());
         }
         // Send the request
         // method: GET, POST, PUT, DELETE
@@ -141,18 +140,14 @@ var AliMNS;
                 }
             });
             // google analytics
-            if (this._bGoogleAnalytics) {
-                if (!this._visitor) {
-                    this._visitor = UA("UA-75293894-5", this.u2id(this._account.getAccountId()));
-                }
-                var args = { dl: url.replace(this._rgxAccId, "//0.") };
-                // catagory, action, label, value, params
-                this._visitor.event("AliMNS", "OpenStack.sendP", this._gitMark, 0, args).send();
-            }
+            this._ga.send("OpenStack.sendP", 0, url);
             return ret;
         };
+        OpenStack.prototype.accumulateNextGASend = function (prefix) {
+            this._ga.accumulateNextSend(prefix);
+        };
         OpenStack.prototype.disableGA = function (bDisable) {
-            this._bGoogleAnalytics = (!bDisable);
+            this._ga.disableGA(bDisable);
         };
         OpenStack.prototype.makeHeaders = function (mothod, url, headers, body) {
             // if not exist, create one
@@ -207,19 +202,6 @@ var AliMNS;
         OpenStack.prototype.signature = function (httpVerb, mnsURI, mnsHeaders, contentType, contentMD5, tm) {
             var text = Util.format(this._patternSign, httpVerb, contentMD5, contentType, tm, mnsHeaders, mnsURI);
             return this._account.hmac_sha1(text, "base64");
-        };
-        OpenStack.prototype.u2id = function (uid) {
-            var cryptoMD5 = CryptoA.createHash("md5");
-            var md5HEX = cryptoMD5.update(uid).digest("hex");
-            var uxid = new Array(36);
-            for (var i = 0, j = 0; i < md5HEX.length; i++, j++) {
-                if (i === 8 || i === 12 || i === 16 || i === 20) {
-                    uxid[j] = "-";
-                    j++;
-                }
-                uxid[j] = md5HEX.charAt(i);
-            }
-            return uxid.join("");
         };
         return OpenStack;
     }());
@@ -297,9 +279,16 @@ var AliMNS;
             // 这时抛出NetworkBroken异常
             this._timeoutCount = 0;
             this._timeoutMax = 128;
+            this._ga = null;
             this._mq = mq;
             // emitter
             this._emitter = new Events.EventEmitter();
+            // Google Analytics
+            if (mq instanceof AliMNS.MQ) {
+                var account = mq.getAccount();
+                this._ga = new AliMNS.GA(account.getAccountId());
+                this._ga.disableGA(!account.getGA());
+            }
         }
         // 消息通知.每当有消息收到时,都调用cb回调函数
         // 如果cb返回true,那么将删除消息,否则保留消息
@@ -307,12 +296,18 @@ var AliMNS;
             this._signalSTOP = false;
             this._timeoutCount = 0;
             this.notifyRecvInternal(cb, waitSeconds, numOfMessages);
+            // Google Analytics
+            if (this._ga)
+                this._ga.send("NotifyRecv.notifyRecv", 0, "");
         };
         // 停止消息通知
         NotifyRecv.prototype.notifyStopP = function () {
             var _this = this;
             if (this._signalSTOP)
                 return Promise.resolve(this._evStopped);
+            // Google Analytics
+            if (this._ga)
+                this._ga.send("NotifyRecv.notifyStopP", 0, "");
             this._signalSTOP = true;
             return new Promise(function (resolve) {
                 _this._emitter.once(_this._evStopped, function () {
@@ -470,6 +465,7 @@ var AliMNS;
                 var options = { timeout: 1000 * _this._recvTolerance };
                 if (waitSeconds)
                     options.timeout += (1000 * waitSeconds);
+                _this._openStack.accumulateNextGASend("MQ.recvP");
                 _this._openStack.sendP("GET", url, null, null, options).done(function (data) {
                     debug(data);
                     if (data && data.Message && data.Message.MessageBody) {
@@ -597,6 +593,7 @@ var AliMNS;
                     var options = { timeout: 1000 * _this._recvTolerance };
                     if (waitSeconds)
                         options.timeout += (1000 * waitSeconds);
+                    _this._openStack.accumulateNextGASend("MQBatch.recvP");
                     _this._openStack.sendP("GET", url, null, null, options).done(function (data) {
                         debug(data);
                         _this.decodeB64Messages(data);
@@ -688,6 +685,63 @@ var AliMNS;
 /// <reference path="MQBatch.ts" />
 // Exports the AliMNS
 module.exports = AliMNS;
+var AliMNS;
+(function (AliMNS) {
+    var GA = (function () {
+        function GA(accId) {
+            this._bGoogleAnalytics = true;
+            this._rgxAccId = /\/\/\w+\./;
+            this._bAccumulated = false;
+            this._bAccumulatePrefix = "";
+            this._accumutionMax = 100;
+            this._accumulation = {};
+            this._gitMark = gitVersion.branch + "." + gitVersion.rev + "@" + gitVersion.hash;
+            this._visitor = UA("UA-75293894-5", this.u2id(accId));
+        }
+        GA.prototype.send = function (action, value, url) {
+            if (this._bGoogleAnalytics) {
+                if (this._bAccumulated) {
+                    // 累积多个一起发送
+                    this._bAccumulated = false;
+                    var actionPrefixed = this._bAccumulatePrefix + ":" + action;
+                    if (!this._accumulation[actionPrefixed])
+                        this._accumulation[actionPrefixed] = { value: 0, count: 0 };
+                    this._accumulation[actionPrefixed].value += value;
+                    this._accumulation[actionPrefixed].count++;
+                    if (this._accumulation[actionPrefixed].count >= this._accumutionMax)
+                        this.send(actionPrefixed, this._accumulation[actionPrefixed].value, url);
+                }
+                else {
+                    var args = { dl: url.replace(this._rgxAccId, "//0.") };
+                    // catagory, action, label, value, params
+                    this._visitor.event("AliMNS", action, this._gitMark, value, args).send();
+                }
+            }
+        };
+        GA.prototype.accumulateNextSend = function (prefix) {
+            this._bAccumulated = true;
+            this._bAccumulatePrefix = prefix;
+        };
+        GA.prototype.disableGA = function (bDisable) {
+            this._bGoogleAnalytics = (!bDisable);
+        };
+        GA.prototype.u2id = function (uid) {
+            var cryptoMD5 = CryptoA.createHash("md5");
+            var md5HEX = cryptoMD5.update(uid).digest("hex");
+            var uxid = new Array(36);
+            for (var i = 0, j = 0; i < md5HEX.length; i++, j++) {
+                if (i === 8 || i === 12 || i === 16 || i === 20) {
+                    uxid[j] = "-";
+                    j++;
+                }
+                uxid[j] = md5HEX.charAt(i);
+            }
+            return uxid.join("");
+        };
+        return GA;
+    }());
+    AliMNS.GA = GA;
+})(AliMNS || (AliMNS = {}));
 /// <reference path="Interfaces.ts" />
 var AliMNS;
 (function (AliMNS) {

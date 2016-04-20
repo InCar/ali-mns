@@ -4,7 +4,7 @@
 
 The nodejs sdk for aliyun mns service
 
-[阿里云消息服务-简体中文-帮助手册](https://github.com/InCar/ali-mns/blob/master/README.zh-Hans.md)
+[阿里云消息服务-简体中文-帮助手册](http://armclr.azurewebsites.net/Links/AliMNS?lang=zh-Hans)
 
 Ali MNS service is a MQ(message queue) service provided by AliYun.
 The world largest online sales website www.taobao.com is heavily relying on it.
@@ -848,7 +848,7 @@ By default a tracing information is sent to google analytics when sending a requ
 The tracing information contains only the url.
 Your data, key will not be sent.
 Your account id is sent by hash to md5 value, so it can not be used tracking back to you.
-You can check [code](https://github.com/InCar/ali-mns/blob/master/ts/OpenStack.ts#L66) about data collection.
+You can check [code](https://github.com/InCar/ali-mns/blob/master/ts/GA.ts#L25) about data collection.
 
 You can always disable data collection as you wish.
 ```javascript
