@@ -25,6 +25,7 @@ module AliMNS{
                 }
 
                 debug("POST " + this._url, body);
+                this._openStack.accumulateNextGASend("MQBatch.sendP");
                 return this._openStack.sendP("POST", this._url, body);
             }
         }
@@ -75,6 +76,7 @@ module AliMNS{
                 var url = this._url + "?peekonly=true";
                 url += "&numOfMessages=" + numOfMessages;
                 debug("GET " + url);
+                this._openStack.accumulateNextGASend("MQBatch.peekP");
                 return this._openStack.sendP("GET", url).then(function(data){
                     debug(data);
                     _this.decodeB64Messages(data);
@@ -97,6 +99,7 @@ module AliMNS{
                     var r:any = { ReceiptHandle: receiptHandle[i] };
                     body.ReceiptHandles['#list'].push(r);
                 }
+                this._openStack.accumulateNextGASend("MQBatch.deleteP");
                 return this._openStack.sendP("DELETE", this._url, body);
             }
         }

@@ -20,7 +20,7 @@ var Xml2js = require("xml2js");
 Xml2js.parseStringP = Promise.denodeify(Xml2js.parseString);
 var XmlBuilder = require("xmlbuilder");
 // git version
-var gitVersion = { branch: "master", rev: "104", hash: "d8667ad", hash160: "d8667ad358787aa572e23dc9bb78c8017ba66e7f" };
+var gitVersion = { branch: "master", rev: "105", hash: "2cd9b35", hash160: "2cd9b35bb83b4dba461429a687ea0dad5dec90b8" };
 /// <reference path="ali-mns.ts" />
 var AliMNS;
 (function (AliMNS) {
@@ -447,6 +447,7 @@ var AliMNS;
             if (!isNaN(delaySeconds))
                 body.Message.DelaySeconds = delaySeconds;
             debug("POST " + this._url, body);
+            this._openStack.accumulateNextGASend("MQ.sendP");
             return this._openStack.sendP("POST", this._url, body);
         };
         // 接收消息容忍时间(秒)
@@ -491,6 +492,7 @@ var AliMNS;
             var _this = this;
             var url = this._url + "?peekonly=true";
             debug("GET " + url);
+            this._openStack.accumulateNextGASend("MQ.peekP");
             return this._openStack.sendP("GET", url).then(function (data) {
                 debug(data);
                 _this.decodeB64Messages(data);
@@ -501,6 +503,7 @@ var AliMNS;
         MQ.prototype.deleteP = function (receiptHandle) {
             var url = this._url + "?ReceiptHandle=" + receiptHandle;
             debug("DELETE " + url);
+            this._openStack.accumulateNextGASend("MQ.deleteP");
             return this._openStack.sendP("DELETE", url);
         };
         // 保留消息
@@ -509,6 +512,7 @@ var AliMNS;
                 + "?ReceiptHandle=" + receiptHandle
                 + "&VisibilityTimeout=" + reserveSeconds;
             debug("PUT " + url);
+            this._openStack.accumulateNextGASend("MQ.reserveP");
             return this._openStack.sendP("PUT", url);
         };
         // 消息通知.每当有消息收到时,都调用cb回调函数
@@ -575,6 +579,7 @@ var AliMNS;
                     body.Messages['#list'].push(xMsg);
                 }
                 debug("POST " + this._url, body);
+                this._openStack.accumulateNextGASend("MQBatch.sendP");
                 return this._openStack.sendP("POST", this._url, body);
             }
         };
@@ -624,6 +629,7 @@ var AliMNS;
                 var url = this._url + "?peekonly=true";
                 url += "&numOfMessages=" + numOfMessages;
                 debug("GET " + url);
+                this._openStack.accumulateNextGASend("MQBatch.peekP");
                 return this._openStack.sendP("GET", url).then(function (data) {
                     debug(data);
                     _this.decodeB64Messages(data);
@@ -645,6 +651,7 @@ var AliMNS;
                     var r = { ReceiptHandle: receiptHandle[i] };
                     body.ReceiptHandles['#list'].push(r);
                 }
+                this._openStack.accumulateNextGASend("MQBatch.deleteP");
                 return this._openStack.sendP("DELETE", this._url, body);
             }
         };
@@ -867,6 +874,7 @@ var AliMNS;
                 }
             };
             debug("POST " + this._urlPublish, body);
+            this._openStack.accumulateNextGASend("Topic.publishP");
             return this._openStack.sendP("POST", this._urlPublish, body);
         };
         Topic.prototype.utf8ToBase64 = function (src) {

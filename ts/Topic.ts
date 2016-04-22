@@ -75,6 +75,7 @@ module AliMNS{
                 }
             };
             debug("POST " + this._urlPublish, body);
+            this._openStack.accumulateNextGASend("Topic.publishP");
             return this._openStack.sendP("POST", this._urlPublish, body);
         }
         

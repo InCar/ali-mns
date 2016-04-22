@@ -48,6 +48,7 @@ module AliMNS{
             if(!isNaN(delaySeconds)) body.Message.DelaySeconds = delaySeconds;
 
             debug("POST " + this._url, body);
+            this._openStack.accumulateNextGASend("MQ.sendP");
             return this._openStack.sendP("POST", this._url, body);
         }
         
@@ -95,6 +96,7 @@ module AliMNS{
             var _this = this;
             var url = this._url + "?peekonly=true";
             debug("GET " + url);
+            this._openStack.accumulateNextGASend("MQ.peekP");
             return this._openStack.sendP("GET", url).then(function(data){
                 debug(data);
                 _this.decodeB64Messages(data);
@@ -106,6 +108,7 @@ module AliMNS{
         public deleteP(receiptHandle:string){
             var url = this._url +  "?ReceiptHandle=" + receiptHandle;
             debug("DELETE " + url);
+            this._openStack.accumulateNextGASend("MQ.deleteP");
             return this._openStack.sendP("DELETE", url);
         }
 
@@ -115,6 +118,7 @@ module AliMNS{
                 + "?ReceiptHandle=" + receiptHandle
                 + "&VisibilityTimeout=" + reserveSeconds;
             debug("PUT " + url);
+            this._openStack.accumulateNextGASend("MQ.reserveP");
             return this._openStack.sendP("PUT", url);
         }
 
