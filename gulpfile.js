@@ -14,7 +14,7 @@ gulp.task('gitVer', ()=>{
     gitTasks[0] = new Promise((resolve, reject)=>{
         git.exec({args: "symbolic-ref --short HEAD"}, (ex, out)=>{
             gitVer.branch = out.trim();
-            resolve(gitVer.rev);
+            resolve(gitVer.branch);
         });
     }); 
     
