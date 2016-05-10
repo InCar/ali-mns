@@ -1,3 +1,4 @@
+var gitVersion={"branch":"dev","rev":"107","hash":"011a4c2","hash160":"011a4c283605b3f645af63e9c0cc99c44d606510"};
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -19,8 +20,6 @@ Request.debug = false;
 var Xml2js = require("xml2js");
 Xml2js.parseStringP = Promise.denodeify(Xml2js.parseString);
 var XmlBuilder = require("xmlbuilder");
-// git version
-var gitVersion = { branch: "master", rev: "105", hash: "2cd9b35", hash160: "2cd9b35bb83b4dba461429a687ea0dad5dec90b8" };
 /// <reference path="ali-mns.ts" />
 var AliMNS;
 (function (AliMNS) {
