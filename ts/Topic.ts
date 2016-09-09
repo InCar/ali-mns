@@ -68,12 +68,15 @@ module AliMNS{
             return this._openStack.sendP("DELETE", url);
         }
         
-        public publishP(msg:string, b64:boolean){
+        public publishP(msg:string, b64:boolean, tag:string){
             var body = {
                 Message: {
                     MessageBody: b64?this.utf8ToBase64(msg):msg
                 }
             };
+            if (tag) {
+                body.Message.MessageTag = tag;
+            }
             debug("POST " + this._urlPublish, body);
             this._openStack.accumulateNextGASend("Topic.publishP");
             return this._openStack.sendP("POST", this._urlPublish, body);
