@@ -240,7 +240,7 @@ Please use 'gulp' to compile ts files into a single index.js file after download
         <td>Unsubscribe a topic.</td>
     </tr>
     <tr>
-        <td>[publishP](#topicpublishpmsgstring-b64boolean-tagstring-attrsstring)</td>
+        <td>[publishP](#topicpublishpmsgstring-b64boolean-tagstring-attrsany)</td>
         <td>Publish a message to a topic.</td>
     </tr>
     <tr>
@@ -721,7 +721,7 @@ Unsubscribe a topic.
 
 name: Name of subscription.
 
-## topic.publishP(msg:string, b64:boolean, tag?:string, attrs?: any)
+## topic.publishP(msg:string, b64:boolean, tag?:string, attrs?:any)
 Publish a message to a topic.
 
 msg: content of message

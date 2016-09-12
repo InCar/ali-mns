@@ -239,7 +239,7 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
         <td>取消对一个主题的订阅.</td>
     </tr>
     <tr>
-        <td>[publishP](#topicpublishpmsgstring-b64boolean-tagstring-attrsstring)</td>
+        <td>[publishP](#topicpublishpmsgstring-b64boolean-tagstring-attrsany)</td>
         <td>向主题中发布一个消息.</td>
     </tr>
     <tr>
@@ -714,7 +714,7 @@ topic.subscribeP("subx", "http://www.yoursite.com/mns-ep",
 
 name: 订阅名称.
 
-## topic.publishP(msg:string, b64:boolean, tag?:string, attrs?: any)
+## topic.publishP(msg:string, b64:boolean, tag?:string, attrs?:any)
 向主题中发布一个消息.
 
 msg: 消息内容.
