@@ -239,7 +239,7 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
         <td>取消对一个主题的订阅.</td>
     </tr>
     <tr>
-        <td>[publishP](#topicpublishpmsgstring-b64boolean)</td>
+        <td>[publishP](#topicpublishpmsgstring-b64boolean-tagstring-attrsstring)</td>
         <td>向主题中发布一个消息.</td>
     </tr>
     <tr>
@@ -714,13 +714,17 @@ topic.subscribeP("subx", "http://www.yoursite.com/mns-ep",
 
 name: 订阅名称.
 
-## topic.publishP(msg:string, b64:boolean)
+## topic.publishP(msg:string, b64:boolean, tag?:string, attrs?: any)
 向主题中发布一个消息.
 
 msg: 消息内容.
 
 b64: true, 发布消息使用base64编码方式. 
 false, 发布消息不使用base64编码方式.
+
+tag: 消息标签(用于消息过滤)
+
+attrs: 消息属性，如果需要推送到邮件终端，则MessageAttributes为必填项
 
 如果消息中包含中文字符,必须把`b64`设置为`true`.
 只有非常简单的消息才可以把`b64`设置为`false`.

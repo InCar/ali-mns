@@ -240,7 +240,7 @@ Please use 'gulp' to compile ts files into a single index.js file after download
         <td>Unsubscribe a topic.</td>
     </tr>
     <tr>
-        <td>[publishP](#topicpublishpmsgstring-b64boolean)</td>
+        <td>[publishP](#topicpublishpmsgstring-b64boolean-tagstring-attrsstring)</td>
         <td>Publish a message to a topic.</td>
     </tr>
     <tr>
@@ -721,13 +721,17 @@ Unsubscribe a topic.
 
 name: Name of subscription.
 
-## topic.publishP(msg:string, b64:boolean)
+## topic.publishP(msg:string, b64:boolean, tag?:string, attrs?: any)
 Publish a message to a topic.
 
 msg: content of message
 
 b64: true, encoding msg to base64 format before publishing. 
 false, do not encoding msg before publishing.
+
+tag: the TAG of message.
+
+attrs: attribures of message.
 
 If message contains Chinese characters, must set `b64` to `true`.
 Only very simple message can set `b64` to `false`.

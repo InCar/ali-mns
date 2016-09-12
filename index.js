@@ -1,4 +1,4 @@
-var gitVersion={"branch":"dev","rev":"107","hash":"011a4c2","hash160":"011a4c283605b3f645af63e9c0cc99c44d606510"};
+var gitVersion={"branch":"iamcc-tag","rev":"109","hash":"63d8133","hash160":"63d8133a85d270b91124c1ff15357c291ad90979"};
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -866,11 +866,16 @@ var AliMNS;
             debug("DELETE " + url);
             return this._openStack.sendP("DELETE", url);
         };
-        Topic.prototype.publishP = function (msg, b64) {
+        Topic.prototype.publishP = function (msg, b64, tag, attrs) {
+            var msgBlock = {
+                MessageBody: b64 ? this.utf8ToBase64(msg) : msg
+            };
+            if (tag)
+                msgBlock.MessageTag = tag;
+            if (attrs)
+                msgBlock.MessageAttributes = attrs;
             var body = {
-                Message: {
-                    MessageBody: b64 ? this.utf8ToBase64(msg) : msg
-                }
+                Message: msgBlock
             };
             debug("POST " + this._urlPublish, body);
             this._openStack.accumulateNextGASend("Topic.publishP");
