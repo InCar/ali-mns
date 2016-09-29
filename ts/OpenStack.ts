@@ -107,7 +107,7 @@ module AliMNS{
             var mnsHeaders = "";
             for(var i in keys){
                 var k = keys[i];
-                if(k.indexOf("x-mns-") === 0){
+                if(typeof k === "string" && k.indexOf("x-mns-") === 0){
                     mnsHeaders += Util.format("%s:%s\n", k, headsLower[k]);
                 }
             }

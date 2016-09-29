@@ -1,4 +1,4 @@
-var gitVersion={"branch":"iamcc-tag","rev":"109","hash":"63d8133","hash160":"63d8133a85d270b91124c1ff15357c291ad90979"};
+var gitVersion={"branch":"master","rev":"112","hash":"2934641","hash160":"2934641e9b48613e9b6cb7edc37ba82e46c0d3ed"};
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -182,7 +182,7 @@ var AliMNS;
             var mnsHeaders = "";
             for (var i in keys) {
                 var k = keys[i];
-                if (k.indexOf("x-mns-") === 0) {
+                if (typeof k === "string" && k.indexOf("x-mns-") === 0) {
                     mnsHeaders += Util.format("%s:%s\n", k, headsLower[k]);
                 }
             }
