@@ -49,7 +49,7 @@ module AliMNS{
             return this._openStack.sendP("GET", url, null, headers);
         }
         
-        public subscribeP(name:string, endPoint:string, notifyStrategy?:string, notifyContentFormat?:string){
+        public subscribeP(name:string, endPoint:string, notifyStrategy?:string, notifyContentFormat?:string, filterTag?:string){
             var body = {
                 Subscription: {
                     Endpoint: endPoint
@@ -57,6 +57,7 @@ module AliMNS{
             };
             if(notifyStrategy) body.Subscription['NotifyStrategy'] = notifyStrategy;
             if(notifyContentFormat) body.Subscription['NotifyContentFormat'] = notifyContentFormat;
+            if(filterTag) body.Subscription.FilterTag = filterTag;
             var url = Url.resolve(this._urlSubscription, name);
             debug("PUT " + url, body);
             return this._openStack.sendP("PUT", url, body);
