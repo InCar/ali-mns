@@ -232,7 +232,7 @@ Please use 'gulp' to compile ts files into a single index.js file after download
         <td>List all subscriptions.</td>
     </tr>
     <tr>
-        <td>[subscribeP](#topicsubscribepnamestring-endpointstring-notifystrategystring-notifycontentformatstring)</td>
+        <td>[subscribeP](#topicsubscribepnamestring-endpointstring-notifystrategystring-notifycontentformatstring-filtertagstring)</td>
         <td>Subscribe a topic.</td>
     </tr>
     <tr>
@@ -695,7 +695,7 @@ pageSize: number, optional. How many subscriptions will be returned in a page, 1
 
 pageMarker: String, optional. Request the next page, the value is returned in last call.
 
-## topic.subscribeP(name:string, endPoint:string, notifyStrategy?:string, notifyContentFormat?:string)
+## topic.subscribeP(name:string, endPoint:string, notifyStrategy?:string, notifyContentFormat?:string, filterTag?:string)
 Subscribe a topic.
 
 name: Name of subscription.
@@ -705,6 +705,8 @@ endPoint: Notify end point. eg. `http://www.yoursite.com/mns-ep`
 notifyStrategy: optional. BACKOFF_RETRY or EXPONENTIAL_DECAY_RETRY, default is BACKOFF_RETRY.
 
 notifyContentFormat: optional. XML or SIMPLIFIED, default is XML.
+
+filterTag: Optional. Only matched messages will be pushed the endPoint, max length is 16; default is *undefined*, do not filter out any messages.  
 
 ```javascript
 topic.subscribeP("subx", "http://www.yoursite.com/mns-ep",

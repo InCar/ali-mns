@@ -114,8 +114,7 @@ describe('AliMNS-main', function(){
             .then(function(data){
                 assert.fail(data, "expect timeout");
             }, function(ex){
-                assert.equal(ex.message, "timeout");
-                assert.equal(ex.code, "ETIMEDOUT");
+                assert.equal(ex.code, "ESOCKETTIMEDOUT");
             })
             .then(done, done);
         });

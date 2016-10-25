@@ -231,7 +231,7 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
         <td>列出主题的所有订阅.</td>
     </tr>
     <tr>
-        <td>[subscribeP](#topicsubscribepnamestring-endpointstring-notifystrategystring-notifycontentformatstring)</td>
+        <td>[subscribeP](#topicsubscribepnamestring-endpointstring-notifystrategystring-notifycontentformatstring-filtertagstring)</td>
         <td>订阅一个主题.</td>
     </tr>
     <tr>
@@ -688,7 +688,7 @@ pageSize: 可选.每页包含的订阅数目1~1000,缺省为1000.
 
 pageMarker: 可选.填入上一次请求中返回的值,来请求下一页.
 
-## topic.subscribeP(name:string, endPoint:string, notifyStrategy?:string, notifyContentFormat?:string)
+## topic.subscribeP(name:string, endPoint:string, notifyStrategy?:string, notifyContentFormat?:string, filterTag?:string)
 订阅一个主题.
 
 name: 订阅名称.
@@ -698,6 +698,8 @@ endPoint: 通知终端点. 例如: `http://www.yoursite.com/mns-ep`
 notifyStrategy: 可选.通知策略BACKOFF_RETRY或EXPONENTIAL_DECAY_RETRY,缺省是BACKOFF_RETRY.
 
 notifyContentFormat: 可选.通知消息格式XML或SIMPLIFIED,缺省是XML.
+
+filterTag: 可选.只有匹配的消息才会被推送到通知终端端点,最长16个字符,缺省是*undefined*,不过滤任何消息.
 
 ```javascript
 topic.subscribeP("subx", "http://www.yoursite.com/mns-ep",

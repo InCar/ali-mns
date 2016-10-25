@@ -57,7 +57,7 @@ module AliMNS{
             };
             if(notifyStrategy) body.Subscription['NotifyStrategy'] = notifyStrategy;
             if(notifyContentFormat) body.Subscription['NotifyContentFormat'] = notifyContentFormat;
-            if(filterTag) body.Subscription.FilterTag = filterTag;
+            if(filterTag) body.Subscription['FilterTag'] = filterTag;
             var url = Url.resolve(this._urlSubscription, name);
             debug("PUT " + url, body);
             return this._openStack.sendP("PUT", url, body);
