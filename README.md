@@ -72,6 +72,14 @@ Please use 'gulp' to compile ts files into a single index.js file after download
         <td>Sets the status of google analytics collection.</td>
     </tr>
     <tr>
+        <td rowspan="2">[Region](#)</td>
+        <td colspan="2">The *Region* class help your specifying the region of datacenter.</td>
+    </tr>
+    <tr>
+        <td>[toString](#)</td>
+        <td></td>
+    </tr>
+    <tr>
         <td rowspan="4">[MNS](#mnsaccountaccount-regionstring)<br/>[MQS](#mqsaccountaccount-regionstring)<br/>[MNSTopic](#mnstopicaccountaccount-regionstring)</td>
         <td colspan="2">Operate the mns queue. The *MQS* is for compatible v1.x.</td>
     </tr>

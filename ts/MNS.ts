@@ -51,15 +51,22 @@ module AliMNS{
             return this._openStack.sendP("DELETE", url);
         }
 
+        // Switch http or https
+        public switchHttps(bHttps:boolean):void{
+            this._protocol = bHttps?"https":"http";
+            this.makeURL();
+        }
+
         private makeURL(){
-            return Util.format(this._pattern, this._account.getAccountId(), this._region.toString());
+            return Util.format(this._pattern, this._protocol, this._account.getAccountId(), this._region.toString());
         }
 
         protected _account:Account; // Ali account
         protected _region = new Region(City.Hangzhou);
-        private _pattern = "http://%s.mns.%s.aliyuncs.com/queues/";
+        private _pattern = "%s://%s.mns.%s.aliyuncs.com/queues/";
         private _url:string; // mns url
         protected _openStack: OpenStack;
+        protected _protocol = "http";
     }
 
     // For compatible v1.x
