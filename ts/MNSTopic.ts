@@ -1,8 +1,9 @@
 /// <reference path="Interfaces.ts" />
+/// <reference path="Region.ts" />
 
 module AliMNS{
     export class MNSTopic extends MNS implements IMNSTopic{
-        public constructor(account:Account, region?:string){
+        public constructor(account:Account, region?:string|Region){
             super(account, region);
             // make url
             this._urlTopic = this.makeTopicURL();
@@ -36,10 +37,10 @@ module AliMNS{
         }
         
         private makeTopicURL(){
-            return Util.format(this._patternTopic, this._account.getAccountId(), this._region);
+            return Util.format(this._patternTopic, this._account.getAccountId(), this._region.toString());
         }
         
-        private _patternTopic = "http://%s.mns.cn-%s.aliyuncs.com/topics/";
+        private _patternTopic = "http://%s.mns.%s.aliyuncs.com/topics/";
         private _urlTopic:String;
     }
 }
