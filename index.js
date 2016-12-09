@@ -1,4 +1,4 @@
-var gitVersion={"branch":"master","rev":"114","hash":"bc46780","hash160":"bc4678003a4bc025dfd75c5462434d8dec7d666f"};
+var gitVersion={"branch":"dev-outsea","rev":"116","hash":"15e9091","hash160":"15e9091c3895aa2c597047316b28a315e06b98b3"};
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -266,21 +266,242 @@ var AliMNS;
     }());
     AliMNS.OpenStack = OpenStack;
 })(AliMNS || (AliMNS = {}));
+var AliMNS;
+(function (AliMNS) {
+    var Region = (function () {
+        function Region(city, network, zone) {
+            // cn,ap,eu,us,me -> China, Asia Pacific, Europe, Unite State, Middle East
+            this._zone = "cn";
+            // cn: hangzhou, beijing, qingdao, shanghai, shenzhen,
+            // ap: northeast-1[Tokyo], southeast-1[Singapore], southeast-2[Sydney]
+            // eu: central-1[Frankfurt]
+            // us: west-1[Silicon Valley], west-2[Virginia]
+            // me: east-1[Dubai]
+            this._city = "hangzhou";
+            // public-internal-vpc
+            this._network = "";
+            // pattern
+            this._pattern = "%s-%s%s";
+            // region string
+            this._region = "cn-hangzhou";
+            if (network) {
+                if (typeof network === "string")
+                    this._network = network;
+                else
+                    this._network = this.networkToString(network);
+            }
+            if (zone) {
+                if (typeof zone === "string")
+                    this._zone = zone;
+                else
+                    this._zone = this.zoneToString(zone);
+            }
+            if (city) {
+                if (typeof city === "string")
+                    this._city = city;
+                else {
+                    this._city = this.cityToString(city);
+                    this._zone = this.cityToZone(city);
+                }
+            }
+            this.buildString();
+        }
+        Region.prototype.buildString = function () {
+            // like "ap-southeast-2-internal-vpc"
+            this._region = Util.format(this._pattern, this._zone, this._city, this._network);
+        };
+        Region.prototype.toString = function () {
+            return this._region;
+        };
+        Region.prototype.networkToString = function (network) {
+            var value;
+            switch (network) {
+                case NetworkType.Public:
+                    value = "";
+                    break;
+                case NetworkType.Internal:
+                    value = "-internal";
+                    break;
+                case NetworkType.VPC:
+                    value = "-internal-vpc";
+                    break;
+                default: throw new Error("Unsupported network type value: " + network);
+            }
+            return value;
+        };
+        Region.prototype.zoneToString = function (zone) {
+            var value;
+            switch (zone) {
+                case Zone.China:
+                    value = "cn";
+                    break;
+                case Zone.AsiaPacific:
+                    value = "ap";
+                    break;
+                case Zone.UniteState:
+                    value = "us";
+                    break;
+                case Zone.Europe:
+                    value = "eu";
+                    break;
+                case Zone.MiddleEast:
+                    value = "me";
+                    break;
+                default: throw new Error("Unsupported zone value: " + zone);
+            }
+            return value;
+        };
+        Region.prototype.cityToString = function (city) {
+            var value;
+            switch (city) {
+                case City.Beijing:
+                    value = "beijing";
+                    break;
+                case City.Shanghai:
+                    value = "shanghai";
+                    break;
+                case City.Qingdao:
+                    value = "qingdao";
+                    break;
+                case City.Hangzhou:
+                    value = "hangzhou";
+                    break;
+                case City.Shenzhen:
+                    value = "shenzhen";
+                    break;
+                case City.Hongkong:
+                    value = "hongkong";
+                    break;
+                case City.Tokyo:
+                    value = "northeast-1";
+                    break;
+                case City.Singapore:
+                    value = "southeast-1";
+                    break;
+                case City.Sydney:
+                    value = "southeast-2";
+                    break;
+                case City.Frankfurt:
+                    value = "central-1";
+                    break;
+                case City.SiliconValley:
+                    value = "west-1";
+                    break;
+                case City.Virginia:
+                    value = "east-1";
+                    break;
+                case City.Dubai:
+                    value = "east-1";
+                    break;
+                default: throw new Error("Unsupported city value: " + city);
+            }
+            return value;
+        };
+        Region.prototype.cityToZone = function (city) {
+            var value;
+            switch (city) {
+                case City.Beijing:
+                case City.Shanghai:
+                case City.Qingdao:
+                case City.Hangzhou:
+                case City.Shenzhen:
+                    value = "cn";
+                    break;
+                case City.Hongkong:
+                    value = "cn";
+                    break;
+                case City.Tokyo:
+                case City.Singapore:
+                case City.Sydney:
+                    value = "ap";
+                    break;
+                case City.Frankfurt:
+                    value = "eu";
+                    break;
+                case City.SiliconValley:
+                case City.Virginia:
+                    value = "us";
+                    break;
+                case City.Dubai:
+                    value = "me";
+                    break;
+                default:
+                    throw new Error("Unsupported city value: " + city);
+            }
+            return value;
+        };
+        return Region;
+    }());
+    AliMNS.Region = Region;
+    (function (NetworkType) {
+        NetworkType[NetworkType["Public"] = 0] = "Public";
+        NetworkType[NetworkType["Internal"] = 1] = "Internal";
+        NetworkType[NetworkType["VPC"] = 2] = "VPC";
+    })(AliMNS.NetworkType || (AliMNS.NetworkType = {}));
+    var NetworkType = AliMNS.NetworkType;
+    (function (Zone) {
+        Zone[Zone["China"] = 0] = "China";
+        Zone[Zone["AsiaPacific"] = 1] = "AsiaPacific";
+        Zone[Zone["Europe"] = 2] = "Europe";
+        Zone[Zone["UniteState"] = 3] = "UniteState";
+        Zone[Zone["MiddleEast"] = 4] = "MiddleEast";
+    })(AliMNS.Zone || (AliMNS.Zone = {}));
+    var Zone = AliMNS.Zone;
+    (function (Area) {
+        Area[Area["UniteState"] = 1] = "UniteState";
+        Area[Area["Germany"] = 49] = "Germany";
+        Area[Area["Australia"] = 61] = "Australia";
+        Area[Area["Singapore"] = 65] = "Singapore";
+        Area[Area["Japan"] = 81] = "Japan";
+        Area[Area["China"] = 86] = "China";
+        Area[Area["Hongkong"] = 852] = "Hongkong";
+        Area[Area["UnitedArabEmirates"] = 971] = "UnitedArabEmirates";
+    })(AliMNS.Area || (AliMNS.Area = {}));
+    var Area = AliMNS.Area;
+    (function (City) {
+        // China
+        City[City["Beijing"] = 5636106] = "Beijing";
+        City[City["Shanghai"] = 5636117] = "Shanghai";
+        City[City["Qingdao"] = 5636628] = "Qingdao";
+        City[City["Hangzhou"] = 5636667] = "Hangzhou";
+        City[City["Shenzhen"] = 5636851] = "Shenzhen";
+        City[City["Hongkong"] = 55836672] = "Hongkong";
+        // AsiaPacific
+        City[City["Tokyo"] = 5308419] = "Tokyo";
+        City[City["Singapore"] = 4259840] = "Singapore";
+        City[City["Sydney"] = 3997698] = "Sydney";
+        // Europe
+        City[City["Frankfurt"] = 3211599] = "Frankfurt";
+        // UniteState
+        City[City["SiliconValley"] = 65951] = "SiliconValley";
+        City[City["Virginia"] = 66107] = "Virginia";
+        // MiddleEast
+        City[City["Dubai"] = 63635460] = "Dubai";
+    })(AliMNS.City || (AliMNS.City = {}));
+    var City = AliMNS.City;
+})(AliMNS || (AliMNS = {}));
 /// <reference path="Interfaces.ts" />
 /// <reference path="Account.ts" />
 /// <reference path="OpenStack.ts" />
+/// <reference path="Region.ts" />
 var AliMNS;
 (function (AliMNS) {
     // The MNS can list, create, delete, modify the mq.
     var MNS = (function () {
         // The constructor. account: ali account; region: can be "hangzhou", "beijing" or "qingdao", default is "hangzhou"
         function MNS(account, region) {
-            this._region = "hangzhou"; // region: hangzhou, beijing, qingdao
-            this._pattern = "http://%s.mns.cn-%s.aliyuncs.com/queues/";
+            this._region = new AliMNS.Region(AliMNS.City.Hangzhou);
+            this._pattern = "%s://%s.mns.%s.aliyuncs.com/queues/";
+            this._protocol = "http";
             // save the input arguments
             this._account = account;
-            if (region)
-                this._region = region;
+            // region
+            if (region) {
+                if (typeof region === "string")
+                    this._region = new AliMNS.Region(region, AliMNS.NetworkType.Public, AliMNS.Zone.China);
+                else
+                    this._region = region;
+            }
             // make url
             this._url = this.makeURL();
             // create the OpenStack object
@@ -314,8 +535,13 @@ var AliMNS;
             debug("DELETE " + url);
             return this._openStack.sendP("DELETE", url);
         };
+        // Switch http or https
+        MNS.prototype.switchHttps = function (bHttps) {
+            this._protocol = bHttps ? "https" : "http";
+            this.makeURL();
+        };
         MNS.prototype.makeURL = function () {
-            return Util.format(this._pattern, this._account.getAccountId(), this._region);
+            return Util.format(this._pattern, this._protocol, this._account.getAccountId(), this._region.toString());
         };
         return MNS;
     }());
@@ -324,13 +550,14 @@ var AliMNS;
     AliMNS.MQS = MNS;
 })(AliMNS || (AliMNS = {}));
 /// <reference path="Interfaces.ts" />
+/// <reference path="Region.ts" />
 var AliMNS;
 (function (AliMNS) {
     var MNSTopic = (function (_super) {
         __extends(MNSTopic, _super);
         function MNSTopic(account, region) {
             _super.call(this, account, region);
-            this._patternTopic = "http://%s.mns.cn-%s.aliyuncs.com/topics/";
+            this._patternTopic = "%s://%s.mns.%s.aliyuncs.com/topics/";
             // make url
             this._urlTopic = this.makeTopicURL();
         }
@@ -362,8 +589,13 @@ var AliMNS;
             debug("DELETE " + url);
             return this._openStack.sendP("DELETE", url);
         };
+        // Switch http or https
+        MNSTopic.prototype.switchHttps = function (bHttps) {
+            _super.prototype.switchHttps.call(this, bHttps);
+            this.makeTopicURL();
+        };
         MNSTopic.prototype.makeTopicURL = function () {
-            return Util.format(this._patternTopic, this._account.getAccountId(), this._region);
+            return Util.format(this._patternTopic, this._protocol, this._account.getAccountId(), this._region.toString());
         };
         return MNSTopic;
     }(AliMNS.MNS));

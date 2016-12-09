@@ -77,7 +77,7 @@ Please use 'gulp' to compile ts files into a single index.js file after download
     </tr>
     <tr>
         <td>[toString](#)</td>
-        <td></td>
+        <td>Convert region object to string value.</td>
     </tr>
     <tr>
         <td rowspan="4">[MNS](#mnsaccountaccount-regionstring)<br/>[MQS](#mqsaccountaccount-regionstring)<br/>[MNSTopic](#mnstopicaccountaccount-regionstring)</td>
@@ -312,20 +312,75 @@ Gets or Sets the status of google analytics collection.
 Set `bGA` to `true` for enabling google analytics, while set to `false` for disabling google analytics.
 See [Privacy Policy](#privacy-policy).
 
-## MNS(account:Account, region?:string)
+## Region(city?:string|City, network?:string|NetworkType, zone?:string|Zone)
+The *Region* class help your specifying the region of datacenter.
+
+city: String | City, optional. It can be the data center name, like "hangzhou", "beijing" or "west-1", "southeast-2";
+or it can be a pre-defined city enum value, like `AliMNS.City.Beijing`, `AliMNS.City.Tokyo`, check [Region.ts#L169-L188](ts/Region.ts#L169-L188) for the full list.
+The default is "hangzhou".
+
+network: String | NetworkType, optional.
+If it is a string, should be ""(empty string) or "-internal" or "-internal-vpc".
+If it is [NetworkType](ts/Region.ts#L144-L148) enum, should be `AliMNS.NetworkType.Public` or `AliMNS.NetworkType.Internal` or `AliMNS.NetworkType.VPC`.
+The default is ""(empty string), means `AliMNS.NetworkType.Public` network.
+
+zone: String | Zone, optional.
+If it is a string, should be data center zone, like "cn", "us", "eu", "me" or "ap".
+If it is [Zone](ts/Region.ts#L150-L156) enum, should be `AliMNS.Zone.China`, `AliMNS.Zone.AsiaPacific`, `AliMNS.Zone.Europe`, `AliMNS.Zone.UniteState` or `AliMNS.Zone.MiddleEast`.
+The default is "cn", means `AliMNS.Zone.China`.
+This value will be ignored if city parameter is a pre-defined city enum value, because we can deduce zone from city.
+
+samples
+```javascript
+// because hangzhou is the default value.
+var regionHangzhou = new AliMNS.Region(); 
+
+// beijing public network in china
+var regionBeijing = new AliMNS.Region("beijing");
+regionBeijing = new AliMNS.Region(AliMNS.City.Beijing);
+regionBeijing = new AliMNS.Region("beijing", "");
+regionBeijing = new AliMNS.Region("beijing", AliMNS.NetworkType.Public);
+regionBeijing = new AliMNS.Region("beijing", "", "cn");
+
+// east asia in internal network
+var regionJapan = new AliMNS.Region(AliMNS.City.Japan, AliMNS.NetworkType.Internal);
+regionJapan = new AliMNS.Region("northeast-1", AliMNS.NetworkType.Internal, "ap");
+regionJapan = new AliMNS.Region("northeast-1", "-internal", "ap");
+
+// south asia in vpc network
+var regionSingapore = new AliMNS.Region(AliMNS.City.Singapore, AliMNS.NetworkType.VPC);
+regionSingapore = new AliMNS.Region(AliMNS.City.Singapore, "-internal-vpc");
+regionSingapore = new AliMNS.Region("southeast-1", "-internal-vpc", AliMNS.Zone.AsiaPacific);
+regionSingapore = new AliMNS.Region("southeast-1", "-internal-vpc", "ap");
+```
+
+## region.toString()
+Convert region object to string value.
+
+## MNS(account:Account, region?:string|Region)
 The *MNS* operate the mns queue.
 
 account: An account object.
 
-region: String, optional. It can be "hangzhou", "beijing" or "qingdao", the 3 data center that provide mns service.
-Default is "hangzhou". It can also be internal address "hangzhou-internal", "beijing-internal" or "qingdao-internal".
+region: String|Region, optional. 
+If it is string, it can be "hangzhou", "beijing" or any Chinese datacenter city name.
+If it is Region, it allows you to specify data center other than in China. 
+Default is "hangzhou". It can also be internal or vpc address "hangzhou-internal", "beijing-internal" or "qingdao-internal-vpc".
 ```javascript
     var AliMNS = require("ali-mns");
     var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
     var mns = new AliMNS.MNS(account, "hangzhou");
+    // or
+    var regionJapan = new AliMNS.Region(AliMNS.City.Japan, AliMNS.NetworkType.Public);
+    var mnsJapan = new AliMNS.MNS(account, regionJapan);
 ```
 
-## MQS(account:Account, region?:string)
+## mns.switchHttps(bHttps:boolean):void
+Switch to use https or http protocol. The default is `http`.
+
+bHttps: boolean. true to use `https` while false to use `http`.
+
+## MQS(account:Account, region?:string|Region)
 Same as MNS. For compatible v1.x.
 
 ## mns.listP(prefix?:string, pageSize?:number, pageMarker?:string)
