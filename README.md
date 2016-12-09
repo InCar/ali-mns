@@ -72,11 +72,11 @@ Please use 'gulp' to compile ts files into a single index.js file after download
         <td>Sets the status of google analytics collection.</td>
     </tr>
     <tr>
-        <td rowspan="2">[Region](#)</td>
+        <td rowspan="2">[Region](#regioncitystringcity-networkstringnetworktype-zonestringzone)</td>
         <td colspan="2">The *Region* class help your specifying the region of datacenter.</td>
     </tr>
     <tr>
-        <td>[toString](#)</td>
+        <td>[toString](#regiontostring)</td>
         <td>Convert region object to string value.</td>
     </tr>
     <tr>

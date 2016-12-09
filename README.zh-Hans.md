@@ -71,11 +71,11 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
         <td>设置Google数据收集状态.</td>
     </tr>
         <tr>
-        <td rowspan="2">[Region](#)</td>
+        <td rowspan="2">[Region](#regioncitystringcity-networkstringnetworktype-zonestringzone)</td>
         <td colspan="2">类*Region*帮助指定数据中心.</td>
     </tr>
     <tr>
-        <td>[toString](#)</td>
+        <td>[toString](#regiontostring)</td>
         <td>转换为字符串的形式.</td>
     </tr>
     <tr>
