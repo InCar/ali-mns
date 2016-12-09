@@ -1,15 +1,21 @@
 /// <reference path="Interfaces.ts" />
 /// <reference path="Account.ts" />
 /// <reference path="OpenStack.ts" />
+/// <reference path="Region.ts" />
+
 
 module AliMNS{
     // The MNS can list, create, delete, modify the mq.
     export class MNS implements IMNS {
         // The constructor. account: ali account; region: can be "hangzhou", "beijing" or "qingdao", default is "hangzhou"
-        constructor(account:Account, region?:string){
+        constructor(account:Account, region?:string|Region){
             // save the input arguments
             this._account = account;
-            if(region) this._region = region;
+            // region
+            if(region){
+                if(typeof region === "string") this._region = new Region(region, NetworkType.Public, Zone.China);
+                else this._region = region;
+            }
 
             // make url
             this._url = this.makeURL();
@@ -45,15 +51,22 @@ module AliMNS{
             return this._openStack.sendP("DELETE", url);
         }
 
+        // Switch http or https
+        public switchHttps(bHttps:boolean):void{
+            this._protocol = bHttps?"https":"http";
+            this.makeURL();
+        }
+
         private makeURL(){
-            return Util.format(this._pattern, this._account.getAccountId(), this._region);
+            return Util.format(this._pattern, this._protocol, this._account.getAccountId(), this._region.toString());
         }
 
         protected _account:Account; // Ali account
-        protected _region = "hangzhou"; // region: hangzhou, beijing, qingdao
-        private _pattern = "http://%s.mns.cn-%s.aliyuncs.com/queues/";
+        protected _region = new Region(City.Hangzhou);
+        private _pattern = "%s://%s.mns.%s.aliyuncs.com/queues/";
         private _url:string; // mns url
         protected _openStack: OpenStack;
+        protected _protocol = "http";
     }
 
     // For compatible v1.x

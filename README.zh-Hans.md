@@ -70,6 +70,14 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
         <td>[setGA](#accountgetga--accountsetgabgaboolean)</td>
         <td>设置Google数据收集状态.</td>
     </tr>
+        <tr>
+        <td rowspan="2">[Region](#regioncitystringcity-networkstringnetworktype-zonestringzone)</td>
+        <td colspan="2">类*Region*帮助指定数据中心.</td>
+    </tr>
+    <tr>
+        <td>[toString](#regiontostring)</td>
+        <td>转换为字符串的形式.</td>
+    </tr>
     <tr>
         <td rowspan="4">[MNS](#mnsaccountaccount-regionstring)<br/>[MQS](#mqsaccountaccount-regionstring)<br/>[MNSTopic](#mnstopicaccountaccount-regionstring)</td>
         <td colspan="2">*MNS*类用于操作mns队列. *MQS*和*MNS*相同.为了向下兼容v1.x版本.</td>
@@ -303,18 +311,71 @@ keySecret: String, 阿里云密钥.
 设置`bGA`为`true`允许Google数据收集,设置`false`禁用Google数据收集.
 参见[私隐策略](#privacy-policy).
 
+## Region(city?:string|City, network?:string|NetworkType, zone?:string|Zone)
+类*Region*帮助指定数据中心.
+
+city: String | City, optional. 可以是数据中心的名称,如"hangzhou", "beijing" or "west-1", "southeast-2";
+或者是预先定义的城市,如`AliMNS.City.Beijing`, `AliMNS.City.Tokyo`, 完整的列表请查看[Region.ts#L169-L188](ts/Region.ts#L169-L188).
+缺省为"hangzhou".
+
+network: String | NetworkType, optional.
+如果是字符串,应当是""(空字符串)或"-internal"或"-internal-vpc".
+如果是[NetworkType](ts/Region.ts#L144-L148)枚举,应当是`AliMNS.NetworkType.Public`或`AliMNS.NetworkType.Internal`或`AliMNS.NetworkType.VPC`.
+缺省为""(空字符串),代表`AliMNS.NetworkType.Public`网络.
+
+zone: String | Zone, optional.
+如果是字符串,应当是数据中心区域缩写,如"cn", "us", "eu", "me" or "ap".
+如果是[Zone](ts/Region.ts#L150-L156)枚举,应当是`AliMNS.Zone.China`, `AliMNS.Zone.AsiaPacific`, `AliMNS.Zone.Europe`, `AliMNS.Zone.UniteState`或`AliMNS.Zone.MiddleEast`.
+缺省为"cn",表示`AliMNS.Zone.China`.
+如果city参数是一个预先定义的城市枚举,那么这个参数会被忽略掉,因为我们可以从城市推导出数据中心区域.
+
+示例
+```javascript
+// because hangzhou is the default value.
+var regionHangzhou = new AliMNS.Region(); 
+
+// beijing public network in china
+var regionBeijing = new AliMNS.Region("beijing");
+regionBeijing = new AliMNS.Region(AliMNS.City.Beijing);
+regionBeijing = new AliMNS.Region("beijing", "");
+regionBeijing = new AliMNS.Region("beijing", AliMNS.NetworkType.Public);
+regionBeijing = new AliMNS.Region("beijing", "", "cn");
+
+// east asia in internal network
+var regionJapan = new AliMNS.Region(AliMNS.City.Japan, AliMNS.NetworkType.Internal);
+regionJapan = new AliMNS.Region("northeast-1", AliMNS.NetworkType.Internal, "ap");
+regionJapan = new AliMNS.Region("northeast-1", "-internal", "ap");
+
+// south asia in vpc network
+var regionSingapore = new AliMNS.Region(AliMNS.City.Singapore, AliMNS.NetworkType.VPC);
+regionSingapore = new AliMNS.Region(AliMNS.City.Singapore, "-internal-vpc");
+regionSingapore = new AliMNS.Region("southeast-1", "-internal-vpc", AliMNS.Zone.AsiaPacific);
+regionSingapore = new AliMNS.Region("southeast-1", "-internal-vpc", "ap");
+```
+
+## region.toString()
+转换为字符串的形式.
+
 ## MNS(account:Account, region?:string)
 *MNS*类用于操作mns队列.
 
 account: 阿里云帐号对象.
 
-region: String, optional. 可能的取值为"hangzhou", "beijing" or "qingdao",分别代表阿里云提供消息服务的3个数据中心.
-缺省为"hangzhou".也可以是带有"-internal"后缀的内网形式,如"hangzhou-internal", "beijing-internal" or "qingdao-internal".
+region: String|Region, optional. 如果是字符串可能的取值为"hangzhou", "beijing" or "qingdao",或其它位于中国地区的数据中心所在城市名称.
+如果是Region类型,允许指定中国以外的数据中心.
+缺省为"hangzhou".也可以是带有"-internal"后缀的内网形式,如"hangzhou-internal", "beijing-internal" or "qingdao-internal-vpc".
 ```javascript
     var AliMNS = require("ali-mns");
     var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
     var mns = new AliMNS.MNS(account, "hangzhou");
+    // or
+    var regionJapan = new AliMNS.Region(AliMNS.City.Japan, AliMNS.NetworkType.Public);
+    var mnsJapan = new AliMNS.MNS(account, regionJapan);
 ```
+## mns.switchHttps(bHttps:boolean):void
+切换使用的协议`http`或者`https`,缺省使用`http`.
+
+bHttps: boolean. true表示使用`https`, false表示使用`http`.
 
 ## MQS(account:Account, region?:string)
 和MNS相同.为了向下兼容v1.x版本.

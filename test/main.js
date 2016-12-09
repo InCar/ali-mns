@@ -12,7 +12,7 @@ describe('AliMNS-main', function(){
         accountId: "your-account-id",
         keyId: "your-key-id",
         keySecret: "your-key-secret",
-        region: "hangzhou",
+        region: new AliMNS.Region(AliMNS.City.Hangzhou),
         mqName: "dev"
     };
 
