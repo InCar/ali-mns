@@ -1,4 +1,4 @@
-var gitVersion={"branch":"dev-outsea","rev":"116","hash":"15e9091","hash160":"15e9091c3895aa2c597047316b28a315e06b98b3"};
+var gitVersion={"branch":"dev-i18n","rev":"120","hash":"89f40f8","hash160":"89f40f804c46bbd25c2c9aea2e570c1b0b2a4db4"};
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -27,6 +27,7 @@ var AliMNS;
     var Account = (function () {
         function Account(accountId, keyId, keySecret) {
             this._bGoogleAnalytics = true; // Enable Google Analytics
+            this._bHttps = false; // Default to use http
             this._accountId = accountId;
             this._keyId = keyId;
             this._keySecret = keySecret;
@@ -36,6 +37,8 @@ var AliMNS;
         Account.prototype.getKeyId = function () { return this._keyId; };
         Account.prototype.getGA = function () { return this._bGoogleAnalytics; };
         Account.prototype.setGA = function (bGA) { this._bGoogleAnalytics = bGA; };
+        Account.prototype.getHttps = function () { return this._bHttps; };
+        Account.prototype.setHttps = function (bHttps) { this._bHttps = bHttps; };
         // encoding: "hex", "binary" or "base64"
         Account.prototype.hmac_sha1 = function (text, encoding) {
             var hmacSHA1 = CryptoA.createHmac("sha1", this._keySecret);
@@ -492,7 +495,6 @@ var AliMNS;
         function MNS(account, region) {
             this._region = new AliMNS.Region(AliMNS.City.Hangzhou);
             this._pattern = "%s://%s.mns.%s.aliyuncs.com/queues/";
-            this._protocol = "http";
             // save the input arguments
             this._account = account;
             // region
@@ -535,13 +537,8 @@ var AliMNS;
             debug("DELETE " + url);
             return this._openStack.sendP("DELETE", url);
         };
-        // Switch http or https
-        MNS.prototype.switchHttps = function (bHttps) {
-            this._protocol = bHttps ? "https" : "http";
-            this.makeURL();
-        };
         MNS.prototype.makeURL = function () {
-            return Util.format(this._pattern, this._protocol, this._account.getAccountId(), this._region.toString());
+            return Util.format(this._pattern, this._account.getHttps() ? "https" : "http", this._account.getAccountId(), this._region.toString());
         };
         return MNS;
     }());
@@ -589,13 +586,8 @@ var AliMNS;
             debug("DELETE " + url);
             return this._openStack.sendP("DELETE", url);
         };
-        // Switch http or https
-        MNSTopic.prototype.switchHttps = function (bHttps) {
-            _super.prototype.switchHttps.call(this, bHttps);
-            this.makeTopicURL();
-        };
         MNSTopic.prototype.makeTopicURL = function () {
-            return Util.format(this._patternTopic, this._protocol, this._account.getAccountId(), this._region.toString());
+            return Util.format(this._patternTopic, this._account.getHttps() ? "https" : "http", this._account.getAccountId(), this._region.toString());
         };
         return MNSTopic;
     }(AliMNS.MNS));
@@ -740,6 +732,7 @@ var AliMNS;
 /// <reference path="Account.ts" />
 /// <reference path="OpenStack.ts" />
 /// <reference path="NotifyRecv.ts" />
+/// <reference path="Region.ts" />
 var AliMNS;
 (function (AliMNS) {
     // The MQ
@@ -749,12 +742,17 @@ var AliMNS;
         function MQ(name, account, region) {
             this._notifyRecv = null;
             this._recvTolerance = 5; // 接收消息的容忍时间(单位:秒)
-            this._region = "hangzhou";
-            this._pattern = "http://%s.mns.cn-%s.aliyuncs.com/queues/%s";
+            this._region = new AliMNS.Region(AliMNS.City.Hangzhou);
+            this._pattern = "%s://%s.mns.%s.aliyuncs.com/queues/%s";
             this._name = name;
             this._account = account;
-            if (region)
-                this._region = region;
+            // region
+            if (region) {
+                if (typeof region === "string")
+                    this._region = new AliMNS.Region(region, AliMNS.NetworkType.Public, AliMNS.Zone.China);
+                else
+                    this._region = region;
+            }
             // make url
             this._urlAttr = this.makeAttrURL();
             this._url = this.makeURL();
@@ -881,7 +879,7 @@ var AliMNS;
             }
         };
         MQ.prototype.makeAttrURL = function () {
-            return Util.format(this._pattern, this._account.getAccountId(), this._region, this._name);
+            return Util.format(this._pattern, this._account.getHttps() ? "https" : "http", this._account.getAccountId(), this._region.toString(), this._name);
         };
         MQ.prototype.makeURL = function () {
             return this.makeAttrURL() + "/messages";
@@ -1024,6 +1022,7 @@ var AliMNS;
 /// <reference path="Interfaces.ts" />
 /// <reference path="Account.ts" />
 /// <reference path="OpenStack.ts" />
+/// <reference path="Region.ts" />
 var AliMNS;
 (function (AliMNS) {
     // The Topic
@@ -1031,12 +1030,17 @@ var AliMNS;
         // The constructor. name & account is required.
         // region can be "hangzhou", "beijing" or "qingdao", the default is "hangzhou"
         function Topic(name, account, region) {
-            this._region = "hangzhou";
-            this._pattern = "http://%s.mns.cn-%s.aliyuncs.com/topics/%s";
+            this._region = new AliMNS.Region(AliMNS.City.Hangzhou);
+            this._pattern = "%s://%s.mns.%s.aliyuncs.com/topics/%s";
             this._name = name;
             this._account = account;
-            if (region)
-                this._region = region;
+            // region
+            if (region) {
+                if (typeof region === "string")
+                    this._region = new AliMNS.Region(region, AliMNS.NetworkType.Public, AliMNS.Zone.China);
+                else
+                    this._region = region;
+            }
             // make url
             this._urlAttr = this.makeAttrURL();
             this._urlSubscription = this.makeSubscriptionURL();
@@ -1112,7 +1116,7 @@ var AliMNS;
             return buf.toString('base64');
         };
         Topic.prototype.makeAttrURL = function () {
-            return Util.format(this._pattern, this._account.getAccountId(), this._region, this._name);
+            return Util.format(this._pattern, this._account.getHttps() ? "https" : "http", this._account.getAccountId(), this._region.toString(), this._name);
         };
         Topic.prototype.makeSubscriptionURL = function () {
             return this.makeAttrURL() + "/subscriptions/";
@@ -1133,7 +1137,7 @@ var AliMNS;
     var Subscription = (function () {
         // The constructor. name & topic is required.
         function Subscription(name, topic) {
-            this._pattern = "http://%s.mns.cn-%s.aliyuncs.com/topics/%s/subscriptions/%s";
+            this._pattern = "%s://%s.mns.%s.aliyuncs.com/topics/%s/subscriptions/%s";
             this._name = name;
             this._topic = topic;
             // make url
@@ -1155,7 +1159,7 @@ var AliMNS;
             return this._openStack.sendP("PUT", this._urlAttr + "?metaoverride=true", body);
         };
         Subscription.prototype.makeAttrURL = function () {
-            return Util.format(this._pattern, this._topic.getAccount().getAccountId(), this._topic.getRegion(), this._topic.getName(), this._name);
+            return Util.format(this._pattern, this._topic.getAccount().getHttps() ? "https" : "http", this._topic.getAccount().getAccountId(), this._topic.getRegion().toString(), this._topic.getName(), this._name);
         };
         Subscription.NotifyStrategy = {
             BACKOFF_RETRY: "BACKOFF_RETRY",

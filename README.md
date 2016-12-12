@@ -72,6 +72,14 @@ Please use 'gulp' to compile ts files into a single index.js file after download
         <td>Sets the status of google analytics collection.</td>
     </tr>
     <tr>
+        <td>[getHttps](#accountgethttps--accountsethttpsbhttpsboolean)</td>
+        <td>Gets using http or https protocol.</td>
+    </tr>
+    <tr>
+        <td>[setHttps](#accountgethttps--accountsethttpsbhttpsboolean)</td>
+        <td>Sets using http or https protocol.</td>
+    </tr>
+    <tr>
         <td rowspan="2">[Region](#regioncitystringcity-networkstringnetworktype-zonestringzone)</td>
         <td colspan="2">The *Region* class help your specifying the region of datacenter.</td>
     </tr>
@@ -80,7 +88,7 @@ Please use 'gulp' to compile ts files into a single index.js file after download
         <td>Convert region object to string value.</td>
     </tr>
     <tr>
-        <td rowspan="4">[MNS](#mnsaccountaccount-regionstring)<br/>[MQS](#mqsaccountaccount-regionstring)<br/>[MNSTopic](#mnstopicaccountaccount-regionstring)</td>
+        <td rowspan="4">[MNS](#mnsaccountaccount-regionstringregion)<br/>[MQS](#mqsaccountaccount-regionstringregion)<br/>[MNSTopic](#mnstopicaccountaccount-regionstringregion)</td>
         <td colspan="2">Operate the mns queue. The *MQS* is for compatible v1.x.</td>
     </tr>
     <tr>
@@ -96,7 +104,7 @@ Please use 'gulp' to compile ts files into a single index.js file after download
         <td>Delete an mq.</td>
     </tr>
     <tr>
-        <td rowspan="15">[MQ](#mqnamestring-accountaccount-regionstring)<br/>[MQBatch](#mqbatch)</td>
+        <td rowspan="15">[MQ](#mqnamestring-accountaccount-regionstringregion)<br/>[MQBatch](#mqbatch)</td>
         <td colspan="2">The *MQ* operate the message in a queue.</td>
     </tr>
     <tr>
@@ -196,7 +204,7 @@ Please use 'gulp' to compile ts files into a single index.js file after download
         <td>Return the delay seconds of message.</td>
     </tr>
     <tr>
-        <td rowspan="4">[MNSTopic](#mnstopicaccountaccount-regionstring)</td>
+        <td rowspan="4">[MNSTopic](#mnstopicaccountaccount-regionstringregion)</td>
         <td colspan="2">The class MNSTopic extends class MNS for providing features in topic model.</td>
     </tr>
     <tr>
@@ -212,7 +220,7 @@ Please use 'gulp' to compile ts files into a single index.js file after download
         <td>Delete a topic.</td>
     </tr>
     <tr>
-        <td rowspan="10">[Topic](#topicnamestring-accountaccount-regionstring)</td>
+        <td rowspan="10">[Topic](#topicnamestring-accountaccount-regionstringregion)</td>
         <td colspan="2">Operate a topic.</td>
     </tr>
     <tr>
@@ -312,6 +320,11 @@ Gets or Sets the status of google analytics collection.
 Set `bGA` to `true` for enabling google analytics, while set to `false` for disabling google analytics.
 See [Privacy Policy](#privacy-policy).
 
+## account.getHttps() & account.setHttps(bHttps:boolean)
+Gets or Sets using `http` or `https` protocol.
+Set `bHttps` to `true` for using `https`, while set to `false` for using `http` protocol.
+Default is `false` for using `http` protocol.
+
 ## Region(city?:string|City, network?:string|NetworkType, zone?:string|Zone)
 The *Region* class help your specifying the region of datacenter.
 
@@ -375,11 +388,6 @@ Default is "hangzhou". It can also be internal or vpc address "hangzhou-internal
     var mnsJapan = new AliMNS.MNS(account, regionJapan);
 ```
 
-## mns.switchHttps(bHttps:boolean):void
-Switch to use https or http protocol. The default is `http`.
-
-bHttps: boolean. true to use `https` while false to use `http`.
-
 ## MQS(account:Account, region?:string|Region)
 Same as MNS. For compatible v1.x.
 
@@ -436,19 +444,24 @@ name: String. The queue name.
     mns.deleteP("myAliMQ").then(console.log, console.error);;
 ```
 
-## MQ(name:string, account:Account, region?:string)
+## MQ(name:string, account:Account, region?:string|Region)
 The *MQ* operate the message in a queue.
 
 name: String. The name of mq.
 
 account: An account object.
 
-region: String, optional. It can be "hangzhou", "beijing" or "qingdao", the 3 data center that provide mns service.
-Default is "hangzhou". It can also be internal address "hangzhou-internal", "beijing-internal" or "qingdao-internal".
+region: String|Region, optional. 
+If it is string, it can be "hangzhou", "beijing" or any Chinese datacenter city name.
+If it is Region, it allows you to specify data center other than in China. 
+Default is "hangzhou". It can also be internal or vpc address "hangzhou-internal", "beijing-internal" or "qingdao-internal-vpc".
 ```javascript
     var AliMNS = require("ali-mns");
-    var account = new AliMNS.Account("<your-owner-id>", "<your-key-id>", "<your-key-secret>");
-    var mq = new AliMNS.MQ("myAliMQ", account, "hangzhou");
+    var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
+    var mq = new AliMNS.MQ(account, "hangzhou");
+    // or
+    var regionJapan = new AliMNS.Region(AliMNS.City.Japan, AliMNS.NetworkType.Public);
+    var mqJapan = new AliMNS.MQ(account, regionJapan);
 ```
 
 ## mq.getName()
@@ -675,15 +688,17 @@ numOfMessages: number. optional. The max number of message can be received in a 
 
 All other arguments are same as *mq.notifyRecv*.
 
-# MNSTopic(account:Account, region?:string)
+# MNSTopic(account:Account, region?:string|Region)
 The class `MNSTopic` extends class `MNS` for providing features in topic model.
 All methods in `MNS` class are also available in `MNSTopic`.
 ```javascript
     var AliMNS = require("ali-mns");
     var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
     var mns = new AliMNS.MNSTopic(account, "shenzhen");
+    // or
+    var regionJapan = new AliMNS.Region(AliMNS.City.Japan, AliMNS.NetworkType.Public);
+    var mnsJapan = new AliMNS.MNSTopic(account, regionJapan);
 ```
-*By now(Apr. 2016), the topic model is only provided in shenzhen data center.*
 
 ## mns.listTopicP(prefix?:string, pageSize?:number, pageMarker?:string)
 List all topics.
@@ -710,20 +725,24 @@ Delete a topic.
 
 name: topic name.
 
-# Topic(name:string, account:Account, region?:string)
+# Topic(name:string, account:Account, region?:string|Region)
 Operate a topic.
 
 name: topic name.
 
 account: An account object.
 
-region: optional. Can be "shenzhen" or "shenzhen-internal", default is "hangzhou".
-
-*By now(Apr. 2016), the topic model is only provided in shenzhen data center*
+region: String|Region, optional. 
+If it is string, it can be "hangzhou", "beijing" or any Chinese datacenter city name.
+If it is Region, it allows you to specify data center other than in China. 
+Default is "hangzhou". It can also be internal or vpc address "hangzhou-internal", "beijing-internal" or "qingdao-internal-vpc".
 ```javascript
-var AliMNS = require("ali-mns");
-var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
-var topic = new AliMNS.Topic("t11", account, "shenzhen");
+    var AliMNS = require("ali-mns");
+    var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
+    var topic = new AliMNS.Topic("t11", account, "shenzhen");
+    // or
+    var regionJapan = new AliMNS.Region(AliMNS.City.Japan, AliMNS.NetworkType.Public);
+    var topicJapan = new AliMNS.Topic("t11", account, regionJapan);
 ```
 
 ## topic.getName()

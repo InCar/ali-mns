@@ -35,15 +35,12 @@ module AliMNS{
             debug("DELETE " + url);
             return this._openStack.sendP("DELETE", url);
         }
-
-        // Switch http or https
-        public switchHttps(bHttps:boolean):void{
-            super.switchHttps(bHttps);
-            this.makeTopicURL();
-        }
         
         private makeTopicURL(){
-            return Util.format(this._patternTopic, this._protocol, this._account.getAccountId(), this._region.toString());
+            return Util.format(this._patternTopic,
+                this._account.getHttps()?"https":"http",
+                this._account.getAccountId(),
+                this._region.toString());
         }
         
         private _patternTopic = "%s://%s.mns.%s.aliyuncs.com/topics/";

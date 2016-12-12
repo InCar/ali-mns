@@ -2,16 +2,21 @@
 /// <reference path="Account.ts" />
 /// <reference path="OpenStack.ts" />
 /// <reference path="NotifyRecv.ts" />
+/// <reference path="Region.ts" />
 
 module AliMNS{
     // The MQ
     export class MQ implements IMQ, INotifyRecv{
         // The constructor. name & account is required.
         // region can be "hangzhou", "beijing" or "qingdao", the default is "hangzhou"
-        constructor(name:string, account:Account, region?:string){
+        constructor(name:string, account:Account, region?:string|Region){
             this._name = name;
             this._account = account;
-            if(region) this._region = region;
+            // region
+            if(region){
+                if(typeof region === "string") this._region = new Region(region, NetworkType.Public, Zone.China);
+                else this._region = region;
+            }
 
             // make url
             this._urlAttr = this.makeAttrURL();
@@ -154,7 +159,11 @@ module AliMNS{
         }
 
         private makeAttrURL(){
-            return Util.format(this._pattern, this._account.getAccountId(), this._region, this._name);
+            return Util.format(this._pattern,
+                this._account.getHttps()?"https":"http",
+                this._account.getAccountId(),
+                this._region.toString(),
+                this._name);
         }
 
         private makeURL(){
@@ -167,9 +176,9 @@ module AliMNS{
         protected _recvTolerance = 5; // 接收消息的容忍时间(单位:秒)
 
         private _name: string;
-        private _region = "hangzhou";
+        private _region = new Region(City.Hangzhou);
         private _account: Account;
         private _urlAttr: string; // mq attr url
-        private _pattern = "http://%s.mns.cn-%s.aliyuncs.com/queues/%s";
+        private _pattern = "%s://%s.mns.%s.aliyuncs.com/queues/%s";
     }
 }

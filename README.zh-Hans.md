@@ -70,7 +70,15 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
         <td>[setGA](#accountgetga--accountsetgabgaboolean)</td>
         <td>设置Google数据收集状态.</td>
     </tr>
-        <tr>
+    <tr>
+        <td>[getHttps](#accountgethttps--accountsethttpsbhttpsboolean)</td>
+        <td>获取使用的是http还是https协议.</td>
+    </tr>
+    <tr>
+        <td>[setHttps](#accountgethttps--accountsethttpsbhttpsboolean)</td>
+        <td>设置使用http还是https协议.</td>
+    </tr>
+    <tr>
         <td rowspan="2">[Region](#regioncitystringcity-networkstringnetworktype-zonestringzone)</td>
         <td colspan="2">类*Region*帮助指定数据中心.</td>
     </tr>
@@ -79,7 +87,7 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
         <td>转换为字符串的形式.</td>
     </tr>
     <tr>
-        <td rowspan="4">[MNS](#mnsaccountaccount-regionstring)<br/>[MQS](#mqsaccountaccount-regionstring)<br/>[MNSTopic](#mnstopicaccountaccount-regionstring)</td>
+        <td rowspan="4">[MNS](#mnsaccountaccount-regionstringregion)<br/>[MQS](#mqsaccountaccount-regionstringregion)<br/>[MNSTopic](#mnstopicaccountaccount-regionstringregion)</td>
         <td colspan="2">*MNS*类用于操作mns队列. *MQS*和*MNS*相同.为了向下兼容v1.x版本.</td>
     </tr>
     <tr>
@@ -95,7 +103,7 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
         <td>删除一个队列.</td>
     </tr>
     <tr>
-        <td rowspan="15">[MQ](#mqnamestring-accountaccount-regionstring)<br/>[MQBatch](#mqbatch)</td>
+        <td rowspan="15">[MQ](#mqnamestring-accountaccount-regionstringregion)<br/>[MQBatch](#mqbatch)</td>
         <td colspan="2">*MQ*操作队列中的消息.</td>
     </tr>
     <tr>
@@ -195,7 +203,7 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
         <td>返回消息延迟可见秒数.</td>
     </tr>
     <tr>
-        <td rowspan="4">[MNSTopic](#mnstopicaccountaccount-regionstring)</td>
+        <td rowspan="4">[MNSTopic](#mnstopicaccountaccount-regionstringregion)</td>
         <td colspan="2">MNSTopic扩展自MNS,它提供了基于主题模型的消息功能.</td>
     </tr>
     <tr>
@@ -211,7 +219,7 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
         <td>删除一个主题.</td>
     </tr>
     <tr>
-        <td rowspan="10">[Topic](#topicnamestring-accountaccount-regionstring)</td>
+        <td rowspan="10">[Topic](#topicnamestring-accountaccount-regionstringregion)</td>
         <td colspan="2">操控主题</td>
     </tr>
     <tr>
@@ -311,6 +319,11 @@ keySecret: String, 阿里云密钥.
 设置`bGA`为`true`允许Google数据收集,设置`false`禁用Google数据收集.
 参见[私隐策略](#privacy-policy).
 
+## account.getHttps() & account.setHttps(bHttps:boolean)
+获取或设置使用`http`还是`https`协议.
+设置`bHttps`为`true`使用`https`协议,设置`false`使用`http`协议.
+默认为`false`使用`http`协议.
+
 ## Region(city?:string|City, network?:string|NetworkType, zone?:string|Zone)
 类*Region*帮助指定数据中心.
 
@@ -356,7 +369,7 @@ regionSingapore = new AliMNS.Region("southeast-1", "-internal-vpc", "ap");
 ## region.toString()
 转换为字符串的形式.
 
-## MNS(account:Account, region?:string)
+## MNS(account:Account, region?:string|Region)
 *MNS*类用于操作mns队列.
 
 account: 阿里云帐号对象.
@@ -372,12 +385,8 @@ region: String|Region, optional. 如果是字符串可能的取值为"hangzhou",
     var regionJapan = new AliMNS.Region(AliMNS.City.Japan, AliMNS.NetworkType.Public);
     var mnsJapan = new AliMNS.MNS(account, regionJapan);
 ```
-## mns.switchHttps(bHttps:boolean):void
-切换使用的协议`http`或者`https`,缺省使用`http`.
 
-bHttps: boolean. true表示使用`https`, false表示使用`http`.
-
-## MQS(account:Account, region?:string)
+## MQS(account:Account, region?:string|Region)
 和MNS相同.为了向下兼容v1.x版本.
 
 ## mns.listP(prefix?:string, pageSize?:number, pageMarker?:string)
@@ -430,22 +439,26 @@ options.PollingWaitSeconds: numer. 当消息队列为空时,接收请求最多�
 
 name: String. 队列名称.
 ```javascript
-    mns.deleteP("myAliMQ").then(console.log, console.error);;
+    mns.deleteP("myAliMQ").then(console.log, console.error);
 ```
 
-## MQ(name:string, account:Account, region?:string)
+## MQ(name:string, account:Account, region?:string|Region)
 *MQ*操作队列中的消息.
 
 name: String. 队列名称.
 
 account: 帐号对象.
 
-region: String, optional. 可能的取值为"hangzhou", "beijing" or "qingdao",分别代表阿里云提供消息服务的3个数据中心.
-缺省为"hangzhou".也可以是带有"-internal"后缀的内网形式,如"hangzhou-internal", "beijing-internal" or "qingdao-internal".
+region: String|Region, optional. 如果是字符串可能的取值为"hangzhou", "beijing" or "qingdao",或其它位于中国地区的数据中心所在城市名称.
+如果是Region类型,允许指定中国以外的数据中心.
+缺省为"hangzhou".也可以是带有"-internal"后缀的内网形式,如"hangzhou-internal", "beijing-internal" or "qingdao-internal-vpc".
 ```javascript
     var AliMNS = require("ali-mns");
-    var account = new AliMNS.Account("<your-owner-id>", "<your-key-id>", "<your-key-secret>");
-    var mq = new AliMNS.MQ("myAliMQ", account, "hangzhou");
+    var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
+    var mq = new AliMNS.MQ(account, "hangzhou");
+    // or
+    var regionJapan = new AliMNS.Region(AliMNS.City.Japan, AliMNS.NetworkType.Public);
+    var mqJapan = new AliMNS.MQ(account, regionJapan);
 ```
 
 ## mq.getName()
@@ -666,15 +679,17 @@ numOfMessages: number. optional. 最多一批接收的消息数目,1~16,缺省�
 
 所有春它参数都和*mq.notifyRecv*一致.
 
-# MNSTopic(account:Account, region?:string)
+# MNSTopic(account:Account, region?:string|Region)
 `MNSTopic`提供了关于主题模型的功能,它扩展自`MNS`.
 所有`MNS`的方法都适用于`MNSTopic`.
 ```javascript
     var AliMNS = require("ali-mns");
     var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
     var mns = new AliMNS.MNSTopic(account, "shenzhen");
+    // or
+    var regionJapan = new AliMNS.Region(AliMNS.City.Japan, AliMNS.NetworkType.Public);
+    var mnsJapan = new AliMNS.MNSTopic(account, regionJapan);
 ```
-*截至目前(2016年4月),主题模型仅在深圳数据中心提供服务*
 
 ## mns.listTopicP(prefix?:string, pageSize?:number, pageMarker?:string)
 列出所有的主题.
@@ -701,20 +716,23 @@ options.LoggingEnabled: boolean. 是否开启日志记录,缺省是false不开�
 
 name: 主题名称.
 
-# Topic(name:string, account:Account, region?:string)
+# Topic(name:string, account:Account, region?:string|Region)
 操控一个主题。
 
 name: 主题名称.
 
 account: 主题帐号.
 
-region: 可选.数据中心,可以是"shenzhen"或"shenzhen-internal", 缺省是"hangzhou".
-
-*截至目前(2016年4月), 主题模型仅在深圳数据中心提供服务*
+region: String|Region, optional. 如果是字符串可能的取值为"hangzhou", "beijing" or "qingdao",或其它位于中国地区的数据中心所在城市名称.
+如果是Region类型,允许指定中国以外的数据中心.
+缺省为"hangzhou".也可以是带有"-internal"后缀的内网形式,如"hangzhou-internal", "beijing-internal" or "qingdao-internal-vpc".
 ```javascript
-var AliMNS = require("ali-mns");
-var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
-var topic = new AliMNS.Topic("t11", account, "shenzhen");
+    var AliMNS = require("ali-mns");
+    var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
+    var topic = new AliMNS.Topic("t11", account, "hangzhou");
+    // or
+    var regionJapan = new AliMNS.Region(AliMNS.City.Japan, AliMNS.NetworkType.Public);
+    var topicJapan = new AliMNS.Topic("t11", account, regionJapan);
 ```
 
 ## topic.getName()
