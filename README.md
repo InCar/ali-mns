@@ -375,11 +375,6 @@ Default is "hangzhou". It can also be internal or vpc address "hangzhou-internal
     var mnsJapan = new AliMNS.MNS(account, regionJapan);
 ```
 
-## mns.switchHttps(bHttps:boolean):void
-Switch to use https or http protocol. The default is `http`.
-
-bHttps: boolean. true to use `https` while false to use `http`.
-
 ## MQS(account:Account, region?:string|Region)
 Same as MNS. For compatible v1.x.
 
@@ -436,19 +431,24 @@ name: String. The queue name.
     mns.deleteP("myAliMQ").then(console.log, console.error);;
 ```
 
-## MQ(name:string, account:Account, region?:string)
+## MQ(name:string, account:Account, region?:string|Region)
 The *MQ* operate the message in a queue.
 
 name: String. The name of mq.
 
 account: An account object.
 
-region: String, optional. It can be "hangzhou", "beijing" or "qingdao", the 3 data center that provide mns service.
-Default is "hangzhou". It can also be internal address "hangzhou-internal", "beijing-internal" or "qingdao-internal".
+region: String|Region, optional. 
+If it is string, it can be "hangzhou", "beijing" or any Chinese datacenter city name.
+If it is Region, it allows you to specify data center other than in China. 
+Default is "hangzhou". It can also be internal or vpc address "hangzhou-internal", "beijing-internal" or "qingdao-internal-vpc".
 ```javascript
     var AliMNS = require("ali-mns");
-    var account = new AliMNS.Account("<your-owner-id>", "<your-key-id>", "<your-key-secret>");
-    var mq = new AliMNS.MQ("myAliMQ", account, "hangzhou");
+    var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
+    var mq = new AliMNS.MQ(account, "hangzhou");
+    // or
+    var regionJapan = new AliMNS.Region(AliMNS.City.Japan, AliMNS.NetworkType.Public);
+    var mqJapan = new AliMNS.MQ(account, regionJapan);
 ```
 
 ## mq.getName()
@@ -675,15 +675,17 @@ numOfMessages: number. optional. The max number of message can be received in a 
 
 All other arguments are same as *mq.notifyRecv*.
 
-# MNSTopic(account:Account, region?:string)
+# MNSTopic(account:Account, region?:string|Region)
 The class `MNSTopic` extends class `MNS` for providing features in topic model.
 All methods in `MNS` class are also available in `MNSTopic`.
 ```javascript
     var AliMNS = require("ali-mns");
     var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
     var mns = new AliMNS.MNSTopic(account, "shenzhen");
+    // or
+    var regionJapan = new AliMNS.Region(AliMNS.City.Japan, AliMNS.NetworkType.Public);
+    var mnsJapan = new AliMNS.MNSTopic(account, regionJapan);
 ```
-*By now(Apr. 2016), the topic model is only provided in shenzhen data center.*
 
 ## mns.listTopicP(prefix?:string, pageSize?:number, pageMarker?:string)
 List all topics.
@@ -710,20 +712,24 @@ Delete a topic.
 
 name: topic name.
 
-# Topic(name:string, account:Account, region?:string)
+# Topic(name:string, account:Account, region?:string|Region)
 Operate a topic.
 
 name: topic name.
 
 account: An account object.
 
-region: optional. Can be "shenzhen" or "shenzhen-internal", default is "hangzhou".
-
-*By now(Apr. 2016), the topic model is only provided in shenzhen data center*
+region: String|Region, optional. 
+If it is string, it can be "hangzhou", "beijing" or any Chinese datacenter city name.
+If it is Region, it allows you to specify data center other than in China. 
+Default is "hangzhou". It can also be internal or vpc address "hangzhou-internal", "beijing-internal" or "qingdao-internal-vpc".
 ```javascript
-var AliMNS = require("ali-mns");
-var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
-var topic = new AliMNS.Topic("t11", account, "shenzhen");
+    var AliMNS = require("ali-mns");
+    var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
+    var topic = new AliMNS.Topic("t11", account, "shenzhen");
+    // or
+    var regionJapan = new AliMNS.Region(AliMNS.City.Japan, AliMNS.NetworkType.Public);
+    var topicJapan = new AliMNS.Topic("t11", account, regionJapan);
 ```
 
 ## topic.getName()

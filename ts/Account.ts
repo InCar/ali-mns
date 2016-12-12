@@ -14,6 +14,8 @@ module AliMNS{
         public getKeyId(){ return this._keyId; }
         public getGA(){ return this._bGoogleAnalytics; }
         public setGA(bGA:boolean){ this._bGoogleAnalytics = bGA; }
+        public getHttps(){ return this._bHttps; }
+        public setHttps(bHttps:boolean){ this._bHttps = bHttps; }
 
         // encoding: "hex", "binary" or "base64"
         public hmac_sha1(text:string, encoding?:string){
@@ -32,5 +34,6 @@ module AliMNS{
         private _keyId: string; // Access key id
         private _keySecret: string; // Access key secret
         private _bGoogleAnalytics = true; // Enable Google Analytics
+        private _bHttps = false; // Default to use http
     }
 }

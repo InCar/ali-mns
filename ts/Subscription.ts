@@ -44,7 +44,12 @@ module AliMNS{
         };
 
         private makeAttrURL(){
-            return Util.format(this._pattern, this._topic.getAccount().getAccountId(), this._topic.getRegion(), this._topic.getName(), this._name);
+            return Util.format(this._pattern,
+                this._topic.getAccount().getHttps()?"https":"http",
+                this._topic.getAccount().getAccountId(),
+                this._topic.getRegion().toString(),
+                this._topic.getName(),
+                this._name);
         }
 
         protected _openStack: OpenStack;
@@ -52,6 +57,6 @@ module AliMNS{
         private _name: string;
         private _topic: Topic;
         private _urlAttr: string; // Subscription attr url
-        private _pattern = "http://%s.mns.cn-%s.aliyuncs.com/topics/%s/subscriptions/%s";
+        private _pattern = "%s://%s.mns.%s.aliyuncs.com/topics/%s/subscriptions/%s";
     }
 }
