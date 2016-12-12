@@ -80,7 +80,7 @@ Please use 'gulp' to compile ts files into a single index.js file after download
         <td>Convert region object to string value.</td>
     </tr>
     <tr>
-        <td rowspan="4">[MNS](#mnsaccountaccount-regionstring)<br/>[MQS](#mqsaccountaccount-regionstring)<br/>[MNSTopic](#mnstopicaccountaccount-regionstring)</td>
+        <td rowspan="4">[MNS](#mnsaccountaccount-regionstringregion)<br/>[MQS](#mqsaccountaccount-regionstringregion)<br/>[MNSTopic](#mnstopicaccountaccount-regionstringregion)</td>
         <td colspan="2">Operate the mns queue. The *MQS* is for compatible v1.x.</td>
     </tr>
     <tr>
@@ -96,7 +96,7 @@ Please use 'gulp' to compile ts files into a single index.js file after download
         <td>Delete an mq.</td>
     </tr>
     <tr>
-        <td rowspan="15">[MQ](#mqnamestring-accountaccount-regionstring)<br/>[MQBatch](#mqbatch)</td>
+        <td rowspan="15">[MQ](#mqnamestring-accountaccount-regionstringregion)<br/>[MQBatch](#mqbatch)</td>
         <td colspan="2">The *MQ* operate the message in a queue.</td>
     </tr>
     <tr>
@@ -196,7 +196,7 @@ Please use 'gulp' to compile ts files into a single index.js file after download
         <td>Return the delay seconds of message.</td>
     </tr>
     <tr>
-        <td rowspan="4">[MNSTopic](#mnstopicaccountaccount-regionstring)</td>
+        <td rowspan="4">[MNSTopic](#mnstopicaccountaccount-regionstringregion)</td>
         <td colspan="2">The class MNSTopic extends class MNS for providing features in topic model.</td>
     </tr>
     <tr>
@@ -212,7 +212,7 @@ Please use 'gulp' to compile ts files into a single index.js file after download
         <td>Delete a topic.</td>
     </tr>
     <tr>
-        <td rowspan="10">[Topic](#topicnamestring-accountaccount-regionstring)</td>
+        <td rowspan="10">[Topic](#topicnamestring-accountaccount-regionstringregion)</td>
         <td colspan="2">Operate a topic.</td>
     </tr>
     <tr>

@@ -79,7 +79,7 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
         <td>转换为字符串的形式.</td>
     </tr>
     <tr>
-        <td rowspan="4">[MNS](#mnsaccountaccount-regionstring)<br/>[MQS](#mqsaccountaccount-regionstring)<br/>[MNSTopic](#mnstopicaccountaccount-regionstring)</td>
+        <td rowspan="4">[MNS](#mnsaccountaccount-regionstringregion)<br/>[MQS](#mqsaccountaccount-regionstringregion)<br/>[MNSTopic](#mnstopicaccountaccount-regionstringregion)</td>
         <td colspan="2">*MNS*类用于操作mns队列. *MQS*和*MNS*相同.为了向下兼容v1.x版本.</td>
     </tr>
     <tr>
@@ -95,7 +95,7 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
         <td>删除一个队列.</td>
     </tr>
     <tr>
-        <td rowspan="15">[MQ](#mqnamestring-accountaccount-regionstring)<br/>[MQBatch](#mqbatch)</td>
+        <td rowspan="15">[MQ](#mqnamestring-accountaccount-regionstringregion)<br/>[MQBatch](#mqbatch)</td>
         <td colspan="2">*MQ*操作队列中的消息.</td>
     </tr>
     <tr>
@@ -195,7 +195,7 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
         <td>返回消息延迟可见秒数.</td>
     </tr>
     <tr>
-        <td rowspan="4">[MNSTopic](#mnstopicaccountaccount-regionstring)</td>
+        <td rowspan="4">[MNSTopic](#mnstopicaccountaccount-regionstringregion)</td>
         <td colspan="2">MNSTopic扩展自MNS,它提供了基于主题模型的消息功能.</td>
     </tr>
     <tr>
@@ -211,7 +211,7 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
         <td>删除一个主题.</td>
     </tr>
     <tr>
-        <td rowspan="10">[Topic](#topicnamestring-accountaccount-regionstring)</td>
+        <td rowspan="10">[Topic](#topicnamestring-accountaccount-regionstringregion)</td>
         <td colspan="2">操控主题</td>
     </tr>
     <tr>
