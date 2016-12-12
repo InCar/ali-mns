@@ -70,7 +70,15 @@ ali-mns使用 [promise](https://www.npmjs.org/package/promise) 模式.
         <td>[setGA](#accountgetga--accountsetgabgaboolean)</td>
         <td>设置Google数据收集状态.</td>
     </tr>
-        <tr>
+    <tr>
+        <td>[getHttps](#accountgethttps--accountsethttpsbhttpsboolean)</td>
+        <td>获取使用的是http还是https协议.</td>
+    </tr>
+    <tr>
+        <td>[setHttps](#accountgethttps--accountsethttpsbhttpsboolean)</td>
+        <td>设置使用http还是https协议.</td>
+    </tr>
+    <tr>
         <td rowspan="2">[Region](#regioncitystringcity-networkstringnetworktype-zonestringzone)</td>
         <td colspan="2">类*Region*帮助指定数据中心.</td>
     </tr>
@@ -310,6 +318,11 @@ keySecret: String, 阿里云密钥.
 获取或设置Google Analytics数据收集状态.
 设置`bGA`为`true`允许Google数据收集,设置`false`禁用Google数据收集.
 参见[私隐策略](#privacy-policy).
+
+## account.getHttps() & account.setHttps(bHttps:boolean)
+获取或设置使用`http`还是`https`协议.
+设置`bHttps`为`true`使用`https`协议,设置`false`使用`http`协议.
+默认为`false`使用`http`协议.
 
 ## Region(city?:string|City, network?:string|NetworkType, zone?:string|Zone)
 类*Region*帮助指定数据中心.

@@ -72,6 +72,14 @@ Please use 'gulp' to compile ts files into a single index.js file after download
         <td>Sets the status of google analytics collection.</td>
     </tr>
     <tr>
+        <td>[getHttps](#accountgethttps--accountsethttpsbhttpsboolean)</td>
+        <td>Gets using http or https protocol.</td>
+    </tr>
+    <tr>
+        <td>[setHttps](#accountgethttps--accountsethttpsbhttpsboolean)</td>
+        <td>Sets using http or https protocol.</td>
+    </tr>
+    <tr>
         <td rowspan="2">[Region](#regioncitystringcity-networkstringnetworktype-zonestringzone)</td>
         <td colspan="2">The *Region* class help your specifying the region of datacenter.</td>
     </tr>
@@ -311,6 +319,11 @@ Return the ali key id.
 Gets or Sets the status of google analytics collection.
 Set `bGA` to `true` for enabling google analytics, while set to `false` for disabling google analytics.
 See [Privacy Policy](#privacy-policy).
+
+## account.getHttps() & account.setHttps(bHttps:boolean)
+Gets or Sets using `http` or `https` protocol.
+Set `bHttps` to `true` for using `https`, while set to `false` for using `http` protocol.
+Default is `false` for using `http` protocol.
 
 ## Region(city?:string|City, network?:string|NetworkType, zone?:string|Zone)
 The *Region* class help your specifying the region of datacenter.
