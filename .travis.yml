@@ -15,5 +15,6 @@ branches:
 before_install:
     - "npm install -g typescript gulp-cli"
     - "npm install"
+    - "gulp clean"
     - "gulp"
 
