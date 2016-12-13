@@ -2,6 +2,16 @@ language: node_js
 node_js:
     - "6"
 
+# Only ci these branches
+branches:
+    only:
+        - master
+
+# cache:
+#     directories:
+#         - $HOME/.npm
+#         - $HOME/build/InCar/ali-mns/node_modules
+
 before_install:
     - "npm install -g typescript gulp-cli"
     - "npm install"
