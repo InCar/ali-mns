@@ -10,13 +10,13 @@ var AliMNS = require(Path.join(__dirname, "../index.js"));
 describe('AliMNS-topic', ()=>{
     // ali account configuration
     var aliCfg = {
-        accountId: "your-account-id",
-        keyId: "your-key-id",
-        keySecret: "your-key-secret",
-        region: "hangzhou",
-        topicName: "dev",
-        endPoint: "https://www.baidu.com/ali-mns-ep",
-        port: 80
+        accountId: process.env.aliyun_accountId || "your-account-id",
+        keyId: process.env.aliyun_keyId || "your-key-id",
+        keySecret: process.env.aliyun_keySecret || "your-key-secret",
+        region: process.env.TRAVIS == "true" ? new AliMNS.Region(AliMNS.City.SiliconValley): new AliMNS.Region(AliMNS.City.Hangzhou),
+        topicName: process.env.aliyun_topicName || "dev",
+        endPoint: process.env.aliyun_endPoint || "https://www.baidu.com/ali-mns-ep",
+        port: process.env.aliyun_port || 80
     };
 
     // test/account.js contains sensitive data, and will not be tracked by git

@@ -11,11 +11,11 @@ describe.skip('AliMNS-performance', function(){
     this.timeout(1000 * 30);
     // ali account configuration
     var aliCfg = {
-        accountId: "your-account-id",
-        keyId: "your-key-id",
-        keySecret: "your-key-secret",
-        region: "hangzhou",
-        mqName: "dev"
+        accountId: process.env.aliyun_accountId || "your-account-id",
+        keyId: process.env.aliyun_keyId || "your-key-id",
+        keySecret: process.env.aliyun_keySecret || "your-key-secret",
+        region: process.env.TRAVIS == "true" ? new AliMNS.Region(AliMNS.City.SiliconValley): new AliMNS.Region(AliMNS.City.Hangzhou),
+        mqName: process.env.aliyun_mqName || "dev"
     };
 
     // test/account.js contains sensitive data, and will not be tracked by git
