@@ -74,7 +74,7 @@ module AliMNS{
             return this._openStack.sendP("DELETE", url);
         }
         
-        public publishP(msg:string, b64:boolean, tag?:string, attrs?: any){
+        public publishP(msg:string, b64:boolean, tag?:string, attrs?: any, options?:any){
             var msgBlock:any = {
                 MessageBody: b64?this.utf8ToBase64(msg):msg
             };
@@ -89,7 +89,7 @@ module AliMNS{
             debug("POST " + this._urlPublish, body);
 
             this._openStack.accumulateNextGASend("Topic.publishP");
-            return this._openStack.sendP("POST", this._urlPublish, body);
+            return this._openStack.sendP("POST", this._urlPublish, body, null, options);
         }
         
         protected utf8ToBase64(src){

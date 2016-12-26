@@ -1,4 +1,4 @@
-var gitVersion={"branch":"dev-i18n","rev":"120","hash":"89f40f8","hash160":"89f40f804c46bbd25c2c9aea2e570c1b0b2a4db4"};
+var gitVersion={"branch":"master","rev":"122","hash":"24c9deb","hash160":"24c9deb0313c0b54c65c8186950b912eca787c39"};
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -1096,7 +1096,7 @@ var AliMNS;
             debug("DELETE " + url);
             return this._openStack.sendP("DELETE", url);
         };
-        Topic.prototype.publishP = function (msg, b64, tag, attrs) {
+        Topic.prototype.publishP = function (msg, b64, tag, attrs, options) {
             var msgBlock = {
                 MessageBody: b64 ? this.utf8ToBase64(msg) : msg
             };
@@ -1109,7 +1109,7 @@ var AliMNS;
             };
             debug("POST " + this._urlPublish, body);
             this._openStack.accumulateNextGASend("Topic.publishP");
-            return this._openStack.sendP("POST", this._urlPublish, body);
+            return this._openStack.sendP("POST", this._urlPublish, body, null, options);
         };
         Topic.prototype.utf8ToBase64 = function (src) {
             var buf = new Buffer.Buffer(src, 'utf8');
