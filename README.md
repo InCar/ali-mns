@@ -256,7 +256,7 @@ Please use 'gulp' to compile ts files into a single index.js file after download
         <td>Unsubscribe a topic.</td>
     </tr>
     <tr>
-        <td>[publishP](#topicpublishpmsgstring-b64boolean-tagstring-attrsany)</td>
+        <td>[publishP](#topicpublishpmsgstring-b64boolean-tagstring-attrsany-optionsany)</td>
         <td>Publish a message to a topic.</td>
     </tr>
     <tr>
@@ -805,7 +805,7 @@ Unsubscribe a topic.
 
 name: Name of subscription.
 
-## topic.publishP(msg:string, b64:boolean, tag?:string, attrs?:any)
+## topic.publishP(msg:string, b64:boolean, tag?:string, attrs?:any, options?:any)
 Publish a message to a topic.
 
 msg: content of message
@@ -817,8 +817,12 @@ tag: the TAG of message.
 
 attrs: attribures of message.
 
+options: options for the [request](https://www.npmjs.com/package/request#requestoptions-callback) underlying.
+
 If message contains Chinese characters, must set `b64` to `true`.
 Only very simple message can set `b64` to `false`.
+
+Set options to `{ forever: true }` will let http(s) channel *KeepAive*.
 
 # Subscription(name:string, topic:Topic)
 Operate a subscription.
