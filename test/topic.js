@@ -94,7 +94,7 @@ describe('AliMNS-topic', ()=>{
         });
         
         it('#publishP', (done)=>{
-            topic.publishP("Hello")
+            topic.publishP("Hello", false, null, null, {forever:true})
             .then((data)=>{
                 // console.info(data); 
             done(); }, done);
