@@ -46,9 +46,7 @@ var AliMNS;
         };
         Account.prototype.b64md5 = function (text) {
             var cryptoMD5 = CryptoA.createHash("md5");
-            var md5HEX = cryptoMD5.update(text).digest("hex");
-            var buf = new Buffer.Buffer(md5HEX, "utf8");
-            return buf.toString("base64");
+            return cryptoMD5.update(new Buffer.Buffer(text, 'utf-8')).digest('base64');
         };
         return Account;
     }());
@@ -221,7 +219,9 @@ var AliMNS;
             var contentType = "";
             if (body) {
                 if (!headers["Content-Length"])
-                    headers["Content-Length"] = body.length;
+                {
+                    headers["Content-Length"] = new Buffer.Buffer(body, 'utf-8').length;
+                }
                 if (!headers["Content-Type"])
                     headers["Content-Type"] = this._contentType;
                 contentType = headers["Content-Type"];
