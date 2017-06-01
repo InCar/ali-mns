@@ -93,7 +93,7 @@ module AliMNS{
         }
         
         protected utf8ToBase64(src){
-            var buf = new Buffer.Buffer(src, 'utf8');
+            var buf = new Buffer(src, 'utf8');
             return buf.toString('base64');
         }
 

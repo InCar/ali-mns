@@ -36,7 +36,7 @@ module AliMNS{
                 }
             }
 
-            var ret = Request.requestP(req).then((response)=>{
+            var ret = Request['requestP'](req).then((response)=>{
                 // convert the body from xml to json
                 return Xml2js.parseStringP(response.body, {explicitArray: false})
                     .then((bodyJSON)=> {

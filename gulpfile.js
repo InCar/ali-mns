@@ -16,17 +16,24 @@ gulp.task('build', [GitVersionJson.task], ()=>{
         .pipe(newer('index.js'))
         .pipe(sourcemaps.init())
         .pipe(debug({ title: 'ts: ' }))
-        .pipe(ts(tsProject));
-    return tsResult.js
+        .pipe(tsProject());
+    
+    var dts = tsResult.dts
+        .pipe(gulp.dest('.'))
+        .pipe(debug({ title: 'out: ' }));
+    
+    var js = tsResult.js
         .pipe(header("var gitVersion=${version};\n",
             { version: GitVersionJson.getGitVerStr() }))
         .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest('.'))
         .pipe(debug({ title: 'out: ' }));
+
+   return Promise.all([dts, js]);
 });
 
 gulp.task('clean', ()=>{
-    return del(['index.js', 'index.js.map']);
+    return del(['index.js', 'index.js.map', 'index.d.ts']);
 });
 
 gulp.task('default', ['build']);
