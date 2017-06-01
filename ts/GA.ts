@@ -1,4 +1,4 @@
-
+declare var gitVersion:any;
 module AliMNS{
     export class GA{
         public constructor(accId:string){

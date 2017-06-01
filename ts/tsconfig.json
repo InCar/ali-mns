@@ -1,12 +1,14 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
+        "module": "system",
         "noImplicitAny": false,
         "removeComments": false,
         "preserveConstEnums": true,
         "outFile": "index.js",
         "sourceMap": true,
-        "rootDir": "ts/"
+        "rootDir": "ts/",
+        "declaration": true,
+        "moduleResolution": "node"
     },
     "exclude": [
         "node_modules",

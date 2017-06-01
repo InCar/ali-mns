@@ -143,12 +143,12 @@ module AliMNS{
         }
         
         protected utf8ToBase64(src){
-            var buf = new Buffer.Buffer(src, 'utf8');
+            var buf = new Buffer(src, 'utf8');
             return buf.toString('base64');
         }
         
         protected base64ToUtf8(src){
-            var buf = new Buffer.Buffer(src, 'base64');
+            var buf = new Buffer(src, 'base64');
             return buf.toString('utf8');
         }
         

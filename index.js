@@ -1,12 +1,15 @@
-var gitVersion={"branch":"master","rev":"122","hash":"24c9deb","hash160":"24c9deb0313c0b54c65c8186950b912eca787c39"};
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-/// <reference path="../dts/external.d.ts" />
+var gitVersion={"branch":"master","rev":"124","hash":"ff00d0b","hash160":"ff00d0bcecd6f4619a4dd2365edcce861beacd42"};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 // dependencies
-var Buffer = require("buffer");
 var CryptoA = require("crypto");
 var Events = require("events");
 var Util = require("util");
@@ -15,13 +18,14 @@ var UA = require("universal-analytics");
 var debug = require("debug")("ali-mns");
 var Promise = require("promise");
 var Request = require("request");
-Request.requestP = Promise.denodeify(Request);
-Request.debug = false;
+Request['requestP'] = Promise.denodeify(Request);
+Request['debug'] = false;
 var Xml2js = require("xml2js");
 Xml2js.parseStringP = Promise.denodeify(Xml2js.parseString);
 var XmlBuilder = require("xmlbuilder");
 /// <reference path="ali-mns.ts" />
 var AliMNS;
+/// <reference path="ali-mns.ts" />
 (function (AliMNS) {
     // The Ali account, it holds the key id and secret.
     var Account = (function () {
@@ -47,72 +51,12 @@ var AliMNS;
         Account.prototype.b64md5 = function (text) {
             var cryptoMD5 = CryptoA.createHash("md5");
             var md5HEX = cryptoMD5.update(text).digest("hex");
-            var buf = new Buffer.Buffer(md5HEX, "utf8");
+            var buf = new Buffer(md5HEX, "utf8");
             return buf.toString("base64");
         };
         return Account;
     }());
     AliMNS.Account = Account;
-})(AliMNS || (AliMNS = {}));
-var AliMNS;
-(function (AliMNS) {
-    var GA = (function () {
-        function GA(accId) {
-            this._bGoogleAnalytics = true;
-            this._rgxAccId = /\/\/\w+\./;
-            this._bAccumulated = false;
-            this._bAccumulatePrefix = "";
-            this._accumutionMax = 100;
-            this._accumulation = {};
-            this._gitMark = gitVersion.branch + "." + gitVersion.rev + "@" + gitVersion.hash;
-            this._visitor = UA("UA-75293894-5", this.u2id(accId));
-        }
-        GA.prototype.send = function (action, value, url) {
-            if (this._bGoogleAnalytics) {
-                if (this._bAccumulated) {
-                    // 累积多个一起发送
-                    this._bAccumulated = false;
-                    var actionPrefixed = this._bAccumulatePrefix + ":" + action;
-                    if (!this._accumulation[actionPrefixed])
-                        this._accumulation[actionPrefixed] = { value: 0, count: 0 };
-                    this._accumulation[actionPrefixed].value += value;
-                    this._accumulation[actionPrefixed].count++;
-                    if (this._accumulation[actionPrefixed].count >= this._accumutionMax) {
-                        this.send(actionPrefixed, this._accumulation[actionPrefixed].value, url);
-                        this._accumulation[actionPrefixed].value = 0;
-                        this._accumulation[actionPrefixed].count = 0;
-                    }
-                }
-                else {
-                    var args = { dl: url.replace(this._rgxAccId, "//0.") };
-                    // catagory, action, label, value, params
-                    this._visitor.event("AliMNS", action, this._gitMark, value, args).send();
-                }
-            }
-        };
-        GA.prototype.accumulateNextSend = function (prefix) {
-            this._bAccumulated = true;
-            this._bAccumulatePrefix = prefix;
-        };
-        GA.prototype.disableGA = function (bDisable) {
-            this._bGoogleAnalytics = (!bDisable);
-        };
-        GA.prototype.u2id = function (uid) {
-            var cryptoMD5 = CryptoA.createHash("md5");
-            var md5HEX = cryptoMD5.update(uid).digest("hex");
-            var uxid = new Array(36);
-            for (var i = 0, j = 0; i < md5HEX.length; i++, j++) {
-                if (i === 8 || i === 12 || i === 16 || i === 20) {
-                    uxid[j] = "-";
-                    j++;
-                }
-                uxid[j] = md5HEX.charAt(i);
-            }
-            return uxid.join("");
-        };
-        return GA;
-    }());
-    AliMNS.GA = GA;
 })(AliMNS || (AliMNS = {}));
 var AliMNS;
 (function (AliMNS) {
@@ -141,6 +85,9 @@ var AliMNS;
 /// <reference path="ali-mns.ts" />
 /// <reference path="Account.ts" />
 var AliMNS;
+// The Ali open interface stack
+/// <reference path="ali-mns.ts" />
+/// <reference path="Account.ts" />
 (function (AliMNS) {
     // the ali open interface stack protocol
     var OpenStack = (function () {
@@ -176,7 +123,7 @@ var AliMNS;
                         req[opt] = options[opt];
                 }
             }
-            var ret = Request.requestP(req).then(function (response) {
+            var ret = Request['requestP'](req).then(function (response) {
                 // convert the body from xml to json
                 return Xml2js.parseStringP(response.body, { explicitArray: false })
                     .then(function (bodyJSON) {
@@ -436,20 +383,21 @@ var AliMNS;
         return Region;
     }());
     AliMNS.Region = Region;
+    var NetworkType;
     (function (NetworkType) {
         NetworkType[NetworkType["Public"] = 0] = "Public";
         NetworkType[NetworkType["Internal"] = 1] = "Internal";
         NetworkType[NetworkType["VPC"] = 2] = "VPC";
-    })(AliMNS.NetworkType || (AliMNS.NetworkType = {}));
-    var NetworkType = AliMNS.NetworkType;
+    })(NetworkType = AliMNS.NetworkType || (AliMNS.NetworkType = {}));
+    var Zone;
     (function (Zone) {
         Zone[Zone["China"] = 0] = "China";
         Zone[Zone["AsiaPacific"] = 1] = "AsiaPacific";
         Zone[Zone["Europe"] = 2] = "Europe";
         Zone[Zone["UniteState"] = 3] = "UniteState";
         Zone[Zone["MiddleEast"] = 4] = "MiddleEast";
-    })(AliMNS.Zone || (AliMNS.Zone = {}));
-    var Zone = AliMNS.Zone;
+    })(Zone = AliMNS.Zone || (AliMNS.Zone = {}));
+    var Area;
     (function (Area) {
         Area[Area["UniteState"] = 1] = "UniteState";
         Area[Area["Germany"] = 49] = "Germany";
@@ -459,8 +407,8 @@ var AliMNS;
         Area[Area["China"] = 86] = "China";
         Area[Area["Hongkong"] = 852] = "Hongkong";
         Area[Area["UnitedArabEmirates"] = 971] = "UnitedArabEmirates";
-    })(AliMNS.Area || (AliMNS.Area = {}));
-    var Area = AliMNS.Area;
+    })(Area = AliMNS.Area || (AliMNS.Area = {}));
+    var City;
     (function (City) {
         // China
         City[City["Beijing"] = 5636106] = "Beijing";
@@ -480,14 +428,17 @@ var AliMNS;
         City[City["Virginia"] = 66107] = "Virginia";
         // MiddleEast
         City[City["Dubai"] = 63635460] = "Dubai";
-    })(AliMNS.City || (AliMNS.City = {}));
-    var City = AliMNS.City;
+    })(City = AliMNS.City || (AliMNS.City = {}));
 })(AliMNS || (AliMNS = {}));
 /// <reference path="Interfaces.ts" />
 /// <reference path="Account.ts" />
 /// <reference path="OpenStack.ts" />
 /// <reference path="Region.ts" />
 var AliMNS;
+/// <reference path="Interfaces.ts" />
+/// <reference path="Account.ts" />
+/// <reference path="OpenStack.ts" />
+/// <reference path="Region.ts" />
 (function (AliMNS) {
     // The MNS can list, create, delete, modify the mq.
     var MNS = (function () {
@@ -547,55 +498,10 @@ var AliMNS;
     AliMNS.MQS = MNS;
 })(AliMNS || (AliMNS = {}));
 /// <reference path="Interfaces.ts" />
-/// <reference path="Region.ts" />
-var AliMNS;
-(function (AliMNS) {
-    var MNSTopic = (function (_super) {
-        __extends(MNSTopic, _super);
-        function MNSTopic(account, region) {
-            _super.call(this, account, region);
-            this._patternTopic = "%s://%s.mns.%s.aliyuncs.com/topics/";
-            // make url
-            this._urlTopic = this.makeTopicURL();
-        }
-        // List all topics.
-        MNSTopic.prototype.listTopicP = function (prefix, pageSize, pageMarker) {
-            var headers = {};
-            if (prefix)
-                headers["x-mns-prefix"] = prefix;
-            if (pageMarker)
-                headers["x-mns-marker"] = pageMarker;
-            if (pageSize)
-                headers["x-mns-ret-number"] = pageSize;
-            var url = this._urlTopic.slice(0, -1);
-            debug("GET " + url);
-            return this._openStack.sendP("GET", url, null, headers);
-        };
-        // Create a topic
-        MNSTopic.prototype.createTopicP = function (name, options) {
-            var body = { Topic: "" };
-            if (options)
-                body.Topic = options;
-            var url = Url.resolve(this._urlTopic, name);
-            debug("PUT " + url, body);
-            return this._openStack.sendP("PUT", url, body);
-        };
-        // Delete a topic
-        MNSTopic.prototype.deleteTopicP = function (name) {
-            var url = Url.resolve(this._urlTopic, name);
-            debug("DELETE " + url);
-            return this._openStack.sendP("DELETE", url);
-        };
-        MNSTopic.prototype.makeTopicURL = function () {
-            return Util.format(this._patternTopic, this._account.getHttps() ? "https" : "http", this._account.getAccountId(), this._region.toString());
-        };
-        return MNSTopic;
-    }(AliMNS.MNS));
-    AliMNS.MNSTopic = MNSTopic;
-})(AliMNS || (AliMNS = {}));
-/// <reference path="Interfaces.ts" />
 /// <reference path="ali-mns.ts" />
 var AliMNS;
+/// <reference path="Interfaces.ts" />
+/// <reference path="ali-mns.ts" />
 (function (AliMNS) {
     var NotifyRecv = (function () {
         function NotifyRecv(mq) {
@@ -734,6 +640,11 @@ var AliMNS;
 /// <reference path="NotifyRecv.ts" />
 /// <reference path="Region.ts" />
 var AliMNS;
+/// <reference path="Interfaces.ts" />
+/// <reference path="Account.ts" />
+/// <reference path="OpenStack.ts" />
+/// <reference path="NotifyRecv.ts" />
+/// <reference path="Region.ts" />
 (function (AliMNS) {
     // The MQ
     var MQ = (function () {
@@ -866,11 +777,11 @@ var AliMNS;
                 return this._notifyRecv.notifyStopP();
         };
         MQ.prototype.utf8ToBase64 = function (src) {
-            var buf = new Buffer.Buffer(src, 'utf8');
+            var buf = new Buffer(src, 'utf8');
             return buf.toString('base64');
         };
         MQ.prototype.base64ToUtf8 = function (src) {
-            var buf = new Buffer.Buffer(src, 'base64');
+            var buf = new Buffer(src, 'base64');
             return buf.toString('utf8');
         };
         MQ.prototype.decodeB64Messages = function (data) {
@@ -892,12 +803,16 @@ var AliMNS;
 /// <reference path="Msg.ts" />
 /// <reference path="Interfaces.ts" />
 var AliMNS;
+/// <reference path="MQ.ts" />
+/// <reference path="Msg.ts" />
+/// <reference path="Interfaces.ts" />
 (function (AliMNS) {
     var MQBatch = (function (_super) {
         __extends(MQBatch, _super);
         function MQBatch(name, account, region) {
-            _super.call(this, name, account, region);
-            this._notifyRecv = null;
+            var _this = _super.call(this, name, account, region) || this;
+            _this._notifyRecv = null;
+            return _this;
         }
         MQBatch.prototype.sendP = function (msg, priority, delaySeconds) {
             if (typeof msg === "string") {
@@ -922,7 +837,7 @@ var AliMNS;
             if (numOfMessages === undefined)
                 numOfMessages = 16;
             if (numOfMessages && numOfMessages > 1) {
-                var _this = this;
+                var self = this;
                 var url = this._url;
                 url += "?numOfMessages=" + numOfMessages;
                 if (waitSeconds)
@@ -930,13 +845,13 @@ var AliMNS;
                 debug("GET " + url);
                 return new Promise(function (resolve, reject) {
                     // use the timeout mechanism inside the request module
-                    var options = { timeout: 1000 * _this._recvTolerance };
+                    var options = { timeout: 1000 * self._recvTolerance };
                     if (waitSeconds)
                         options.timeout += (1000 * waitSeconds);
-                    _this._openStack.accumulateNextGASend("MQBatch.recvP");
-                    _this._openStack.sendP("GET", url, null, null, options).done(function (data) {
+                    self._openStack.accumulateNextGASend("MQBatch.recvP");
+                    self._openStack.sendP("GET", url, null, null, options).done(function (data) {
                         debug(data);
-                        _this.decodeB64Messages(data);
+                        self.decodeB64Messages(data);
                         resolve(data);
                     }, function (ex) {
                         // for compatible with 1.x, still use literal "timeout"
@@ -960,14 +875,14 @@ var AliMNS;
             if (numOfMessages === undefined)
                 numOfMessages = 16;
             if (numOfMessages && numOfMessages > 1) {
-                var _this = this;
+                var self = this;
                 var url = this._url + "?peekonly=true";
                 url += "&numOfMessages=" + numOfMessages;
                 debug("GET " + url);
                 this._openStack.accumulateNextGASend("MQBatch.peekP");
                 return this._openStack.sendP("GET", url).then(function (data) {
                     debug(data);
-                    _this.decodeB64Messages(data);
+                    self.decodeB64Messages(data);
                     return data;
                 });
             }
@@ -1019,11 +934,133 @@ var AliMNS;
     }(AliMNS.MQ));
     AliMNS.MQBatch = MQBatch;
 })(AliMNS || (AliMNS = {}));
+/// <reference path="ali-mns.ts" />
+/// <reference path="MNS.ts" />
+/// <reference path="Account.ts" />
+/// <reference path="Msg.ts" />
+/// <reference path="MQ.ts" />
+/// <reference path="MQBatch.ts" />
+// Exports the AliMNS
+module.exports = AliMNS;
+var AliMNS;
+(function (AliMNS) {
+    var GA = (function () {
+        function GA(accId) {
+            this._bGoogleAnalytics = true;
+            this._rgxAccId = /\/\/\w+\./;
+            this._bAccumulated = false;
+            this._bAccumulatePrefix = "";
+            this._accumutionMax = 100;
+            this._accumulation = {};
+            this._gitMark = gitVersion.branch + "." + gitVersion.rev + "@" + gitVersion.hash;
+            this._visitor = UA("UA-75293894-5", this.u2id(accId));
+        }
+        GA.prototype.send = function (action, value, url) {
+            if (this._bGoogleAnalytics) {
+                if (this._bAccumulated) {
+                    // 累积多个一起发送
+                    this._bAccumulated = false;
+                    var actionPrefixed = this._bAccumulatePrefix + ":" + action;
+                    if (!this._accumulation[actionPrefixed])
+                        this._accumulation[actionPrefixed] = { value: 0, count: 0 };
+                    this._accumulation[actionPrefixed].value += value;
+                    this._accumulation[actionPrefixed].count++;
+                    if (this._accumulation[actionPrefixed].count >= this._accumutionMax) {
+                        this.send(actionPrefixed, this._accumulation[actionPrefixed].value, url);
+                        this._accumulation[actionPrefixed].value = 0;
+                        this._accumulation[actionPrefixed].count = 0;
+                    }
+                }
+                else {
+                    var args = { dl: url.replace(this._rgxAccId, "//0.") };
+                    // catagory, action, label, value, params
+                    this._visitor.event("AliMNS", action, this._gitMark, value, args).send();
+                }
+            }
+        };
+        GA.prototype.accumulateNextSend = function (prefix) {
+            this._bAccumulated = true;
+            this._bAccumulatePrefix = prefix;
+        };
+        GA.prototype.disableGA = function (bDisable) {
+            this._bGoogleAnalytics = (!bDisable);
+        };
+        GA.prototype.u2id = function (uid) {
+            var cryptoMD5 = CryptoA.createHash("md5");
+            var md5HEX = cryptoMD5.update(uid).digest("hex");
+            var uxid = new Array(36);
+            for (var i = 0, j = 0; i < md5HEX.length; i++, j++) {
+                if (i === 8 || i === 12 || i === 16 || i === 20) {
+                    uxid[j] = "-";
+                    j++;
+                }
+                uxid[j] = md5HEX.charAt(i);
+            }
+            return uxid.join("");
+        };
+        return GA;
+    }());
+    AliMNS.GA = GA;
+})(AliMNS || (AliMNS = {}));
+/// <reference path="Interfaces.ts" />
+/// <reference path="Region.ts" />
+var AliMNS;
+/// <reference path="Interfaces.ts" />
+/// <reference path="Region.ts" />
+(function (AliMNS) {
+    var MNSTopic = (function (_super) {
+        __extends(MNSTopic, _super);
+        function MNSTopic(account, region) {
+            var _this = _super.call(this, account, region) || this;
+            _this._patternTopic = "%s://%s.mns.%s.aliyuncs.com/topics/";
+            // make url
+            _this._urlTopic = _this.makeTopicURL();
+            return _this;
+        }
+        // List all topics.
+        MNSTopic.prototype.listTopicP = function (prefix, pageSize, pageMarker) {
+            var headers = {};
+            if (prefix)
+                headers["x-mns-prefix"] = prefix;
+            if (pageMarker)
+                headers["x-mns-marker"] = pageMarker;
+            if (pageSize)
+                headers["x-mns-ret-number"] = pageSize;
+            var url = this._urlTopic.slice(0, -1);
+            debug("GET " + url);
+            return this._openStack.sendP("GET", url, null, headers);
+        };
+        // Create a topic
+        MNSTopic.prototype.createTopicP = function (name, options) {
+            var body = { Topic: "" };
+            if (options)
+                body.Topic = options;
+            var url = Url.resolve(this._urlTopic, name);
+            debug("PUT " + url, body);
+            return this._openStack.sendP("PUT", url, body);
+        };
+        // Delete a topic
+        MNSTopic.prototype.deleteTopicP = function (name) {
+            var url = Url.resolve(this._urlTopic, name);
+            debug("DELETE " + url);
+            return this._openStack.sendP("DELETE", url);
+        };
+        MNSTopic.prototype.makeTopicURL = function () {
+            return Util.format(this._patternTopic, this._account.getHttps() ? "https" : "http", this._account.getAccountId(), this._region.toString());
+        };
+        return MNSTopic;
+    }(AliMNS.MNS));
+    AliMNS.MNSTopic = MNSTopic;
+})(AliMNS || (AliMNS = {}));
 /// <reference path="Interfaces.ts" />
 /// <reference path="Account.ts" />
 /// <reference path="OpenStack.ts" />
 /// <reference path="Region.ts" />
 var AliMNS;
+/// <reference path="Interfaces.ts" />
+/// <reference path="Account.ts" />
+/// <reference path="OpenStack.ts" />
+/// <reference path="Region.ts" />
 (function (AliMNS) {
     // The Topic
     var Topic = (function () {
@@ -1112,7 +1149,7 @@ var AliMNS;
             return this._openStack.sendP("POST", this._urlPublish, body, null, options);
         };
         Topic.prototype.utf8ToBase64 = function (src) {
-            var buf = new Buffer.Buffer(src, 'utf8');
+            var buf = new Buffer(src, 'utf8');
             return buf.toString('base64');
         };
         Topic.prototype.makeAttrURL = function () {
@@ -1132,6 +1169,9 @@ var AliMNS;
 /// <reference path="Topic.ts" />
 /// <reference path="OpenStack.ts" />
 var AliMNS;
+/// <reference path="Interfaces.ts" />
+/// <reference path="Topic.ts" />
+/// <reference path="OpenStack.ts" />
 (function (AliMNS) {
     // The Subscription
     var Subscription = (function () {
@@ -1161,25 +1201,17 @@ var AliMNS;
         Subscription.prototype.makeAttrURL = function () {
             return Util.format(this._pattern, this._topic.getAccount().getHttps() ? "https" : "http", this._topic.getAccount().getAccountId(), this._topic.getRegion().toString(), this._topic.getName(), this._name);
         };
-        Subscription.NotifyStrategy = {
-            BACKOFF_RETRY: "BACKOFF_RETRY",
-            EXPONENTIAL_DECAY_RETRY: "EXPONENTIAL_DECAY_RETRY"
-        };
-        Subscription.NotifyContentFormat = {
-            XML: "XML",
-            SIMPLIFIED: "SIMPLIFIED"
-        };
         return Subscription;
     }());
+    Subscription.NotifyStrategy = {
+        BACKOFF_RETRY: "BACKOFF_RETRY",
+        EXPONENTIAL_DECAY_RETRY: "EXPONENTIAL_DECAY_RETRY"
+    };
+    Subscription.NotifyContentFormat = {
+        XML: "XML",
+        SIMPLIFIED: "SIMPLIFIED"
+    };
     AliMNS.Subscription = Subscription;
 })(AliMNS || (AliMNS = {}));
-/// <reference path="ali-mns.ts" />
-/// <reference path="MNS.ts" />
-/// <reference path="Account.ts" />
-/// <reference path="Msg.ts" />
-/// <reference path="MQ.ts" />
-/// <reference path="MQBatch.ts" />
-// Exports the AliMNS
-module.exports = AliMNS;
 
 //# sourceMappingURL=index.js.map

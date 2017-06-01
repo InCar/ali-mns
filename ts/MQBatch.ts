@@ -33,7 +33,7 @@ module AliMNS{
         public recvP(waitSeconds?:number, numOfMessages?:number){
             if(numOfMessages === undefined) numOfMessages = 16;
             if(numOfMessages && numOfMessages > 1){
-                var _this = this;
+                var self = this;
                 var url = this._url;
                 url += "?numOfMessages=" + numOfMessages;
                 if(waitSeconds) url += "&waitseconds=" + waitSeconds;
@@ -42,13 +42,13 @@ module AliMNS{
     
                 return new Promise(function(resolve, reject){
                     // use the timeout mechanism inside the request module
-                    var options = { timeout: 1000 * _this._recvTolerance };
+                    var options = { timeout: 1000 * self._recvTolerance };
                     if(waitSeconds) options.timeout += (1000 * waitSeconds);
 
-                    _this._openStack.accumulateNextGASend("MQBatch.recvP");
-                    _this._openStack.sendP("GET", url, null, null, options).done(function(data){
+                    self._openStack.accumulateNextGASend("MQBatch.recvP");
+                    self._openStack.sendP("GET", url, null, null, options).done(function(data){
                         debug(data);
-                        _this.decodeB64Messages(data);
+                        self.decodeB64Messages(data);
                         resolve(data);
                     }, function(ex){
                         // for compatible with 1.x, still use literal "timeout"
@@ -72,14 +72,14 @@ module AliMNS{
         public peekP(numOfMessages?:number){
             if(numOfMessages === undefined) numOfMessages = 16;
             if(numOfMessages && numOfMessages > 1){
-                var _this = this;
+                var self = this;
                 var url = this._url + "?peekonly=true";
                 url += "&numOfMessages=" + numOfMessages;
                 debug("GET " + url);
                 this._openStack.accumulateNextGASend("MQBatch.peekP");
                 return this._openStack.sendP("GET", url).then(function(data){
                     debug(data);
-                    _this.decodeB64Messages(data);
+                    self.decodeB64Messages(data);
                     return data;
                 });
             }
