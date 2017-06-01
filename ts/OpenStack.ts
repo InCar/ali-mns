@@ -81,7 +81,7 @@ module AliMNS{
             var contentMD5 = "";
             var contentType = "";
             if(body){
-                if(!headers["Content-Length"]) headers["Content-Length"] = body.length;
+                if(!headers["Content-Length"]) headers["Content-Length"] = (new Buffer(body, 'utf-8')).length;
                 if(!headers["Content-Type"]) headers["Content-Type"] = this._contentType;
                 contentType = headers["Content-Type"];
                 contentMD5 = this._account.b64md5(body);

@@ -25,9 +25,7 @@ module AliMNS{
 
         public b64md5(text:string){
             var cryptoMD5 = CryptoA.createHash("md5");
-            var md5HEX = cryptoMD5.update(text).digest("hex");
-            var buf = new Buffer(md5HEX, "utf8");
-            return buf.toString("base64");
+            return cryptoMD5.update(new Buffer(text, 'utf-8')).digest("base64");
         }
 
         private _accountId: string; // Owner id
