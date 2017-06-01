@@ -1,4 +1,4 @@
-var gitVersion={"branch":"master","rev":"124","hash":"ff00d0b","hash160":"ff00d0bcecd6f4619a4dd2365edcce861beacd42"};
+var gitVersion={"branch":"master","rev":"127","hash":"aa389a9","hash160":"aa389a9e64b480de04cb373dfdcc5d1f3f9d0fe4"};
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -50,9 +50,7 @@ var AliMNS;
         };
         Account.prototype.b64md5 = function (text) {
             var cryptoMD5 = CryptoA.createHash("md5");
-            var md5HEX = cryptoMD5.update(text).digest("hex");
-            var buf = new Buffer(md5HEX, "utf8");
-            return buf.toString("base64");
+            return cryptoMD5.update(new Buffer(text, 'utf-8')).digest("base64");
         };
         return Account;
     }());
@@ -168,7 +166,7 @@ var AliMNS;
             var contentType = "";
             if (body) {
                 if (!headers["Content-Length"])
-                    headers["Content-Length"] = body.length;
+                    headers["Content-Length"] = (new Buffer(body, 'utf-8')).length;
                 if (!headers["Content-Type"])
                     headers["Content-Type"] = this._contentType;
                 contentType = headers["Content-Type"];
