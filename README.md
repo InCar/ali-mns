@@ -4,7 +4,7 @@
 
 The nodejs sdk for aliyun mns service
 
-[阿里云消息服务-简体中文-帮助手册](http://armclr.azurewebsites.net/Links/AliMNS?lang=zh-Hans)
+[阿里云消息服务-简体中文-帮助手册](http://armclr.incars.com.cn/Links/AliMNS?lang=zh-Hans)
 
 Ali MNS service is a MQ(message queue) service provided by AliYun.
 The world largest online sales website www.taobao.com is heavily relying on it.
