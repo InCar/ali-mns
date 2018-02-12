@@ -59,7 +59,9 @@ module AliMNS{
             });
             
             // google analytics
-            this._ga.send("OpenStack.sendP", 0, url);
+            if(this._gaRGA % 1000 == 0)
+                this._ga.send("OpenStack.sendP", 0, url);
+            this._gaRGA++;
             
             return ret;
         }
@@ -144,5 +146,6 @@ module AliMNS{
         private _contentType = "text/xml;charset=utf-8";
         private _version = "2015-06-06";
         private _ga: GA;
+        private _gaRGA = 0; // Reduce Google Analysis sending rate
     }
 }
