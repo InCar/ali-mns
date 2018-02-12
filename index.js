@@ -1,4 +1,4 @@
-var gitVersion={"branch":"master","rev":"127","hash":"aa389a9","hash160":"aa389a9e64b480de04cb373dfdcc5d1f3f9d0fe4"};
+var gitVersion={"branch":"master","rev":"131","hash":"6c6d46c","hash160":"6c6d46c89561a5cef2cc34d2fb4f18188c7951c0"};
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -28,7 +28,7 @@ var AliMNS;
 /// <reference path="ali-mns.ts" />
 (function (AliMNS) {
     // The Ali account, it holds the key id and secret.
-    var Account = (function () {
+    var Account = /** @class */ (function () {
         function Account(accountId, keyId, keySecret) {
             this._bGoogleAnalytics = true; // Enable Google Analytics
             this._bHttps = false; // Default to use http
@@ -59,7 +59,7 @@ var AliMNS;
 var AliMNS;
 (function (AliMNS) {
     // The Message class
-    var Msg = (function () {
+    var Msg = /** @class */ (function () {
         function Msg(msg, priority, delaySeconds) {
             // message priority
             this._priority = 8;
@@ -88,12 +88,13 @@ var AliMNS;
 /// <reference path="Account.ts" />
 (function (AliMNS) {
     // the ali open interface stack protocol
-    var OpenStack = (function () {
+    var OpenStack = /** @class */ (function () {
         function OpenStack(account) {
             this._patternMNS = "MNS %s:%s";
             this._patternSign = "%s\n%s\n%s\n%s\n%s%s";
             this._contentType = "text/xml;charset=utf-8";
             this._version = "2015-06-06";
+            this._gaRGA = 0; // Reduce Google Analysis sending rate
             this._account = account;
             // xml builder
             this._xmlBuilder = XmlBuilder;
@@ -147,7 +148,9 @@ var AliMNS;
                 }
             });
             // google analytics
-            this._ga.send("OpenStack.sendP", 0, url);
+            if (this._gaRGA % 1000 == 0)
+                this._ga.send("OpenStack.sendP", 0, url);
+            this._gaRGA++;
             return ret;
         };
         OpenStack.prototype.accumulateNextGASend = function (prefix) {
@@ -216,7 +219,7 @@ var AliMNS;
 })(AliMNS || (AliMNS = {}));
 var AliMNS;
 (function (AliMNS) {
-    var Region = (function () {
+    var Region = /** @class */ (function () {
         function Region(city, network, zone) {
             // cn,ap,eu,us,me -> China, Asia Pacific, Europe, Unite State, Middle East
             this._zone = "cn";
@@ -439,7 +442,7 @@ var AliMNS;
 /// <reference path="Region.ts" />
 (function (AliMNS) {
     // The MNS can list, create, delete, modify the mq.
-    var MNS = (function () {
+    var MNS = /** @class */ (function () {
         // The constructor. account: ali account; region: can be "hangzhou", "beijing" or "qingdao", default is "hangzhou"
         function MNS(account, region) {
             this._region = new AliMNS.Region(AliMNS.City.Hangzhou);
@@ -501,7 +504,7 @@ var AliMNS;
 /// <reference path="Interfaces.ts" />
 /// <reference path="ali-mns.ts" />
 (function (AliMNS) {
-    var NotifyRecv = (function () {
+    var NotifyRecv = /** @class */ (function () {
         function NotifyRecv(mq) {
             this._signalSTOP = true;
             this._evStopped = "AliMNS_MQ_NOTIFY_STOPPED";
@@ -645,7 +648,7 @@ var AliMNS;
 /// <reference path="Region.ts" />
 (function (AliMNS) {
     // The MQ
-    var MQ = (function () {
+    var MQ = /** @class */ (function () {
         // The constructor. name & account is required.
         // region can be "hangzhou", "beijing" or "qingdao", the default is "hangzhou"
         function MQ(name, account, region) {
@@ -805,7 +808,7 @@ var AliMNS;
 /// <reference path="Msg.ts" />
 /// <reference path="Interfaces.ts" />
 (function (AliMNS) {
-    var MQBatch = (function (_super) {
+    var MQBatch = /** @class */ (function (_super) {
         __extends(MQBatch, _super);
         function MQBatch(name, account, region) {
             var _this = _super.call(this, name, account, region) || this;
@@ -942,7 +945,7 @@ var AliMNS;
 module.exports = AliMNS;
 var AliMNS;
 (function (AliMNS) {
-    var GA = (function () {
+    var GA = /** @class */ (function () {
         function GA(accId) {
             this._bGoogleAnalytics = true;
             this._rgxAccId = /\/\/\w+\./;
@@ -1006,7 +1009,7 @@ var AliMNS;
 /// <reference path="Interfaces.ts" />
 /// <reference path="Region.ts" />
 (function (AliMNS) {
-    var MNSTopic = (function (_super) {
+    var MNSTopic = /** @class */ (function (_super) {
         __extends(MNSTopic, _super);
         function MNSTopic(account, region) {
             var _this = _super.call(this, account, region) || this;
@@ -1061,7 +1064,7 @@ var AliMNS;
 /// <reference path="Region.ts" />
 (function (AliMNS) {
     // The Topic
-    var Topic = (function () {
+    var Topic = /** @class */ (function () {
         // The constructor. name & account is required.
         // region can be "hangzhou", "beijing" or "qingdao", the default is "hangzhou"
         function Topic(name, account, region) {
@@ -1172,7 +1175,7 @@ var AliMNS;
 /// <reference path="OpenStack.ts" />
 (function (AliMNS) {
     // The Subscription
-    var Subscription = (function () {
+    var Subscription = /** @class */ (function () {
         // The constructor. name & topic is required.
         function Subscription(name, topic) {
             this._pattern = "%s://%s.mns.%s.aliyuncs.com/topics/%s/subscriptions/%s";
@@ -1199,16 +1202,16 @@ var AliMNS;
         Subscription.prototype.makeAttrURL = function () {
             return Util.format(this._pattern, this._topic.getAccount().getHttps() ? "https" : "http", this._topic.getAccount().getAccountId(), this._topic.getRegion().toString(), this._topic.getName(), this._name);
         };
+        Subscription.NotifyStrategy = {
+            BACKOFF_RETRY: "BACKOFF_RETRY",
+            EXPONENTIAL_DECAY_RETRY: "EXPONENTIAL_DECAY_RETRY"
+        };
+        Subscription.NotifyContentFormat = {
+            XML: "XML",
+            SIMPLIFIED: "SIMPLIFIED"
+        };
         return Subscription;
     }());
-    Subscription.NotifyStrategy = {
-        BACKOFF_RETRY: "BACKOFF_RETRY",
-        EXPONENTIAL_DECAY_RETRY: "EXPONENTIAL_DECAY_RETRY"
-    };
-    Subscription.NotifyContentFormat = {
-        XML: "XML",
-        SIMPLIFIED: "SIMPLIFIED"
-    };
     AliMNS.Subscription = Subscription;
 })(AliMNS || (AliMNS = {}));
 
