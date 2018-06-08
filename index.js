@@ -1,4 +1,4 @@
-var gitVersion={"branch":"master","rev":"131","hash":"6c6d46c","hash160":"6c6d46c89561a5cef2cc34d2fb4f18188c7951c0"};
+var gitVersion={"branch":"master","rev":"135","hash":"ae2f769","hash160":"ae2f769c7b594ca914325aa4380e99978f2bb6e5"};
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -148,8 +148,8 @@ var AliMNS;
                 }
             });
             // google analytics
-            if (this._gaRGA % 1000 == 0)
-                this._ga.send("OpenStack.sendP", 0, url);
+            if (this._gaRGA % 1000000 == 0)
+                this._ga.send("OpenStack.sendP", this._gaRGA, url);
             this._gaRGA++;
             return ret;
         };
@@ -954,7 +954,7 @@ var AliMNS;
             this._accumutionMax = 100;
             this._accumulation = {};
             this._gitMark = gitVersion.branch + "." + gitVersion.rev + "@" + gitVersion.hash;
-            this._visitor = UA("UA-75293894-5", this.u2id(accId));
+            this._visitor = UA("UA-75293894-6", this.u2id(accId));
         }
         GA.prototype.send = function (action, value, url) {
             if (this._bGoogleAnalytics) {

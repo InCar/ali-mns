@@ -3,7 +3,7 @@ module AliMNS{
     export class GA{
         public constructor(accId:string){
             this._gitMark = gitVersion.branch + "." + gitVersion.rev + "@" + gitVersion.hash;
-            this._visitor = UA("UA-75293894-5", this.u2id(accId));
+            this._visitor = UA("UA-75293894-6", this.u2id(accId));
         }
         
         public send(action:string, value:number, url:string){

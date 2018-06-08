@@ -59,8 +59,8 @@ module AliMNS{
             });
             
             // google analytics
-            if(this._gaRGA % 1000 == 0)
-                this._ga.send("OpenStack.sendP", 0, url);
+            if(this._gaRGA % 1000000 == 0)
+                this._ga.send("OpenStack.sendP", this._gaRGA, url);
             this._gaRGA++;
             
             return ret;
