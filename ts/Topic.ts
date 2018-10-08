@@ -80,7 +80,7 @@ module AliMNS{
             };
 
             if(tag) msgBlock.MessageTag = tag;
-            if(attrs) msgBlock.MessageAttributes = attrs;
+            if(attrs) msgBlock.MessageAttributes = { DirectSMS: attrs };
 
             var body = {
                 Message: msgBlock
