@@ -1,6 +1,6 @@
 {
-  "name": "ali-mns",
-  "version": "2.6.8",
+  "name": "ali-mns-ts",
+  "version": "0.0.0-development",
   "description": "The nodejs SDK for aliyun mns service",
   "main": "index.js",
   "dependencies": {
@@ -25,15 +25,17 @@
     "gulp-typescript": "^3.1.7",
     "mocha": "^3.4.2",
     "should": "^7.1.1",
-    "typescript": "^2.3.4"
+    "typescript": "^2.3.4",
+    "semantic-release": "^15.13.30"
   },
   "scripts": {
     "prepare": "gulp",
-    "test": "node node_modules/mocha/bin/mocha"
+    "test": "node node_modules/mocha/bin/mocha",
+    "semantic-release": "semantic-release"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/InCar/ali-mns.git"
+    "url": "https://github.com/Jeff-Tian/ali-mns.git"
   },
   "keywords": [
     "aliyun",
