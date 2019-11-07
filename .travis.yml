@@ -13,7 +13,7 @@ branches:
 #         - $HOME/build/InCar/ali-mns/node_modules
 
 before_install:
-  - "npm install -g typescript gulp-cli"
+  - "npm install -g typescript gulp-cli@2.0.1"
   - "npm install"
   - "gulp clean"
   - "gulp"
