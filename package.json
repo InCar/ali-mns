@@ -1,7 +1,7 @@
 {
   "name": "ali-mns-ts",
   "version": "0.0.0-development",
-  "description": "The nodejs SDK for aliyun mns service",
+  "description": "The nodejs SDK for aliyun mns service (TypeScript version)",
   "main": "ts/index.js",
   "dependencies": {
     "debug": "^2.2.0",
@@ -46,7 +46,7 @@
   "author": "ghxiong@incardata.com.cn",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/InCar/ali-mns/issues"
+    "url": "https://github.com/Jeff-Tian/ali-mns/issues"
   },
-  "homepage": "https://github.com/InCar/ali-mns"
+  "homepage": "https://github.com/Jeff-Tian/ali-mns"
 }
