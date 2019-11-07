@@ -1,10 +1,9 @@
 {
     "compilerOptions": {
-        "module": "amd",
+        "module": "commonjs",
         "noImplicitAny": false,
         "removeComments": false,
         "preserveConstEnums": true,
-        "outFile": "index.js",
         "sourceMap": true,
         "rootDir": "ts/",
         "declaration": true,
