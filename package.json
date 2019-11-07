@@ -2,7 +2,7 @@
   "name": "ali-mns-ts",
   "version": "0.0.0-development",
   "description": "The nodejs SDK for aliyun mns service",
-  "main": "index.js",
+  "main": "ts/index.js",
   "dependencies": {
     "debug": "^2.2.0",
     "promise": "^7.0.4",
@@ -29,9 +29,9 @@
     "semantic-release": "^15.13.30"
   },
   "scripts": {
-    "prepare": "gulp",
     "test": "node node_modules/mocha/bin/mocha",
-    "semantic-release": "semantic-release"
+    "semantic-release": "semantic-release",
+    "build": "tsc -p ./ts"
   },
   "repository": {
     "type": "git",

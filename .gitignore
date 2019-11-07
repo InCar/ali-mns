@@ -4,3 +4,4 @@ index.d.ts
 .vscode/
 node_modules/
 test/account.js
+ts/index.js
