@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "module": "system",
+        "module": "amd",
         "noImplicitAny": false,
         "removeComments": false,
         "preserveConstEnums": true,
