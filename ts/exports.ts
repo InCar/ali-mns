@@ -7,3 +7,4 @@
 
 // Exports the AliMNS
 module.exports = AliMNS;
+export default AliMNS;
