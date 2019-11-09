@@ -1,14 +1,18 @@
 /// <reference path="Interfaces.ts" />
 /// <reference path="Region.ts" />
 
-module AliMNS{
-    export class MNSTopic extends MNS implements IMNSTopic{
+    import {MNS} from "./MNS";
+import {IMNSTopic} from "./Interfaces";
+import {Region} from "./Region";
+import {Account} from './Account';
+
+export class MNSTopic extends MNS implements IMNSTopic {
         public constructor(account:Account, region?:string|Region){
             super(account, region);
             // make url
             this._urlTopic = this.makeTopicURL();
         }
-        
+
         // List all topics.
         public listTopicP(prefix?:string, pageSize?:number, pageMarker?:string){
             var headers = {};
@@ -19,7 +23,7 @@ module AliMNS{
             debug("GET " + url);
             return this._openStack.sendP("GET", url, null, headers);
         }
-        
+
         // Create a topic
         public createTopicP(name:string, options?:any){
             var body = { Topic: "" };
@@ -28,22 +32,21 @@ module AliMNS{
             debug("PUT " + url, body);
             return this._openStack.sendP("PUT", url, body);
         }
-        
+
         // Delete a topic
         public deleteTopicP(name:string){
             var url = Url.resolve(this._urlTopic, name);
             debug("DELETE " + url);
             return this._openStack.sendP("DELETE", url);
         }
-        
+
         private makeTopicURL(){
             return Util.format(this._patternTopic,
                 this._account.getHttps()?"https":"http",
                 this._account.getAccountId(),
                 this._region.toString());
         }
-        
+
         private _patternTopic = "%s://%s.mns.%s.aliyuncs.com/topics/";
         private _urlTopic:String;
     }
-}

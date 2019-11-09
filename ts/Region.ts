@@ -1,4 +1,3 @@
-module AliMNS{
 
     export class Region{
         constructor(city?:string|City, network?:string|NetworkType, zone?:string|Zone){
@@ -190,4 +189,3 @@ module AliMNS{
     interface HashTable<T>{
         [key: number] : T;
     }
-}

@@ -2,9 +2,11 @@
 /// <reference path="ali-mns.ts" />
 /// <reference path="Account.ts" />
 
-module AliMNS{
     // the ali open interface stack protocol
-    export class OpenStack{
+    import {GA} from "./GA";
+import {Account} from "./Account";
+
+export class OpenStack{
         constructor(account:Account){
             this._account = account;
             // xml builder
@@ -25,7 +27,7 @@ module AliMNS{
             if(body) req.body = this._xmlBuilder.create(body).toString();
 
             req.headers = this.makeHeaders(method, url, headers, req.body);
-            
+
             // combines options
             if(options){
                 for(var opt in options){
@@ -57,19 +59,19 @@ module AliMNS{
                     else return Promise.reject(response.statusCode);
                 }
             });
-            
+
             // google analytics
             if(this._gaRGA % 1000000 == 0)
                 this._ga.send("OpenStack.sendP", this._gaRGA, url);
             this._gaRGA++;
-            
+
             return ret;
         }
-        
+
         public accumulateNextGASend(prefix:string){
             this._ga.accumulateNextSend(prefix);
         }
-        
+
         public disableGA(bDisable?:boolean){
             this._ga.disableGA(bDisable);
         }
@@ -148,4 +150,3 @@ module AliMNS{
         private _ga: GA;
         private _gaRGA = 0; // Reduce Google Analysis sending rate
     }
-}

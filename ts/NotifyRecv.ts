@@ -1,14 +1,18 @@
 /// <reference path="Interfaces.ts" />
 /// <reference path="ali-mns.ts" />
 
-module AliMNS{
-    export class NotifyRecv implements INotifyRecvBatch {
+    import {GA} from "./GA";
+import {IMQ, IMQBatch, INotifyRecvBatch} from "./Interfaces";
+import {Account} from './Account'
+import {MQ} from "./MQ";
+
+export class NotifyRecv implements INotifyRecvBatch {
         public constructor(mq: IMQ){
             this._mq = mq;
 
             // emitter
             this._emitter = new Events.EventEmitter();
-            
+
             // Google Analytics
             if(mq instanceof MQ){
                 var account = mq.getAccount();
@@ -16,7 +20,7 @@ module AliMNS{
                 this._ga.disableGA(!account.getGA());
             }
         }
-        
+
         // 消息通知.每当有消息收到时,都调用cb回调函数
         // 如果cb返回true,那么将删除消息,否则保留消息
         public notifyRecv(cb:(ex:Error, msg:any)=>Boolean, waitSeconds?:number, numOfMessages?:number){
@@ -33,7 +37,7 @@ module AliMNS{
                 return Promise.resolve(this._evStopped);
             // Google Analytics
             if(this._ga) this._ga.send("NotifyRecv.notifyStopP", 0, "");
-            
+
             this._signalSTOP = true;
             return new Promise((resolve)=>{
                 this._emitter.once(this._evStopped, ()=>{
@@ -95,7 +99,7 @@ module AliMNS{
                 });
             }
             catch(ex){
-                // ignore any ex 
+                // ignore any ex
                 console.warn(ex);
                 // 过5秒重试
                 debug("Retry after 5 seconds");
@@ -104,7 +108,7 @@ module AliMNS{
                 }, 5000);
             }
         }
-        
+
         private deleteP(dataRecv:any){
             if(dataRecv){
                 if(dataRecv.Message){
@@ -126,13 +130,13 @@ module AliMNS{
                 return Promise.resolve(dataRecv);
             }
         }
-        
+
         private _mq: IMQ;
         private _signalSTOP = true;
-        
+
         private _evStopped = "AliMNS_MQ_NOTIFY_STOPPED";
         private _emitter:any;
-        
+
         // 连续timeout计数器
         // 在某种未知的原因下,网络底层链接断了
         // 这时在程序内部的重试无法促使网络重连,以后的重试都是徒劳的
@@ -140,7 +144,6 @@ module AliMNS{
         // 这时抛出NetworkBroken异常
         private _timeoutCount = 0;
         private _timeoutMax = 128;
-        
+
         private _ga:GA = null;
-    }
 }

@@ -3,9 +3,13 @@
 /// <reference path="OpenStack.ts" />
 /// <reference path="Region.ts" />
 
-module AliMNS{
     // The Topic
-    export class Topic implements ITopic{
+    import {OpenStack} from "./OpenStack";
+import {City, NetworkType, Region, Zone} from "./Region";
+import {ITopic} from "./Interfaces";
+import {Account} from "./Account"
+
+export class Topic implements ITopic{
         // The constructor. name & account is required.
         // region can be "hangzhou", "beijing" or "qingdao", the default is "hangzhou"
         constructor(name:string, account:Account, region?:string|Region){
@@ -25,7 +29,7 @@ module AliMNS{
             // create the OpenStack object
             this._openStack = new OpenStack(account);
         }
-        
+
         public getName(){ return this._name; }
         public getAccount(){ return this._account; }
         public getRegion(){ return this._region; }
@@ -42,7 +46,7 @@ module AliMNS{
             debug("PUT " + this._urlAttr, body);
             return this._openStack.sendP("PUT", this._urlAttr + "?metaoverride=true", body);
         }
-        
+
         // List all subscriptions.
         public listP(prefix?:string, pageSize?:number, pageMarker?:string){
             var headers = {};
@@ -53,7 +57,7 @@ module AliMNS{
             debug("GET " + url);
             return this._openStack.sendP("GET", url, null, headers);
         }
-        
+
         public subscribeP(name:string, endPoint:string, notifyStrategy?:string, notifyContentFormat?:string, filterTag?:string){
             var body = {
                 Subscription: {
@@ -67,13 +71,13 @@ module AliMNS{
             debug("PUT " + url, body);
             return this._openStack.sendP("PUT", url, body);
         }
-        
+
         public unsubscribeP(name:string){
             var url = Url.resolve(this._urlSubscription, name);
             debug("DELETE " + url);
             return this._openStack.sendP("DELETE", url);
         }
-        
+
         public publishP(msg:string, b64:boolean, tag?:string, attrs?: any, options?:any){
             var msgBlock:any = {
                 MessageBody: b64?this.utf8ToBase64(msg):msg
@@ -85,13 +89,13 @@ module AliMNS{
             var body = {
                 Message: msgBlock
             };
-            
+
             debug("POST " + this._urlPublish, body);
 
             this._openStack.accumulateNextGASend("Topic.publishP");
             return this._openStack.sendP("POST", this._urlPublish, body, null, options);
         }
-        
+
         protected utf8ToBase64(src){
             var buf = new Buffer(src, 'utf8');
             return buf.toString('base64');
@@ -108,7 +112,7 @@ module AliMNS{
         private makeSubscriptionURL(){
             return this.makeAttrURL() + "/subscriptions/";
         }
-        
+
         private makePublishURL(){
             return this.makeAttrURL() + "/messages";
         }
@@ -123,4 +127,3 @@ module AliMNS{
         private _urlAttr: string; // topic attr url
         private _pattern = "%s://%s.mns.%s.aliyuncs.com/topics/%s";
     }
-}

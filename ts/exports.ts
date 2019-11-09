@@ -6,5 +6,4 @@
 /// <reference path="MQBatch.ts" />
 
 // Exports the AliMNS
-module.exports = AliMNS;
-export default AliMNS;
+// module.exports = AliMNS;

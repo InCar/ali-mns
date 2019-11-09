@@ -4,9 +4,13 @@
 /// <reference path="Region.ts" />
 
 
-module AliMNS{
     // The MNS can list, create, delete, modify the mq.
-    export class MNS implements IMNS {
+    import {IMNS} from "./Interfaces";
+import {City, NetworkType, Region, Zone} from "./Region";
+import {OpenStack} from "./OpenStack";
+import {Account} from './Account'
+
+export class MNS implements IMNS {
         // The constructor. account: ali account; region: can be "hangzhou", "beijing" or "qingdao", default is "hangzhou"
         constructor(account:Account, region?:string|Region){
             // save the input arguments
@@ -67,4 +71,3 @@ module AliMNS{
 
     // For compatible v1.x
     export var MQS = MNS;
-}

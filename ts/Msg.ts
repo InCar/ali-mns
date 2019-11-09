@@ -1,4 +1,3 @@
-module AliMNS {
 
     // The Message class
     export class Msg{
@@ -20,4 +19,3 @@ module AliMNS {
         // message delay to visible, in seconds
         private _delaySeconds = 0;
     }
-}

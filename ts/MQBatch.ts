@@ -2,8 +2,13 @@
 /// <reference path="Msg.ts" />
 /// <reference path="Interfaces.ts" />
 
-module AliMNS{
-    export class MQBatch extends MQ implements IMQBatch, INotifyRecvBatch{
+    import {IMQBatch, INotifyRecvBatch} from "./Interfaces";
+import {MQ} from "./MQ";
+import {Account} from './Account'
+import {Msg} from "./Msg";
+import {NotifyRecv} from "./NotifyRecv";
+
+export class MQBatch extends MQ implements IMQBatch, INotifyRecvBatch{
         constructor(name:string, account:Account, region?:string){
             super(name, account, region);
         }
@@ -37,9 +42,9 @@ module AliMNS{
                 var url = this._url;
                 url += "?numOfMessages=" + numOfMessages;
                 if(waitSeconds) url += "&waitseconds=" + waitSeconds;
-                
+
                 debug("GET " + url);
-    
+
                 return new Promise(function(resolve, reject){
                     // use the timeout mechanism inside the request module
                     var options = { timeout: 1000 * self._recvTolerance };
@@ -103,16 +108,16 @@ module AliMNS{
                 return this._openStack.sendP("DELETE", this._url, body);
             }
         }
-        
+
         // 消息通知.每当有消息收到时,都调用cb回调函数
         // 如果cb返回true,那么将删除消息,否则保留消息
         public notifyRecv(cb:(ex:Error, msg:any)=>Boolean, waitSeconds?:number, numOfMessages?:number){
             // lazy create
             if(this._notifyRecv === null) this._notifyRecv = new NotifyRecv(this);
-            
+
             return this._notifyRecv.notifyRecv(cb, waitSeconds || 5, numOfMessages || 16);
         }
-        
+
         protected decodeB64Messages(data:any){
             if(data && data.Messages && data.Messages.Message){
                 if(!Util.isArray(data.Messages.Message)){
@@ -129,7 +134,6 @@ module AliMNS{
                 super.decodeB64Messages(data);
             }
         }
-        
+
         protected _notifyRecv: INotifyRecvBatch = null;
     }
-}

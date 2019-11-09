@@ -4,9 +4,14 @@
 /// <reference path="NotifyRecv.ts" />
 /// <reference path="Region.ts" />
 
-module AliMNS{
     // The MQ
-    export class MQ implements IMQ, INotifyRecv{
+    import {OpenStack} from "./OpenStack";
+import {IMQ, INotifyRecv} from "./Interfaces";
+import {City, NetworkType, Region, Zone} from "./Region";
+import {Account} from './Account';
+import {NotifyRecv} from "./NotifyRecv";
+
+export class MQ implements IMQ, INotifyRecv{
         // The constructor. name & account is required.
         // region can be "hangzhou", "beijing" or "qingdao", the default is "hangzhou"
         constructor(name:string, account:Account, region?:string|Region){
@@ -25,7 +30,7 @@ module AliMNS{
             // create the OpenStack object
             this._openStack = new OpenStack(account);
         }
-        
+
         public getName(){ return this._name; }
         public getAccount(){ return this._account; }
         public getRegion(){ return this._region; }
@@ -45,9 +50,9 @@ module AliMNS{
 
         // 发送消息
         public sendP(msg:string, priority?:number, delaySeconds?:number){
-            
+
             var b64 = this.utf8ToBase64(msg);
-            
+
             var body :any = { Message: { MessageBody: b64 } };
             if(!isNaN(priority)) body.Message.Priority = priority;
             if(!isNaN(delaySeconds)) body.Message.DelaySeconds = delaySeconds;
@@ -56,7 +61,7 @@ module AliMNS{
             this._openStack.accumulateNextGASend("MQ.sendP");
             return this._openStack.sendP("POST", this._url, body);
         }
-        
+
         // 接收消息容忍时间(秒)
         public getRecvTolerance(){ return this._recvTolerance; }
         public setRecvTolerance(value:number){ this._recvTolerance = value; }
@@ -132,7 +137,7 @@ module AliMNS{
         public notifyRecv(cb:(ex:Error, msg:any)=>Boolean, waitSeconds?:number){
             // lazy create
             if(this._notifyRecv === null) this._notifyRecv = new NotifyRecv(this);
-            
+
             return this._notifyRecv.notifyRecv(cb, waitSeconds || 5);
         }
 
@@ -141,17 +146,17 @@ module AliMNS{
             if(this._notifyRecv === null) return Promise.resolve(0);
             else return this._notifyRecv.notifyStopP();
         }
-        
+
         protected utf8ToBase64(src){
             var buf = new Buffer(src, 'utf8');
             return buf.toString('base64');
         }
-        
+
         protected base64ToUtf8(src){
             var buf = new Buffer(src, 'base64');
             return buf.toString('utf8');
         }
-        
+
         protected decodeB64Messages(data:any){
             if(data && data.Message && data.Message.MessageBody){
                 data.Message.MessageBody = this.base64ToUtf8(data.Message.MessageBody);
@@ -181,4 +186,3 @@ module AliMNS{
         private _urlAttr: string; // mq attr url
         private _pattern = "%s://%s.mns.%s.aliyuncs.com/queues/%s";
     }
-}

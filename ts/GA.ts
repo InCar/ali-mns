@@ -1,11 +1,10 @@
 declare var gitVersion:any;
-module AliMNS{
     export class GA{
         public constructor(accId:string){
             this._gitMark = gitVersion.branch + "." + gitVersion.rev + "@" + gitVersion.hash;
             this._visitor = UA("UA-75293894-6", this.u2id(accId));
         }
-        
+
         public send(action:string, value:number, url:string){
             if(this._bGoogleAnalytics){
                 if(this._bAccumulated){
@@ -15,7 +14,7 @@ module AliMNS{
                     if(!this._accumulation[actionPrefixed]) this._accumulation[actionPrefixed] = { value: 0, count: 0 };
                     this._accumulation[actionPrefixed].value += value;
                     this._accumulation[actionPrefixed].count++;
-                    
+
                     if(this._accumulation[actionPrefixed].count >= this._accumutionMax){
                         this.send(actionPrefixed, this._accumulation[actionPrefixed].value, url);
                         this._accumulation[actionPrefixed].value = 0;
@@ -29,32 +28,32 @@ module AliMNS{
                 }
             }
         }
-        
+
         public accumulateNextSend(prefix:string){
             this._bAccumulated = true;
             this._bAccumulatePrefix = prefix;
         }
-        
+
         public disableGA(bDisable?:boolean){
             this._bGoogleAnalytics = (!bDisable);
         }
-        
+
         private u2id(uid:string){
             var cryptoMD5 = CryptoA.createHash("md5");
             var md5HEX = cryptoMD5.update(uid).digest("hex");
-            
+
             var uxid = new Array(36);
             for(var i=0,j=0;i<md5HEX.length;i++,j++){
                 if(i === 8 || i === 12 || i === 16 || i === 20){
                     uxid[j] = "-";
                     j++;
-                } 
+                }
                 uxid[j] = md5HEX.charAt(i);
             }
-            
+
             return uxid.join("");
         }
-        
+
         private _visitor: any;
         private _gitMark: string;
         private _bGoogleAnalytics = true;
@@ -64,4 +63,3 @@ module AliMNS{
         private _accumutionMax = 100;
         private _accumulation:any = {};
     }
-}

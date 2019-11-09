@@ -1,12 +1,12 @@
 /// <reference path="ali-mns.ts" />
 
-module AliMNS{
     // The Ali account, it holds the key id and secret.
     export class Account{
         constructor(accountId:string, keyId:string, keySecret:string){
             this._accountId = accountId;
             this._keyId = keyId;
             this._keySecret = keySecret;
+            this._displayName = 'AliAccount'
         }
 
         public getAccountId(){ return this._accountId; }
@@ -16,6 +16,12 @@ module AliMNS{
         public setGA(bGA:boolean){ this._bGoogleAnalytics = bGA; }
         public getHttps(){ return this._bHttps; }
         public setHttps(bHttps:boolean){ this._bHttps = bHttps; }
+        public getDisplayName(){return this._displayName;}
+        public setDisplayName(name: string){this._displayName = name;}
+
+        public displayName = 'AliAccount';
+        public id = '';
+        public rpDisplayName = 'AliAccount';
 
         // encoding: "hex", "binary" or "base64"
         public hmac_sha1(text:string, encoding?:string){
@@ -33,5 +39,6 @@ module AliMNS{
         private _keySecret: string; // Access key secret
         private _bGoogleAnalytics = true; // Enable Google Analytics
         private _bHttps = false; // Default to use http
+        private _displayName = ''
     }
-}
+
