@@ -1,7 +1,7 @@
 import UA from 'universal-analytics'
 import CryptoA from 'crypto'
 
-declare var gitVersion: any;
+import {gitVersion} from './gitVersion'
 
 export class GA {
     public constructor(accId: string) {
