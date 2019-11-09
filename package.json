@@ -29,7 +29,7 @@
     "semantic-release": "^15.13.30"
   },
   "scripts": {
-    "test": "(node node_modules/mocha/bin/mocha || echo 'ignore test result for now') && echo 'test done'",
+    "test": "mocha",
     "semantic-release": "semantic-release",
     "build": "tsc -p ./ts"
   },
