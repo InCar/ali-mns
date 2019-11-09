@@ -18,6 +18,10 @@ const debug = debug0('ali-mns');
 var Xml2js: any = require("xml2js");
 Xml2js.parseStringP = Promise.denodeify(Xml2js.parseString);
 
+var Request:{ new (input: RequestInfo, init?: RequestInit): Request; prototype: Request; } = require("request");
+Request['requestP'] = Promise.denodeify(Request);
+Request['debug'] = false;
+
 export class OpenStack {
     constructor(account: Account) {
         this._account = account;
