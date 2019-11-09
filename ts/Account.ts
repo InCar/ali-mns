@@ -1,5 +1,8 @@
 /// <reference path="ali-mns.ts" />
 
+import CryptoA from 'crypto'
+
+
     // The Ali account, it holds the key id and secret.
     export class Account{
         constructor(accountId:string, keyId:string, keySecret:string){

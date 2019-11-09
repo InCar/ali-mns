@@ -6,6 +6,11 @@ import {IMNSTopic} from "./Interfaces";
 import {Region} from "./Region";
 import {Account} from './Account';
 
+import debug0 from "debug"
+import Url from "url";
+import Util from "util";
+const debug = debug0('ali-mns');
+
 export class MNSTopic extends MNS implements IMNSTopic {
         public constructor(account:Account, region?:string|Region){
             super(account, region);
@@ -48,5 +53,5 @@ export class MNSTopic extends MNS implements IMNSTopic {
         }
 
         private _patternTopic = "%s://%s.mns.%s.aliyuncs.com/topics/";
-        private _urlTopic:String;
+        private _urlTopic:string;
     }

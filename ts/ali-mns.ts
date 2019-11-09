@@ -1,12 +1,12 @@
-// dependencies
-var CryptoA:any = require("crypto");
-var Events:any  = require("events");
-var Util:any    = require("util");
-var Url:any     = require("url");
-var UA:any      = require("universal-analytics");
-var debug:any   = require("debug")("ali-mns");
+import CryptoA from 'crypto'
+import Events from 'events';
+import Util from 'util';
+import Url from 'url'
+import UA from 'universal-analytics'
+import Promise from 'promise';
 
-var Promise:any = require("promise");
+import debug0 from "debug"
+const debug = debug0('ali-mns');
 
 var Request:{ new (input: RequestInfo, init?: RequestInit): Request; prototype: Request; } = require("request");
 Request['requestP'] = Promise.denodeify(Request);
