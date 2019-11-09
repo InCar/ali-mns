@@ -29,7 +29,7 @@
     "semantic-release": "^15.13.30"
   },
   "scripts": {
-    "test": "mocha -g",
+    "test": "mocha",
     "semantic-release": "semantic-release",
     "build": "tsc -p ./ts"
   },
