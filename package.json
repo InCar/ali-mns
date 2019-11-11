@@ -32,12 +32,12 @@
     "semantic-release": "^15.13.30",
     "should": "^7.1.1",
     "ts-node": "^8.5.0",
-    "typescript": "^2.3.4"
+    "typescript": "3.7.2"
   },
   "scripts": {
     "test": "mocha -r ts-node/register --require espower-typescript/guess test/*.[tj]s",
     "semantic-release": "semantic-release",
-    "build": "tsc -p ./ts"
+    "build": "tsc -p ."
   },
   "repository": {
     "type": "git",

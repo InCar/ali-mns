@@ -11,10 +11,16 @@
     "esModuleInterop": true,
     "strict": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "skipLibCheck": true
   },
+  "include": [
+    "ts/*"
+  ],
   "exclude": [
     "node_modules",
+    "node_modules/*",
+    "node_modules/@types/chai/index.d.ts",
     "dts"
   ]
 }
