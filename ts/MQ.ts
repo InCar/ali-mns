@@ -13,7 +13,8 @@ import {NotifyRecv} from "./NotifyRecv";
 import Promise from 'promise'
 
 import debug0 from "debug"
-import * as Util from "util";
+import Util from "util";
+import assert = require('assert')
 
 const debug = debug0('ali-mns');
 
@@ -70,7 +71,10 @@ export class MQ implements IMQ, INotifyRecv {
 
         var body: any = {Message: {MessageBody: b64}};
         if (priority && !isNaN(priority)) body.Message.Priority = priority;
-        if (delaySeconds && !isNaN(delaySeconds)) body.Message.DelaySeconds = delaySeconds;
+        if (delaySeconds && !isNaN(delaySeconds)) {
+            assert(Number.isInteger(delaySeconds), 'DelaySeconds 参数必须为整数，否则 阿里 mns 会报 MalformedXML 错误！参见：https://help.aliyun.com/document_detail/35134.html?spm=a2c4g.11186623.2.18.539c2b8fn6R3TO');
+            body.Message.DelaySeconds = delaySeconds;
+        }
 
         debug("POST " + this._url, body);
         this._openStack.accumulateNextGASend("MQ.sendP");
