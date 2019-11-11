@@ -1,8 +1,12 @@
-# ali-mns (ali-mqs)
+# ali-mns-ts
+
+> The nodejs sdk for aliyun mns service (TypeScript version)
+
+
 [![npm version](https://badge.fury.io/js/ali-mns-ts.svg)](http://badge.fury.io/js/ali-mns-ts)
 [![Build Status](https://travis-ci.com/Jeff-Tian/ali-mns.svg?branch=master)](https://travis-ci.com/Jeff-Tian/ali-mns)
 
-The nodejs sdk for aliyun mns service (TypeScript version)
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=Jeff-Tian_ali-mns)](https://sonarcloud.io/dashboard?id=Jeff-Tian_ali-mns)
 
 [阿里云消息服务-简体中文-帮助手册](http://armclr.incars.com.cn/Links/AliMNS?lang=zh-Hans)
 
