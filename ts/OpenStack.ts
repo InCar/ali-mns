@@ -5,19 +5,20 @@
 // the ali open interface stack protocol
 import {GA} from "./GA";
 import {Account} from "./Account";
-import XmlBuilder from 'xmlbuilder';
 
 import Promise from 'promise'
 import Util from "util";
 import Url from "url";
 
 
-var Xml2js: any = require("xml2js");
+const Xml2js: any = require("xml2js");
 Xml2js.parseStringP = Promise.denodeify(Xml2js.parseString);
 
-var Request:{ new (input: RequestInfo, init?: RequestInit): Request; prototype: Request; } = require("request");
+const Request: { new(input: RequestInfo, init?: RequestInit): Request; prototype: Request; } = require("request");
 Request['requestP'] = Promise.denodeify(Request);
 Request['debug'] = false;
+
+const XmlBuilder = require('xmlbuilder');
 
 export class OpenStack {
     constructor(account: Account) {
@@ -43,7 +44,7 @@ export class OpenStack {
 
         // combines options
         if (options) {
-            for (var opt in options) {
+            for (const opt in options) {
                 if (opt === "method" || opt === "url" || opt === "uri" || opt === "body" || opt === "headers")
                     continue; // skip these options for avoid conflict to other arguments
                 else if (options.hasOwnProperty(opt))
@@ -51,7 +52,7 @@ export class OpenStack {
             }
         }
 
-        var ret = Request['requestP'](req).then((response) => {
+        const ret = Request['requestP'](req).then((response) => {
             // convert the body from xml to json
             return Xml2js.parseStringP(response.body, {explicitArray: false})
                 .then((bodyJSON) => {

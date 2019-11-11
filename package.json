@@ -12,8 +12,12 @@
     "xmlbuilder": "^3.1.0"
   },
   "devDependencies": {
-    "@types/node": "^7.0.22",
+    "@types/chai": "^4.2.4",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^7.10.9",
+    "chai": "^4.2.0",
     "del": "^2.2.0",
+    "espower-typescript": "^9.0.2",
     "git-version-json": "^1.0.5",
     "gulp": "^3.9.1",
     "gulp-debug": "^2.1.2",
@@ -23,13 +27,15 @@
     "gulp-replace": "^0.5.4",
     "gulp-sourcemaps": "^1.9.1",
     "gulp-typescript": "^3.1.7",
-    "mocha": "^3.4.2",
+    "mocha": "^3.5.3",
+    "power-assert": "^1.6.1",
+    "semantic-release": "^15.13.30",
     "should": "^7.1.1",
-    "typescript": "^2.3.4",
-    "semantic-release": "^15.13.30"
+    "ts-node": "^8.5.0",
+    "typescript": "^2.3.4"
   },
   "scripts": {
-    "test": "mocha",
+    "test": "mocha -r ts-node/register --require espower-typescript/guess test/*.[tj]s",
     "semantic-release": "semantic-release",
     "build": "tsc -p ./ts"
   },
