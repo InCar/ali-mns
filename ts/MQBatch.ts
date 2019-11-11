@@ -10,6 +10,7 @@ import {NotifyRecv} from "./NotifyRecv";
 import Util from "util";
 import Promise from 'promise'
 import debug0 from "debug"
+
 const debug = debug0('ali-mns');
 
 export class MQBatch extends MQ implements IMQBatch, INotifyRecvBatch {
@@ -110,7 +111,7 @@ export class MQBatch extends MQ implements IMQBatch, INotifyRecvBatch {
 
     // 消息通知.每当有消息收到时,都调用cb回调函数
     // 如果cb返回true,那么将删除消息,否则保留消息
-    public notifyRecv(cb: (ex: Error, msg: any) => Boolean, waitSeconds?: number, numOfMessages?: number) {
+    public notifyRecv(cb: (ex: Error | null, msg: any) => Boolean, waitSeconds?: number, numOfMessages?: number) {
         // lazy create
         if (this._notifyRecv === null) this._notifyRecv = new NotifyRecv(this);
 
@@ -133,5 +134,5 @@ export class MQBatch extends MQ implements IMQBatch, INotifyRecvBatch {
         }
     }
 
-    protected _notifyRecv: INotifyRecvBatch = null;
+    protected _notifyRecv: INotifyRecvBatch | null = null;
 }

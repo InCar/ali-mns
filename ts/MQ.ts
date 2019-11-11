@@ -14,6 +14,7 @@ import Promise from 'promise'
 
 import debug0 from "debug"
 import * as Util from "util";
+
 const debug = debug0('ali-mns');
 
 
@@ -68,8 +69,8 @@ export class MQ implements IMQ, INotifyRecv {
         var b64 = this.utf8ToBase64(msg);
 
         var body: any = {Message: {MessageBody: b64}};
-        if (!isNaN(priority)) body.Message.Priority = priority;
-        if (!isNaN(delaySeconds)) body.Message.DelaySeconds = delaySeconds;
+        if (priority && !isNaN(priority)) body.Message.Priority = priority;
+        if (delaySeconds && !isNaN(delaySeconds)) body.Message.DelaySeconds = delaySeconds;
 
         debug("POST " + this._url, body);
         this._openStack.accumulateNextGASend("MQ.sendP");
@@ -152,7 +153,7 @@ export class MQ implements IMQ, INotifyRecv {
 
     // 消息通知.每当有消息收到时,都调用cb回调函数
     // 如果cb返回true,那么将删除消息,否则保留消息
-    public notifyRecv(cb: (ex: Error, msg: any) => Boolean, waitSeconds?: number) {
+    public notifyRecv(cb: (ex: Error | null, msg: any) => Boolean, waitSeconds?: number) {
         // lazy create
         if (this._notifyRecv === null) this._notifyRecv = new NotifyRecv(this);
 
@@ -195,7 +196,7 @@ export class MQ implements IMQ, INotifyRecv {
 
     protected _url: string; // mq url
     protected _openStack: OpenStack;
-    protected _notifyRecv: INotifyRecv = null;
+    protected _notifyRecv: INotifyRecv | null = null;
     protected _recvTolerance = 5; // 接收消息的容忍时间(单位:秒)
 
     private _name: string;

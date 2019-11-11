@@ -3,7 +3,6 @@
 
 import {GA} from "./GA";
 import {IMQ, IMQBatch, INotifyRecvBatch} from "./Interfaces";
-import {Account} from './Account'
 import {MQ} from "./MQ";
 import Events from 'events';
 
@@ -29,7 +28,7 @@ export class NotifyRecv implements INotifyRecvBatch {
 
     // 消息通知.每当有消息收到时,都调用cb回调函数
     // 如果cb返回true,那么将删除消息,否则保留消息
-    public notifyRecv(cb: (ex: Error, msg: any) => Boolean, waitSeconds?: number, numOfMessages?: number) {
+    public notifyRecv(cb: (ex: Error | null, msg: any) => Boolean, waitSeconds?: number, numOfMessages?: number) {
         this._signalSTOP = false;
         this._timeoutCount = 0;
         this.notifyRecvInternal(cb, waitSeconds, numOfMessages);
@@ -52,7 +51,7 @@ export class NotifyRecv implements INotifyRecvBatch {
         });
     }
 
-    private notifyRecvInternal(cb: (ex: Error, msg: any) => Boolean, waitSeconds: number, numOfMessages?: number) {
+    private notifyRecvInternal(cb: (ex: Error | null, msg: any) => Boolean, waitSeconds?: number, numOfMessages?: number) {
         // This signal will be triggered by notifyStopP()
         if (this._signalSTOP) {
             debug("notifyStopped");
@@ -117,7 +116,7 @@ export class NotifyRecv implements INotifyRecvBatch {
             if (dataRecv.Message) {
                 return this._mq.deleteP(dataRecv.Message.ReceiptHandle);
             } else if (dataRecv.Messages && dataRecv.Messages.Message) {
-                var rhs = [];
+                var rhs = new Array<any>();
                 for (var i = 0; i < dataRecv.Messages.Message.length; i++) {
                     rhs.push(dataRecv.Messages.Message[i].ReceiptHandle);
                 }
@@ -145,5 +144,5 @@ export class NotifyRecv implements INotifyRecvBatch {
     private _timeoutCount = 0;
     private _timeoutMax = 128;
 
-    private _ga: GA = null;
+    private _ga: GA | null = null;
 }
