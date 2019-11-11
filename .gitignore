@@ -4,3 +4,9 @@ index.d.ts
 .vscode/
 node_modules/
 test/account.js
+ts/*.js
+ts/*.d.ts
+ts/*.js.map
+test/*.js
+test/*.d.ts
+test/*.js.map

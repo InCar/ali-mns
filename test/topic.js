@@ -5,7 +5,7 @@ var Path = require("path");
 var fs = require("fs");
 var http = require("http");
 var Promise = require("promise");
-var AliMNS = require(Path.join(__dirname, "../index.js"));
+var AliMNS = require(Path.join(__dirname, "../ts/index.js"));
 
 describe('AliMNS-topic', ()=>{
     // ali account configuration
@@ -28,31 +28,31 @@ describe('AliMNS-topic', ()=>{
     }
     var account = new AliMNS.Account(aliCfg.accountId, aliCfg.keyId, aliCfg.keySecret);
     var mns = new AliMNS.MNSTopic(account, aliCfg.region);
-    
+
     describe('Topic', function(){
         this.timeout(1000 * 5);
-        
+
         var topicName = aliCfg.topicName + Math.floor(Math.random() * 10000);
         var subName = topicName + '-sub' + Math.floor(Math.random() * 10000);
         var topic = new AliMNS.Topic(topicName, account, aliCfg.region);
         var subscription = new AliMNS.Subscription(subName, topic);
-        
+
         it('#createTopicP', (done)=>{
             mns.createTopicP(topicName, {
                 MaximumMessageSize: 65536,
                 LoggingEnabled: false
             }).then((data)=>{ done(); }, done);
         });
-        
+
         it('#listTopicP', (done)=>{
             mns.listTopicP(topicName, 1).then((data)=>{
                 // console.info(data.Topics.Topic);
                 done(); }, done);
         });
-        
+
         it('#setAttrsP & #getAttrsP', (done)=>{
             var testSource = 1024;
-            
+
             topic.setAttrsP({ MaximumMessageSize: testSource })
             .then((dataSet)=>{
                 // console.info(dataSet);
@@ -64,22 +64,22 @@ describe('AliMNS-topic', ()=>{
             })
             .then(()=>{ done(); }, done);
         });
-        
+
         it('#subscribe', (done)=>{
             topic.subscribeP(subName, aliCfg.endPoint,
                 AliMNS.Subscription.NotifyStrategy.BACKOFF_RETRY,
                 AliMNS.Subscription.NotifyContentFormat.SIMPLIFIED)
             .then((data)=>{
-                // console.info(data); 
+                // console.info(data);
             done(); }, done);
         });
-        
+
         it('#listP', (done)=>{
             topic.listP().then((data)=>{
                 // console.info(data.Subscriptions);
             done(); }, done);
         });
-        
+
         it('Subscription #setAttrsP & #getAttrsP', (done)=>{
             subscription.setAttrsP({ NotifyStrategy: AliMNS.Subscription.NotifyStrategy.EXPONENTIAL_DECAY_RETRY })
             .then((dataSet)=>{
@@ -92,46 +92,46 @@ describe('AliMNS-topic', ()=>{
             })
             .then(()=>{ done(); }, done);
         });
-        
+
         it('#publishP', (done)=>{
             topic.publishP("Hello", false, null, null, {forever:true})
             .then((data)=>{
-                // console.info(data); 
+                // console.info(data);
             done(); }, done);
         });
-        
+
         it('#unsubscribe', (done)=>{
             topic.unsubscribeP(subName)
             .then(()=>{ done(); }, done);
         });
-        
+
         it('#deleteTopicP', (done)=>{
             mns.deleteTopicP(topicName)
             .then(()=>{ done(); }, done);
         });
     });
-    
+
     describe('Topic-Notify', function(){
         this.timeout(1000 * 10);
-        
+
         var topicName = aliCfg.topicName + Math.floor(Math.random() * 10000);
         var subName = topicName + '-sub' + Math.floor(Math.random() * 10000);
         var topic = new AliMNS.Topic(topicName, account, aliCfg.region);
         var server = null;
         var nx = null;
-        
+
         it('prepare-create-topic', (done)=>{
             mns.createTopicP(topicName)
             .then(()=>{ done(); }, done);
         });
-        
+
         it('prepare-subscribe', (done)=>{
             topic.subscribeP(subName, aliCfg.endPoint,
                 AliMNS.Subscription.NotifyStrategy.BACKOFF_RETRY,
                 AliMNS.Subscription.NotifyContentFormat.SIMPLIFIED)
             .then(()=>{ done(); }, done);
         });
-        
+
         it('prepare-http', ()=>{
             nx = new Promise((resolve, reject)=>{
                 server = http.createServer((request, response)=>{
@@ -141,7 +141,7 @@ describe('AliMNS-topic', ()=>{
                     });
                     request.on('end', ()=>{
                         var buf = Buffer.concat(chunks);
-                        
+
                         response.writeHead(204, {'Content-Type': 'text/plain'});
                         response.end();
                         resolve({
@@ -150,13 +150,13 @@ describe('AliMNS-topic', ()=>{
                             data: buf.toString()
                         });
                     });
-                    
-                    
+
+
                 });
                 server.listen(aliCfg.port);
             });
         });
-        
+
         it.skip('wait-notify', (done)=>{
             var tmo = setTimeout(()=>{
                 done(new Error("timeout"));
@@ -168,7 +168,7 @@ describe('AliMNS-topic', ()=>{
             });
             topic.publishP("Hello");
         });
-        
+
         it('clean', (done)=>{
             server.close();
             mns.deleteTopicP(topicName)

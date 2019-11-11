@@ -1,8 +1,8 @@
 {
-  "name": "ali-mns",
-  "version": "2.6.8",
-  "description": "The nodejs SDK for aliyun mns service",
-  "main": "index.js",
+  "name": "ali-mns-ts",
+  "version": "0.0.0-development",
+  "description": "The nodejs SDK for aliyun mns service (TypeScript version)",
+  "main": "ts/index.js",
   "dependencies": {
     "debug": "^2.2.0",
     "promise": "^7.0.4",
@@ -12,8 +12,12 @@
     "xmlbuilder": "^3.1.0"
   },
   "devDependencies": {
-    "@types/node": "^7.0.22",
+    "@types/chai": "^4.2.4",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^7.10.9",
+    "chai": "^4.2.0",
     "del": "^2.2.0",
+    "espower-typescript": "^9.0.2",
     "git-version-json": "^1.0.5",
     "gulp": "^3.9.1",
     "gulp-debug": "^2.1.2",
@@ -23,17 +27,21 @@
     "gulp-replace": "^0.5.4",
     "gulp-sourcemaps": "^1.9.1",
     "gulp-typescript": "^3.1.7",
-    "mocha": "^3.4.2",
+    "mocha": "^3.5.3",
+    "power-assert": "^1.6.1",
+    "semantic-release": "^15.13.30",
     "should": "^7.1.1",
-    "typescript": "^2.3.4"
+    "ts-node": "^8.5.0",
+    "typescript": "3.7.2"
   },
   "scripts": {
-    "prepare": "gulp",
-    "test": "node node_modules/mocha/bin/mocha"
+    "test": "mocha -r ts-node/register --require espower-typescript/guess test/*.[tj]s",
+    "semantic-release": "semantic-release",
+    "build": "tsc -p ."
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/InCar/ali-mns.git"
+    "url": "https://github.com/Jeff-Tian/ali-mns.git"
   },
   "keywords": [
     "aliyun",
@@ -44,7 +52,7 @@
   "author": "ghxiong@incardata.com.cn",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/InCar/ali-mns/issues"
+    "url": "https://github.com/Jeff-Tian/ali-mns/issues"
   },
-  "homepage": "https://github.com/InCar/ali-mns"
+  "homepage": "https://github.com/Jeff-Tian/ali-mns"
 }

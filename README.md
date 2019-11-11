@@ -1,8 +1,12 @@
-# ali-mns (ali-mqs)
-[![npm version](https://badge.fury.io/js/ali-mns.svg)](http://badge.fury.io/js/ali-mns)
-[![npm version](https://badge.fury.io/js/ali-mqs.svg)](http://badge.fury.io/js/ali-mqs)
+# ali-mns-ts
 
-The nodejs sdk for aliyun mns service
+> The nodejs sdk for aliyun mns service (TypeScript version)
+
+
+[![npm version](https://badge.fury.io/js/ali-mns-ts.svg)](http://badge.fury.io/js/ali-mns-ts)
+[![Build Status](https://travis-ci.com/Jeff-Tian/ali-mns.svg?branch=master)](https://travis-ci.com/Jeff-Tian/ali-mns)
+
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=Jeff-Tian_ali-mns)](https://sonarcloud.io/dashboard?id=Jeff-Tian_ali-mns)
 
 [阿里云消息服务-简体中文-帮助手册](http://armclr.incars.com.cn/Links/AliMNS?lang=zh-Hans)
 
@@ -12,17 +16,17 @@ The world largest online sales website www.taobao.com is heavily relying on it.
 You can visit [http://www.aliyun.com/product/mns](http://www.aliyun.com/product/mns) for more details.
 
 The original Ali-MQS service has been upgraded and changed it's name to Ali-MNS since June, 2015.
-Go to  [Migrate](#migrate) part for the old version informations.
+Go to  [Migrate](#migrate) part for the old version information.
 
 # QuickStart
 Use 'npm install ali-mns' to install the package.
 
 ```javascript
-    var AliMNS = require("ali-mns");
+    var AliMNS = require("ali-mns-ts");
     var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
     var mq = new AliMNS.MQ("<your-mq-name>", account, "hangzhou");
     // send message
-    mq.sendP("Hello ali-mns").then(console.log, console.error);
+    mq.sendP("Hello ali-mns-ts").then(console.log, console.error);
 ```
 More sample codes can be found in [GitHub](https://github.com/InCar/ali-mns/tree/master/test).
 
@@ -299,7 +303,7 @@ keyId: String, ali key id.
 
 keySecret: String, ali key secret.
 ```javascript
-    var AliMNS = require("ali-mns");
+    var AliMNS = require("ali-mns-ts");
     var account = new AliMNS.Account("<your-owner-id>", "<your-key-id>", "<your-key-secret>");
 ```
 The account object is usually passed as an argument for other class such as *MNS*, *MQ*
@@ -380,7 +384,7 @@ If it is string, it can be "hangzhou", "beijing" or any Chinese datacenter city 
 If it is Region, it allows you to specify data center other than in China. 
 Default is "hangzhou". It can also be internal or vpc address "hangzhou-internal", "beijing-internal" or "qingdao-internal-vpc".
 ```javascript
-    var AliMNS = require("ali-mns");
+    var AliMNS = require("ali-mns-ts");
     var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
     var mns = new AliMNS.MNS(account, "hangzhou");
     // or
@@ -456,7 +460,7 @@ If it is string, it can be "hangzhou", "beijing" or any Chinese datacenter city 
 If it is Region, it allows you to specify data center other than in China. 
 Default is "hangzhou". It can also be internal or vpc address "hangzhou-internal", "beijing-internal" or "qingdao-internal-vpc".
 ```javascript
-    var AliMNS = require("ali-mns");
+    var AliMNS = require("ali-mns-ts");
     var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
     var mq = new AliMNS.MQ(account, "hangzhou");
     // or
@@ -483,7 +487,7 @@ priority: number, optional. 1(lowest)~16(highest), default is 8.
 delaySeconds: number, optional. How many seconds will the messages be visible after sent. 0~604800(7days), default is 0.
 This argument is prior to the options.DelaySeconds in attributes of message queue.
 ```javascript
-    mq.sendP("Hello Ali-MNS", 8, 0).then(console.log, console.error);
+    mq.sendP("Hello ali-mns-ts", 8, 0).then(console.log, console.error);
 ```
 
 ## mq.getRecvTolerance() & mq.setRecvTolerance(value:number)
@@ -692,7 +696,7 @@ All other arguments are same as *mq.notifyRecv*.
 The class `MNSTopic` extends class `MNS` for providing features in topic model.
 All methods in `MNS` class are also available in `MNSTopic`.
 ```javascript
-    var AliMNS = require("ali-mns");
+    var AliMNS = require("ali-mns-ts");
     var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
     var mns = new AliMNS.MNSTopic(account, "shenzhen");
     // or
@@ -737,7 +741,7 @@ If it is string, it can be "hangzhou", "beijing" or any Chinese datacenter city 
 If it is Region, it allows you to specify data center other than in China. 
 Default is "hangzhou". It can also be internal or vpc address "hangzhou-internal", "beijing-internal" or "qingdao-internal-vpc".
 ```javascript
-    var AliMNS = require("ali-mns");
+    var AliMNS = require("ali-mns-ts");
     var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
     var topic = new AliMNS.Topic("t11", account, "shenzhen");
     // or
@@ -827,7 +831,7 @@ Set options to `{ forever: true }` will let http(s) channel *KeepAive*.
 # Subscription(name:string, topic:Topic)
 Operate a subscription.
 ```javascript
-var AliMNS = require("ali-mns");
+var AliMNS = require("ali-mns-ts");
 var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
 var topic = new AliMNS.Topic("t11", account, "shenzhen");
 var subscription = new AliMNS.Subscription("s12", topic);
@@ -869,7 +873,7 @@ AliMNS.Subscription.NotifyContentFormat.SIMPLIFIED : "SIMPLIFIED"
 [More about NotifyContentFormat[zh-Hans]](https://help.aliyun.com/document_detail/mns/api_reference/concepts/NotifyContentFormat.html?spm=5176.docmns/api_reference/concepts/NotifyStrategy.6.142.kWiFyy)
 
 # DEBUG Trace
-Set the environment variable **DEBUG** to "ali-mns" to enable the debug trace output.
+Set the environment variable **DEBUG** to "ali-mns-ts" to enable the debug trace output.
 ```SHELL
 # linux bash
 export DEBUG=ali-mns
@@ -889,7 +893,7 @@ var AliMQS = require('ali-mns');
 Ali-Yun upgrade their account system, and recommend to use the newer account id instead of owner id.
 But the old owner id is still available for now.
 ```javascript
-var AliMQS = require("ali-mns");
+var AliMQS = require("ali-mns-ts");
 // var account = new AliMNS.Account("hl35yqoedp", "<your-key-id>", "<your-key-secret>");
 var account = new AliMNS.Account("1786090012649663", "<your-key-id>", "<your-key-secret>");
 ```
@@ -944,14 +948,14 @@ You can check [code](https://github.com/InCar/ali-mns/blob/master/ts/GA.ts#L28) 
 
 You can always disable data collection as you wish.
 ```javascript
-    var AliMNS = require("ali-mns");
+    var AliMNS = require("ali-mns-ts");
     var account = new AliMNS.Account("<your-account-id>", "<your-key-id>", "<your-key-secret>");
     
     // Disable google analytics data collection
     account.setGA(false);
     
     var mq = new AliMNS.MQ("<your-mq-name>", account, "hangzhou");
-    mq.sendP("Hello ali-mns").then(console.log, console.error);
+    mq.sendP("Hello ali-mns-ts").then(console.log, console.error);
 ```
 
 # License
