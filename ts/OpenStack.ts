@@ -68,8 +68,8 @@ export class OpenStack {
                 if (response.bodyJSON) return response.bodyJSON;
                 else return response.statusCode;
             } else {
-                if (response.bodyJSON) return Promise.reject(response.bodyJSON);
-                else return Promise.reject(response.statusCode);
+                if (response.bodyJSON) return Promise.reject({...response.bodyJSON, data: req.body});
+                else return Promise.reject({...response.statusCode, data: req.body});
             }
         });
 
