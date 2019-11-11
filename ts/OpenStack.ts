@@ -8,11 +8,8 @@ import {Account} from "./Account";
 import XmlBuilder from 'xmlbuilder';
 
 import Promise from 'promise'
-import debug0 from "debug"
 import Util from "util";
 import Url from "url";
-
-const debug = debug0('ali-mns');
 
 
 var Xml2js: any = require("xml2js");

@@ -6,9 +6,6 @@
 import {OpenStack} from "./OpenStack";
 import {Topic} from "./Topic";
 import {ISubscription} from "./Interfaces";
-import {Account} from './Account'
-
-import Promise from 'promise';
 
 import debug0 from "debug"
 import Util from "util";

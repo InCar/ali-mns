@@ -231,7 +231,3 @@ export enum City {
     // MiddleEast
     Dubai = (Area.UnitedArabEmirates << 16) | 4
 }
-
-interface HashTable<T> {
-    [key: number]: T;
-}
